@@ -9,7 +9,7 @@ This guide will help you get started with Phantom.js in your OIE scripting proje
 1. **Copy the Library**
    - Open `phantom.js` from this repository
    - Copy the entire contents
-   - Paste into your OIE script editor
+   - Paste into your OIE Code Templates -> New Library -> New code template.
 
 2. **That's It!**
    - The library is immediately available as `phantom` in your script context
