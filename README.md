@@ -1,6 +1,6 @@
 # Phantom.js
 
-A lightweight helper library for OIE (Oracle Integration Enterprise) scripting.
+A lightweight helper library for OIE (Open Integration Engine) scripting.
 
 **Version:** 0.0.9
 
