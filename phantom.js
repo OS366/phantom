@@ -10,11 +10,9 @@
  * - Errors should be generic: "Invalid operation"
  * - Keep full file: maps + strings + numbers
  *
- * WARNING / KNOWN ISSUE
- * ---------------------
- * Variables saved using phantom.maps.* are NOT available for drag-and-drop inside
- * the Destination Mappings section because Destination Mapping uses code templates,
- * not runtime variables. This is a known OIE editor limitation (not a Phantom bug).
+ * WARNING
+ * -------
+ * Drag and drop is not possible for variables saved using phantom.maps.*
  */
 
 (function (global) {

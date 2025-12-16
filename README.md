@@ -15,9 +15,36 @@ Phantom.js provides a comprehensive set of utilities for working with maps, stri
 - **Generic error messages** - All errors return "Invalid operation"
 - **Full file** - Includes maps + strings + numbers utilities
 
-## Warning / Known Issue
+## Warning
 
-Variables saved using `phantom.maps.*` are **NOT** available for drag-and-drop inside the Destination Mappings section because Destination Mapping uses code templates, not runtime variables. This is a known OIE editor limitation (not a Phantom bug).
+Drag and drop is not possible for variables saved using `phantom.maps.*`
+
+---
+
+## Installation
+
+### For OIE Scripting
+
+1. Copy the contents of `phantom.js` into your OIE script editor
+2. The library will be available as `phantom` in your script context
+3. No additional setup required
+
+### For Development/Testing
+
+```bash
+# Clone the repository
+git clone https://github.com/OS366/phantom.git
+cd phantom
+
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
 
 ---
 
