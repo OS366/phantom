@@ -1,6 +1,6 @@
 # Phantom.js Wiki
 
-Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, examples, and best practices for using Phantom.js in your OIE (Oracle Integration Enterprise) scripting projects.
+Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, examples, and best practices for using Phantom.js in your OIE (Open Integration Engine) envrionment. Should work in Mirth and BridgeLink as well.
 
 ## Quick Navigation
 
