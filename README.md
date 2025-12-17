@@ -1041,7 +1041,7 @@ phantom.json.operation.stringify([1, 2, 3]);
 
 ### get
 
-Get a value by key path (supports nested keys with dot notation).
+Get a value by key path (supports nested keys with dot notation). Throws error if key doesn't exist.
 
 ```javascript
 var obj = { user: { name: "John", age: 30 } };
@@ -1053,7 +1053,7 @@ phantom.json.operation.get(obj, "user.age");
 // Output: 30
 
 phantom.json.operation.get(obj, "user.city");
-// Output: null (key doesn't exist)
+// Throws: Error("Invalid operation") (key doesn't exist)
 ```
 
 ### set

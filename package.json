@@ -1,6 +1,6 @@
 {
   "name": "phantom",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "Lightweight helper library for OIE scripting",
   "main": "phantom.js",
   "scripts": {

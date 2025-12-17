@@ -140,14 +140,14 @@ describe('Phantom.js Library', () => {
     });
 
     test('should fail on null key', () => {
-      expect(() => phantom.maps.channel.save(null, 'value')).toThrow('Invalid operation');
-      expect(() => phantom.maps.channel.get(null)).toThrow('Invalid operation');
-      expect(() => phantom.maps.channel.delete(null)).toThrow('Invalid operation');
+      expect(() => phantom.maps.channel.save(null, 'value')).toThrow();
+      expect(() => phantom.maps.channel.get(null)).toThrow();
+      expect(() => phantom.maps.channel.delete(null)).toThrow();
     });
 
     test('should fail on null map', () => {
       delete global.channelMap;
-      expect(() => phantom.maps.channel.save('key', 'value')).toThrow('Invalid operation');
+      expect(() => phantom.maps.channel.save('key', 'value')).toThrow();
     });
   });
 
@@ -186,7 +186,7 @@ describe('Phantom.js Library', () => {
     test('should fail when not in response context', () => {
       // Mock isResponseContext to return false
       delete global.responseMap;
-      expect(() => phantom.maps.response.save('key', 'value')).toThrow('Invalid operation');
+      expect(() => phantom.maps.response.save('key', 'value')).toThrow();
     });
   });
 
@@ -204,11 +204,11 @@ describe('Phantom.js Library', () => {
     });
 
     test('should fail on save to configuration map', () => {
-      expect(() => phantom.maps.configuration.save('key', 'value')).toThrow('Invalid operation');
+      expect(() => phantom.maps.configuration.save('key', 'value')).toThrow();
     });
 
     test('should fail on delete from configuration map', () => {
-      expect(() => phantom.maps.configuration.delete('key')).toThrow('Invalid operation');
+      expect(() => phantom.maps.configuration.delete('key')).toThrow();
     });
   });
 
@@ -526,10 +526,10 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.parse('abc')).toThrow('Invalid operation');
-        expect(() => phantom.numbers.operation.parse(null)).toThrow('Invalid operation');
-        expect(() => phantom.numbers.operation.parse(undefined)).toThrow('Invalid operation');
-        expect(() => phantom.numbers.operation.parse('Infinity')).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.parse('abc')).toThrow();
+        expect(() => phantom.numbers.operation.parse(null)).toThrow();
+        expect(() => phantom.numbers.operation.parse(undefined)).toThrow();
+        expect(() => phantom.numbers.operation.parse('Infinity')).toThrow();
       });
     });
 
@@ -560,8 +560,8 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.add('abc', 5)).toThrow('Invalid operation');
-        expect(() => phantom.numbers.operation.add(5, null)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.add('abc', 5)).toThrow();
+        expect(() => phantom.numbers.operation.add(5, null)).toThrow();
       });
     });
 
@@ -573,7 +573,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.subtract('abc', 5)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.subtract('abc', 5)).toThrow();
       });
     });
 
@@ -585,7 +585,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.multiply('abc', 5)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.multiply('abc', 5)).toThrow();
       });
     });
 
@@ -597,11 +597,11 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on division by zero', () => {
-        expect(() => phantom.numbers.operation.divide(10, 0)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.divide(10, 0)).toThrow();
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.divide('abc', 5)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.divide('abc', 5)).toThrow();
       });
     });
 
@@ -618,7 +618,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.round('abc', 2)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.round('abc', 2)).toThrow();
       });
     });
 
@@ -630,7 +630,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.min('abc', 5)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.min('abc', 5)).toThrow();
       });
     });
 
@@ -642,7 +642,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.max('abc', 5)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.max('abc', 5)).toThrow();
       });
     });
 
@@ -654,7 +654,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid numbers', () => {
-        expect(() => phantom.numbers.operation.abs('abc')).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.abs('abc')).toThrow();
       });
     });
 
@@ -682,7 +682,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on negative numbers', () => {
-        expect(() => phantom.numbers.operation.sqrt(-1)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.sqrt(-1)).toThrow();
       });
     });
 
@@ -702,7 +702,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on division by zero', () => {
-        expect(() => phantom.numbers.operation.mod(10, 0)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.mod(10, 0)).toThrow();
       });
     });
 
@@ -720,7 +720,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail if min > max', () => {
-        expect(() => phantom.numbers.operation.random(10, 0)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.random(10, 0)).toThrow();
       });
     });
 
@@ -733,7 +733,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail if min > max', () => {
-        expect(() => phantom.numbers.operation.randomInt(10, 0)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.randomInt(10, 0)).toThrow();
       });
     });
 
@@ -755,7 +755,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail if min > max', () => {
-        expect(() => phantom.numbers.operation.clamp(5, 10, 1)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.clamp(5, 10, 1)).toThrow();
       });
     });
 
@@ -817,8 +817,8 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid decimal places', () => {
-        expect(() => phantom.numbers.operation.toFixed(5, -1)).toThrow('Invalid operation');
-        expect(() => phantom.numbers.operation.toFixed(5, 21)).toThrow('Invalid operation');
+        expect(() => phantom.numbers.operation.toFixed(5, -1)).toThrow();
+        expect(() => phantom.numbers.operation.toFixed(5, 21)).toThrow();
       });
     });
 
@@ -838,12 +838,14 @@ describe('Phantom.js Library', () => {
       } catch (e) {
         // Expected to throw
       }
-      expect(mockLogger.error).toHaveBeenCalledWith('[phantom] Invalid operation');
+      expect(mockLogger.error).toHaveBeenCalled();
+      var lastCall = mockLogger.error.mock.calls[mockLogger.error.mock.calls.length - 1];
+      expect(lastCall[0]).toMatch(/^\[phantom\]/);
     });
 
     test('should not fail when logger is not available', () => {
       delete global.logger;
-      expect(() => phantom.maps.channel.save(null, 'value')).toThrow('Invalid operation');
+      expect(() => phantom.maps.channel.save(null, 'value')).toThrow();
     });
   });
 
@@ -893,10 +895,10 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid JSON', () => {
-        expect(() => phantom.json.operation.parse('invalid json')).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.parse('{name:}')).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.parse(null)).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.parse('')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.parse('invalid json')).toThrow();
+        expect(() => phantom.json.operation.parse('{name:}')).toThrow();
+        expect(() => phantom.json.operation.parse(null)).toThrow();
+        expect(() => phantom.json.operation.parse('')).toThrow();
       });
     });
 
@@ -908,8 +910,8 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on null/undefined', () => {
-        expect(() => phantom.json.operation.stringify(null)).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.stringify(undefined)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.stringify(null)).toThrow();
+        expect(() => phantom.json.operation.stringify(undefined)).toThrow();
       });
     });
 
@@ -926,16 +928,16 @@ describe('Phantom.js Library', () => {
         expect(phantom.json.operation.get(obj, 'user.address.city')).toBe('NYC');
       });
 
-      test('should return null for non-existent key', () => {
+      test('should throw error for non-existent key', () => {
         var obj = { name: 'John' };
-        expect(phantom.json.operation.get(obj, 'age')).toBeNull();
-        expect(phantom.json.operation.get(obj, 'user.name')).toBeNull();
+        expect(() => phantom.json.operation.get(obj, 'age')).toThrow();
+        expect(() => phantom.json.operation.get(obj, 'user.name')).toThrow();
       });
 
       test('should fail on invalid input', () => {
-        expect(() => phantom.json.operation.get(null, 'key')).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.get({}, null)).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.get({}, '')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.get(null, 'key')).toThrow();
+        expect(() => phantom.json.operation.get({}, null)).toThrow();
+        expect(() => phantom.json.operation.get({}, '')).toThrow();
       });
     });
 
@@ -961,8 +963,8 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid input', () => {
-        expect(() => phantom.json.operation.set(null, 'key', 'value')).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.set({}, null, 'value')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.set(null, 'key', 'value')).toThrow();
+        expect(() => phantom.json.operation.set({}, null, 'value')).toThrow();
       });
     });
 
@@ -981,7 +983,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid input', () => {
-        expect(() => phantom.json.operation.has(null, 'key')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.has(null, 'key')).toThrow();
       });
     });
 
@@ -1002,7 +1004,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid input', () => {
-        expect(() => phantom.json.operation.remove(null, 'key')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.remove(null, 'key')).toThrow();
       });
     });
 
@@ -1017,11 +1019,11 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on arrays', () => {
-        expect(() => phantom.json.operation.keys([1, 2, 3])).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.keys([1, 2, 3])).toThrow();
       });
 
       test('should fail on invalid input', () => {
-        expect(() => phantom.json.operation.keys(null)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.keys(null)).toThrow();
       });
     });
 
@@ -1035,7 +1037,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on arrays', () => {
-        expect(() => phantom.json.operation.values([1, 2, 3])).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.values([1, 2, 3])).toThrow();
       });
     });
 
@@ -1051,7 +1053,7 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on invalid input', () => {
-        expect(() => phantom.json.operation.size(null)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.size(null)).toThrow();
       });
     });
 
@@ -1075,8 +1077,8 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on arrays', () => {
-        expect(() => phantom.json.operation.merge({}, [])).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.merge([], {})).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.merge({}, [])).toThrow();
+        expect(() => phantom.json.operation.merge([], {})).toThrow();
       });
     });
 
@@ -1121,8 +1123,8 @@ describe('Phantom.js Library', () => {
       });
 
       test('should fail on null/undefined', () => {
-        expect(() => phantom.json.operation.toString(null)).toThrow('Invalid operation');
-        expect(() => phantom.json.operation.toString(undefined)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.toString(null)).toThrow();
+        expect(() => phantom.json.operation.toString(undefined)).toThrow();
       });
     });
   });

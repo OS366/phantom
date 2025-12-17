@@ -1,5 +1,5 @@
 /*!
- * Phantom.js v0.0.9
+ * Phantom.js v0.1.0
  * ==================
  * Lightweight helper library for OIE scripting
  *
@@ -7,7 +7,7 @@
  * --------------------
  * - Do NOT log normal operations (no "numbers.add" logs, etc.)
  * - Only log when there is an error
- * - Errors should be generic: "Invalid operation"
+ * - Errors should show specific error messages when available
  * - Keep full file: maps + strings + numbers
  *
  * WARNING
@@ -21,7 +21,7 @@
     var phantom = global.phantom || {};
     global.phantom = phantom;
   
-    phantom.version = "0.0.9";
+    phantom.version = "0.1.0";
   
     phantom.config = { silent: true };
   
@@ -38,10 +38,11 @@
       }
     }
   
-    function fail() {
-      // Generic error message only (as requested)
-      logError("Invalid operation");
-      throw new Error("Invalid operation");
+    function fail(msg) {
+      // Use specific error message if provided, otherwise use generic
+      var errorMsg = msg || "Invalid operation";
+      logError(errorMsg);
+      throw new Error(errorMsg);
     }
   
     /* --------------------------------------------------
@@ -74,8 +75,8 @@
     }
   
     function putSafe(m, k, v) {
-      if (!m) return fail();
-      if (k == null) return fail();
+      if (!m) return fail("Map is null or undefined");
+      if (k == null) return fail("Key is null or undefined");
   
       var jKey = toJavaString(k);
   
@@ -83,28 +84,28 @@
         if (m.put) { m.put(jKey, v); return; }
         if (m.set) { m.set(jKey, v); return; }
       } catch (e) {
-        return fail();
+        return fail("Failed to save to map: " + (e.message || String(e)));
       }
   
-      return fail();
+      return fail("Map does not support put or set operations");
     }
   
     function getSafe(m, k) {
-      if (!m) return fail();
-      if (k == null) return fail();
+      if (!m) return fail("Map is null or undefined");
+      if (k == null) return fail("Key is null or undefined");
   
       try {
         if (m.get) return m.get(toJavaString(k));
       } catch (e) {
-        return fail();
+        return fail("Failed to get from map: " + (e.message || String(e)));
       }
   
-      return fail();
+      return fail("Map does not support get operation");
     }
   
     function delSafe(m, k) {
-      if (!m) return fail();
-      if (k == null) return fail();
+      if (!m) return fail("Map is null or undefined");
+      if (k == null) return fail("Key is null or undefined");
   
       try {
         var jKey = toJavaString(k);
@@ -112,10 +113,10 @@
         if (m.put) { m.put(jKey, null); return; }
         if (m.set) { m.set(jKey, null); return; }
       } catch (e) {
-        return fail();
+        return fail("Failed to delete from map: " + (e.message || String(e)));
       }
   
-      return fail();
+      return fail("Map does not support remove, put, or set operations");
     }
   
     /* --------------------------------------------------
@@ -126,13 +127,15 @@
   
     function mapFacade(mapName, responseOnly, readOnly) {
       function getMap() {
-        if (responseOnly && !isResponseContext()) return fail();
-        return resolveMap(mapName);
+        if (responseOnly && !isResponseContext()) return fail("Response map is only available in response context");
+        var map = resolveMap(mapName);
+        if (!map) return fail("Map '" + mapName + "' is not available");
+        return map;
       }
   
       return {
         save: function (k, v) {
-          if (readOnly) return fail();
+          if (readOnly) return fail("Map is read-only");
           return putSafe(getMap(), k, v);
         },
         get: function (k) {
@@ -144,11 +147,11 @@
             var v = m.get(toJavaString(k));
             return v !== null && typeof v !== "undefined";
           } catch (e) {
-            return fail();
+            return fail("Failed to check if key exists: " + (e.message || String(e)));
           }
         },
         delete: function (k) {
-          if (readOnly) return fail();
+          if (readOnly) return fail("Map is read-only");
           return delSafe(getMap(), k);
         }
       };
@@ -161,19 +164,22 @@
   
     phantom.maps.configuration = {
       get: function (k) {
-        return getSafe(resolveMap("configurationMap"), k);
+        var map = resolveMap("configurationMap");
+        if (!map) return fail("Configuration map is not available");
+        return getSafe(map, k);
       },
       exists: function (k) {
         try {
           var m = resolveMap("configurationMap");
+          if (!m) return fail("Configuration map is not available");
           var v = m.get(toJavaString(k));
           return v !== null && typeof v !== "undefined";
         } catch (e) {
-          return fail();
+          return fail("Failed to check if configuration key exists: " + (e.message || String(e)));
         }
       },
-      save: function () { return fail(); },
-      delete: function () { return fail(); }
+      save: function () { return fail("Configuration map is read-only"); },
+      delete: function () { return fail("Configuration map is read-only"); }
     };
   
     /* --------------------------------------------------
@@ -376,9 +382,9 @@
     phantom.numbers = { operation: {} };
   
     function toNumStrict(x) {
-      if (x === null || typeof x === "undefined") return fail();
+      if (x === null || typeof x === "undefined") return fail("Value is null or undefined");
       var n = Number(x);
-      if (isNaN(n) || !isFinite(n)) return fail();
+      if (isNaN(n) || !isFinite(n)) return fail("Value is not a valid number: " + String(x));
       return n;
     }
   
@@ -409,7 +415,7 @@
   
     phantom.numbers.operation.divide = function (a, b) {
       var denom = toNumStrict(b);
-      if (denom === 0) return fail();
+      if (denom === 0) return fail("Division by zero");
       return toNumStrict(a) / denom;
     };
   
@@ -444,7 +450,7 @@
 
     phantom.numbers.operation.sqrt = function (value) {
       var n = toNumStrict(value);
-      if (n < 0) return fail();
+      if (n < 0) return fail("Cannot calculate square root of negative number: " + n);
       return Math.sqrt(n);
     };
 
@@ -454,21 +460,21 @@
 
     phantom.numbers.operation.mod = function (dividend, divisor) {
       var d = toNumStrict(divisor);
-      if (d === 0) return fail();
+      if (d === 0) return fail("Modulo by zero");
       return toNumStrict(dividend) % d;
     };
 
     phantom.numbers.operation.random = function (min, max) {
       var minVal = min != null ? toNumStrict(min) : 0;
       var maxVal = max != null ? toNumStrict(max) : 1;
-      if (minVal > maxVal) return fail();
+      if (minVal > maxVal) return fail("Minimum value (" + minVal + ") is greater than maximum value (" + maxVal + ")");
       return Math.random() * (maxVal - minVal) + minVal;
     };
 
     phantom.numbers.operation.randomInt = function (min, max) {
       var minVal = min != null ? toNumStrict(min) : 0;
       var maxVal = max != null ? toNumStrict(max) : 1;
-      if (minVal > maxVal) return fail();
+      if (minVal > maxVal) return fail("Minimum value (" + minVal + ") is greater than maximum value (" + maxVal + ")");
       return Math.floor(Math.random() * (Math.floor(maxVal) - Math.ceil(minVal) + 1)) + Math.ceil(minVal);
     };
 
@@ -483,7 +489,7 @@
       var v = toNumStrict(value);
       var minVal = toNumStrict(min);
       var maxVal = toNumStrict(max);
-      if (minVal > maxVal) return fail();
+      if (minVal > maxVal) return fail("Minimum value (" + minVal + ") is greater than maximum value (" + maxVal + ")");
       if (v < minVal) return minVal;
       if (v > maxVal) return maxVal;
       return v;
@@ -521,7 +527,7 @@
     phantom.numbers.operation.toFixed = function (value, decimals) {
       var n = toNumStrict(value);
       var d = decimals != null ? toNumStrict(decimals) : 0;
-      if (d < 0 || d > 20) return fail();
+      if (d < 0 || d > 20) return fail("Decimal places must be between 0 and 20, got: " + d);
       return n.toFixed(Math.floor(d));
     };
 
@@ -539,32 +545,34 @@
   
     function parseJsonSafe(str) {
       try {
-        if (str === null || typeof str === "undefined") return fail();
+        if (str === null || typeof str === "undefined") return fail("JSON string is null or undefined");
         var s = toStr(str);
-        if (s.length === 0) return fail();
+        if (s.length === 0) return fail("JSON string is empty");
         return JSON.parse(s);
       } catch (e) {
-        return fail();
+        return fail("Invalid JSON: " + (e.message || String(e)));
       }
     }
   
     function stringifyJsonSafe(obj) {
       try {
-        if (obj === null || typeof obj === "undefined") return fail();
+        if (obj === null || typeof obj === "undefined") return fail("Object is null or undefined");
         return JSON.stringify(obj);
       } catch (e) {
-        return fail();
+        return fail("Failed to stringify JSON: " + (e.message || String(e)));
       }
     }
   
     function getNestedValue(obj, path) {
-      if (obj == null) return null;
+      if (obj == null) return fail("Object is null or undefined");
       var keys = path.split(".");
       var current = obj;
       for (var i = 0; i < keys.length; i++) {
-        if (current == null || typeof current !== "object") return null;
-        current = current[keys[i]];
-        if (current === undefined) return null;
+        if (current == null || typeof current !== "object") return fail("Path '" + path + "' is invalid: intermediate value is not an object");
+        var key = keys[i];
+        if (!(key in current)) return fail("Key '" + key + "' not found in path '" + path + "'");
+        current = current[key];
+        if (current === undefined) return fail("Value at path '" + path + "' is undefined");
       }
       return current;
     }
@@ -593,70 +601,82 @@
     };
   
     phantom.json.operation.get = function (obj, keyPath) {
-      if (obj == null) return fail();
-      if (keyPath == null) return fail();
+      if (obj == null) return fail("Object is null or undefined");
+      if (keyPath == null) return fail("Key path is null or undefined");
       var path = toStr(keyPath);
-      if (path.length === 0) return fail();
+      if (path.length === 0) return fail("Key path is empty");
       return getNestedValue(obj, path);
     };
   
     phantom.json.operation.set = function (obj, keyPath, value) {
-      if (obj == null) return fail();
-      if (keyPath == null) return fail();
+      if (obj == null) return fail("Object is null or undefined");
+      if (keyPath == null) return fail("Key path is null or undefined");
       var path = toStr(keyPath);
-      if (path.length === 0) return fail();
+      if (path.length === 0) return fail("Key path is empty");
       try {
         var result = JSON.parse(JSON.stringify(obj)); // Deep clone
         setNestedValue(result, path, value);
         return result;
       } catch (e) {
-        return fail();
+        return fail("Failed to set value at path '" + path + "': " + (e.message || String(e)));
       }
     };
   
     phantom.json.operation.has = function (obj, keyPath) {
-      if (obj == null) return fail();
-      if (keyPath == null) return fail();
+      if (obj == null) return fail("Object is null or undefined");
+      if (keyPath == null) return fail("Key path is null or undefined");
       var path = toStr(keyPath);
-      if (path.length === 0) return fail();
-      var value = getNestedValue(obj, path);
-      return value !== null && typeof value !== "undefined";
+      if (path.length === 0) return fail("Key path is empty");
+      try {
+        var keys = path.split(".");
+        var current = obj;
+        for (var i = 0; i < keys.length; i++) {
+          if (current == null || typeof current !== "object") return false;
+          var key = keys[i];
+          if (!(key in current)) return false;
+          current = current[key];
+          if (current === undefined) return false;
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
     };
   
     phantom.json.operation.remove = function (obj, keyPath) {
-      if (obj == null) return fail();
-      if (keyPath == null) return fail();
+      if (obj == null) return fail("Object is null or undefined");
+      if (keyPath == null) return fail("Key path is null or undefined");
       var path = toStr(keyPath);
-      if (path.length === 0) return fail();
+      if (path.length === 0) return fail("Key path is empty");
       try {
         var result = JSON.parse(JSON.stringify(obj)); // Deep clone
         var keys = path.split(".");
         var current = result;
         for (var i = 0; i < keys.length - 1; i++) {
-          if (current == null || typeof current !== "object") return fail();
+          if (current == null || typeof current !== "object") return fail("Path '" + path + "' is invalid: intermediate value is not an object");
           current = current[keys[i]];
         }
-        if (current == null || typeof current !== "object") return fail();
+        if (current == null || typeof current !== "object") return fail("Path '" + path + "' is invalid: cannot remove from non-object");
         delete current[keys[keys.length - 1]];
         return result;
       } catch (e) {
-        return fail();
+        return fail("Failed to remove key at path '" + path + "': " + (e.message || String(e)));
       }
     };
   
     phantom.json.operation.keys = function (obj) {
-      if (obj == null || typeof obj !== "object") return fail();
-      if (Array.isArray(obj)) return fail();
+      if (obj == null || typeof obj !== "object") return fail("Object is null, undefined, or not an object");
+      if (Array.isArray(obj)) return fail("Cannot get keys from array, use size() for array length");
       try {
         return Object.keys(obj);
       } catch (e) {
-        return fail();
+        return fail("Failed to get keys: " + (e.message || String(e)));
       }
     };
   
     phantom.json.operation.values = function (obj) {
-      if (obj == null || typeof obj !== "object") return fail();
-      if (Array.isArray(obj)) return fail();
+      if (obj == null || typeof obj !== "object") return fail("Object is null, undefined, or not an object");
+      if (Array.isArray(obj)) return fail("Cannot get values from array");
       try {
         var keys = Object.keys(obj);
         var vals = [];
@@ -665,24 +685,24 @@
         }
         return vals;
       } catch (e) {
-        return fail();
+        return fail("Failed to get values: " + (e.message || String(e)));
       }
     };
   
     phantom.json.operation.size = function (obj) {
-      if (obj == null || typeof obj !== "object") return fail();
+      if (obj == null || typeof obj !== "object") return fail("Object is null, undefined, or not an object");
       if (Array.isArray(obj)) return obj.length;
       try {
         return Object.keys(obj).length;
       } catch (e) {
-        return fail();
+        return fail("Failed to get size: " + (e.message || String(e)));
       }
     };
   
     phantom.json.operation.merge = function (obj1, obj2) {
-      if (obj1 == null || typeof obj1 !== "object") return fail();
-      if (obj2 == null || typeof obj2 !== "object") return fail();
-      if (Array.isArray(obj1) || Array.isArray(obj2)) return fail();
+      if (obj1 == null || typeof obj1 !== "object") return fail("First object is null, undefined, or not an object");
+      if (obj2 == null || typeof obj2 !== "object") return fail("Second object is null, undefined, or not an object");
+      if (Array.isArray(obj1) || Array.isArray(obj2)) return fail("Cannot merge arrays, only objects");
       try {
         var result = JSON.parse(JSON.stringify(obj1)); // Deep clone
         var keys = Object.keys(obj2);
@@ -691,18 +711,18 @@
         }
         return result;
       } catch (e) {
-        return fail();
+        return fail("Failed to merge objects: " + (e.message || String(e)));
       }
     };
   
     phantom.json.operation.isEmpty = function (obj) {
       if (obj == null) return true;
-      if (typeof obj !== "object") return fail();
+      if (typeof obj !== "object") return fail("Value is not an object or array");
       if (Array.isArray(obj)) return obj.length === 0;
       try {
         return Object.keys(obj).length === 0;
       } catch (e) {
-        return fail();
+        return fail("Failed to check if empty: " + (e.message || String(e)));
       }
     };
   
