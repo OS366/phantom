@@ -1,6 +1,6 @@
 # Phantom.js
 
-A lightweight helper library for OIE (Open Integration Engine) scripting.
+A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
 **Version:** 0.1.2
 
