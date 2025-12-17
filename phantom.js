@@ -45,7 +45,11 @@
      * -------------------------------------------------- */
   
     function isResponseContext() {
-      try { return typeof responseMap !== "undefined"; }
+      try { 
+        if (typeof responseMap !== "undefined") return true;
+        if (global && global.responseMap) return true;
+        return false;
+      }
       catch (e) { return false; }
     }
   
@@ -53,48 +57,38 @@
       try {
         // In OIE/Rhino, these are global variables accessible directly
         // In Node.js test environment (VM context), access via the 'global' parameter passed to IIFE
+        // The 'global' parameter is the context object in VM, so maps are on it
+        var map = null;
         if (name === "channelMap") {
           try { 
-            if (typeof channelMap !== "undefined") return channelMap; 
+            if (typeof channelMap !== "undefined") { map = channelMap; }
           } catch (e) {}
+          if (!map && global && global.channelMap) { map = global.channelMap; }
+        } else if (name === "globalMap") {
           try { 
-            if (global && global.channelMap) return global.channelMap; 
+            if (typeof globalMap !== "undefined") { map = globalMap; }
           } catch (e) {}
+          if (!map && global && global.globalMap) { map = global.globalMap; }
+        } else if (name === "connectorMap") {
+          try { 
+            if (typeof connectorMap !== "undefined") { map = connectorMap; }
+          } catch (e) {}
+          if (!map && global && global.connectorMap) { map = global.connectorMap; }
+        } else if (name === "responseMap") {
+          try { 
+            if (typeof responseMap !== "undefined") { map = responseMap; }
+          } catch (e) {}
+          if (!map && global && global.responseMap) { map = global.responseMap; }
+        } else if (name === "configurationMap") {
+          try { 
+            if (typeof configurationMap !== "undefined") { map = configurationMap; }
+          } catch (e) {}
+          if (!map && global && global.configurationMap) { map = global.configurationMap; }
         }
-        if (name === "globalMap") {
-          try { 
-            if (typeof globalMap !== "undefined") return globalMap; 
-          } catch (e) {}
-          try { 
-            if (global && global.globalMap) return global.globalMap; 
-          } catch (e) {}
-        }
-        if (name === "connectorMap") {
-          try { 
-            if (typeof connectorMap !== "undefined") return connectorMap; 
-          } catch (e) {}
-          try { 
-            if (global && global.connectorMap) return global.connectorMap; 
-          } catch (e) {}
-        }
-        if (name === "responseMap") {
-          try { 
-            if (typeof responseMap !== "undefined") return responseMap; 
-          } catch (e) {}
-          try { 
-            if (global && global.responseMap) return global.responseMap; 
-          } catch (e) {}
-        }
-        if (name === "configurationMap") {
-          try { 
-            if (typeof configurationMap !== "undefined") return configurationMap; 
-          } catch (e) {}
-          try { 
-            if (global && global.configurationMap) return global.configurationMap; 
-          } catch (e) {}
-        }
-      } catch (e) {}
-      return null;
+        return map || null;
+      } catch (e) {
+        return null;
+      }
     }
   
     function toJavaString(x) {
