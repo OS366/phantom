@@ -2,7 +2,7 @@
 
 A lightweight helper library for OIE (Open Integration Engine) scripting.
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
 ## Overview
 
