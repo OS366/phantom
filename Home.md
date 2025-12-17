@@ -23,6 +23,7 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 - **27 Number Operations** - Mathematical operations, rounding, and validation
 - **15 JSON Operations** - Parse, manipulate, and query JSON objects
 - **2 Base64 Operations** - Encode and decode base64 strings
+- **5 XML Operations** - Parse, stringify, query XML documents
 - **18 Map Operations** - 5 map types (Channel, Global, Connector, Response, Configuration) with save/get/exists/delete methods
 - **Consistent API** - All operations follow the same pattern
 - **Error Handling** - Proper error handling with specific error messages
@@ -32,14 +33,14 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 
 ✅ **Zero Dependencies** - Pure JavaScript, no external libraries  
 ✅ **OIE Optimized** - Designed specifically for Oracle Integration Enterprise  
-✅ **Comprehensive Testing** - 174 tests covering all operations  
+✅ **Comprehensive Testing** - 186 tests covering all operations  
 ✅ **Well Documented** - Complete documentation with examples  
 ✅ **Error Safe** - Consistent error handling throughout  
-✅ **88 Total Functions** - Comprehensive utility library
+✅ **93 Total Functions** - Comprehensive utility library
 
 ## Version
 
-**Current Version:** 0.1.2
+**Current Version:** 0.1.3
 
 ## Quick Start
 
@@ -72,6 +73,11 @@ var encoded = phantom.base64.operation.encode("Hello World");
 // Output: "SGVsbG8gV29ybGQ="
 var decoded = phantom.base64.operation.decode(encoded);
 // Output: "Hello World"
+
+// Use XML operations
+var xml = phantom.xml.operation.parse('<root><name>John</name></root>');
+var name = phantom.xml.operation.get(xml, 'name');
+// Output: "John"
 ```
 
 ## Contributing
