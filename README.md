@@ -19,6 +19,21 @@ Phantom.js provides a comprehensive set of utilities for working with maps, stri
 - **Test Cases:** 174
 - **Test Coverage:** Comprehensive coverage for all operations
 
+## Documentation
+
+For detailed documentation, examples, and best practices, visit the [Phantom.js Wiki](https://github.com/OS366/phantom/wiki):
+
+- **[Getting Started](https://github.com/OS366/phantom/wiki/Getting-Started)** - Installation and basic usage
+- **[Map Operations](https://github.com/OS366/phantom/wiki/Map-Operations)** - Complete guide to working with maps
+- **[String Operations](https://github.com/OS366/phantom/wiki/String-Operations)** - All string utilities and examples
+- **[Number Operations](https://github.com/OS366/phantom/wiki/Number-Operations)** - All number utilities and examples
+- **[JSON Operations](https://github.com/OS366/phantom/wiki/JSON-Operations)** - All JSON utilities and examples
+- **[Base64 Operations](https://github.com/OS366/phantom/wiki/Base64-Operations)** - Base64 encode/decode operations
+- **[Best Practices](https://github.com/OS366/phantom/wiki/Best-Practices)** - Tips and patterns for effective usage
+- **[Examples](https://github.com/OS366/phantom/wiki/Examples)** - Real-world usage examples
+- **[Troubleshooting](https://github.com/OS366/phantom/wiki/Troubleshooting)** - Common issues and solutions
+- **[API Reference](https://github.com/OS366/phantom/wiki/API-Reference)** - Complete API documentation
+
 ## Rules
 
 - **No logging on normal operations** - Operations run silently by default
