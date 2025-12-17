@@ -879,27 +879,21 @@
         var s = toStr(str);
         if (s.length === 0) return fail("XML string is empty");
         
-        // Try Java XML parsing first (for OIE/Rhino environment)
+        // Use Java XML parsing (for OIE/Rhino environment)
         try {
           if (typeof java !== "undefined" && java.io && java.io.StringReader) {
             var factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             var builder = factory.newDocumentBuilder();
             var reader = new java.io.StringReader(s);
-            var source = new javax.xml.transform.stream.StreamSource(reader);
             var doc = builder.parse(new org.xml.sax.InputSource(reader));
             return doc;
           }
-        } catch (e) {}
-        
-        // Fallback to DOMParser (browser)
-        if (typeof DOMParser !== "undefined") {
-          var parser = new DOMParser();
-          return parser.parseFromString(s, "text/xml");
+        } catch (e) {
+          return fail("Failed to parse XML: " + (e.message || String(e)));
         }
         
-        // Fallback: return as string if no parser available
-        return fail("XML parsing not available in this environment");
+        return fail("XML parsing not available - Java XML APIs required (OIE/Rhino environment)");
       } catch (e) {
         return fail("Failed to parse XML: " + (e.message || String(e)));
       }
@@ -909,7 +903,10 @@
       try {
         if (obj === null || typeof obj === "undefined") return fail("XML object is null or undefined");
         
-        // Try Java XML serialization (for OIE/Rhino environment)
+        // If it's already a string, return it
+        if (typeof obj === "string") return obj;
+        
+        // Use Java XML serialization (for OIE/Rhino environment)
         try {
           if (typeof java !== "undefined" && obj.getDocumentElement) {
             var transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer();
@@ -919,18 +916,11 @@
             transformer.transform(source, result);
             return writer.toString();
           }
-        } catch (e) {}
-        
-        // Fallback to XMLSerializer (browser)
-        if (typeof XMLSerializer !== "undefined") {
-          var serializer = new XMLSerializer();
-          return serializer.serializeToString(obj);
+        } catch (e) {
+          return fail("Failed to stringify XML: " + (e.message || String(e)));
         }
         
-        // If it's already a string, return it
-        if (typeof obj === "string") return obj;
-        
-        return fail("XML stringification not available in this environment");
+        return fail("XML stringification not available - Java XML APIs required (OIE/Rhino environment)");
       } catch (e) {
         return fail("Failed to stringify XML: " + (e.message || String(e)));
       }
@@ -957,18 +947,7 @@
           return fail("XPath evaluation failed: " + (e.message || String(e)));
         }
         
-        // Fallback: simple element name lookup (no XPath support)
-        if (xml.getElementsByTagName) {
-          var elements = xml.getElementsByTagName(path);
-          if (elements.length > 0) {
-            var text = elements[0].textContent || elements[0].text;
-            if (text == null || text === "") return fail("Element '" + path + "' found but has no text content");
-            return String(text);
-          }
-          return fail("Element '" + path + "' not found");
-        }
-        
-        return fail("XML querying not available in this environment");
+        return fail("XML querying not available - Java XPath APIs required (OIE/Rhino environment)");
       } catch (e) {
         return fail("Failed to get XML value: " + (e.message || String(e)));
       }
@@ -992,12 +971,6 @@
           }
         } catch (e) {
           return false;
-        }
-        
-        // Fallback: simple element name lookup
-        if (xml.getElementsByTagName) {
-          var elements = xml.getElementsByTagName(path);
-          return elements.length > 0;
         }
         
         return false;
