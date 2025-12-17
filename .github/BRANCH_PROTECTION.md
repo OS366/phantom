@@ -22,6 +22,10 @@ This repository uses GitHub Actions CI pipeline to ensure code quality. To enfor
 
 - ✅ **Require conversation resolution before merging** (optional)
 
+- ✅ **Require signed commits** (if you have GPG signing enabled)
+  - This ensures all commits are cryptographically signed
+  - GitHub will automatically verify signatures
+
 - ✅ **Do not allow bypassing the above settings** (recommended for production)
 
 ### Optional Settings:
@@ -32,18 +36,21 @@ This repository uses GitHub Actions CI pipeline to ensure code quality. To enfor
 ## How It Works
 
 1. When code is pushed to main or a PR is created:
+   - GitHub automatically verifies GPG signatures (if signed commits are required)
    - GitHub Actions automatically runs the CI pipeline
    - Tests are executed using `npm test`
    - Tests run on Node.js 18.x and 20.x
 
-2. If tests pass:
+2. If tests pass and commits are signed (if required):
    - ✅ Status check shows green
+   - ✅ Commit signature verified
    - PR can be merged to main
 
-3. If tests fail:
-   - ❌ Status check shows red
+3. If tests fail or commits are not signed:
+   - ❌ Status check shows red (if tests fail)
+   - ❌ Commit signature verification fails (if unsigned)
    - PR cannot be merged to main
-   - Developer must fix failing tests and push again
+   - Developer must fix issues and push again
 
 ## Manual Testing
 
@@ -96,6 +103,20 @@ The CI pipeline (`.github/workflows/ci.yml`) does the following:
 - Check that all required status checks are passing
 - Ensure branch is up to date with main
 - Verify branch protection rules are configured correctly
+- **If signed commits are required:** Ensure all commits are GPG signed
+  - Check commit history for "Verified" badge
+  - Unsigned commits will prevent merging
+
+### Commit signature verification fails
+
+- Ensure GPG key is added to your GitHub account
+- Verify GPG key is not expired
+- Check that git is configured to sign commits:
+  ```bash
+  git config --global user.signingkey YOUR_GPG_KEY_ID
+  git config --global commit.gpgsign true
+  ```
+- Test signing: `git commit -S -m "Test signed commit"`
 
 ---
 
