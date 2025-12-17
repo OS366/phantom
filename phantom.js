@@ -51,11 +51,28 @@
   
     function resolveMap(name) {
       try {
-        if (name === "channelMap") return channelMap;
-        if (name === "globalMap") return globalMap;
-        if (name === "connectorMap") return connectorMap;
-        if (name === "responseMap") return responseMap;
-        if (name === "configurationMap") return configurationMap;
+        // Try to access from global scope (works in both OIE/Rhino and Node.js test environment)
+        var globalScope = (function() { return this; })();
+        if (name === "channelMap") {
+          if (typeof channelMap !== "undefined") return channelMap;
+          if (typeof globalScope !== "undefined" && globalScope.channelMap) return globalScope.channelMap;
+        }
+        if (name === "globalMap") {
+          if (typeof globalMap !== "undefined") return globalMap;
+          if (typeof globalScope !== "undefined" && globalScope.globalMap) return globalScope.globalMap;
+        }
+        if (name === "connectorMap") {
+          if (typeof connectorMap !== "undefined") return connectorMap;
+          if (typeof globalScope !== "undefined" && globalScope.connectorMap) return globalScope.connectorMap;
+        }
+        if (name === "responseMap") {
+          if (typeof responseMap !== "undefined") return responseMap;
+          if (typeof globalScope !== "undefined" && globalScope.responseMap) return globalScope.responseMap;
+        }
+        if (name === "configurationMap") {
+          if (typeof configurationMap !== "undefined") return configurationMap;
+          if (typeof globalScope !== "undefined" && globalScope.configurationMap) return globalScope.configurationMap;
+        }
       } catch (e) {}
       return null;
     }
