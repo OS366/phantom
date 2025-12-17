@@ -7,7 +7,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "minify": "terser phantom.js -o phantom.min.js -c -m --comments false"
+    "minify": "node minify.js"
   },
   "keywords": [
     "oie",
@@ -18,7 +18,8 @@
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "jest": "^29.7.0",
-    "terser": "^5.44.1"
+    "terser": "^5.44.1",
+    "uglify-js": "^3.19.3"
   },
   "jest": {
     "testEnvironment": "node",
