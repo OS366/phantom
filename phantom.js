@@ -51,27 +51,47 @@
   
     function resolveMap(name) {
       try {
-        // Try to access from global scope (works in both OIE/Rhino and Node.js test environment)
-        var globalScope = (function() { return this; })();
+        // In OIE/Rhino, these are global variables accessible directly
+        // In Node.js test environment (VM context), access via the 'global' parameter passed to IIFE
         if (name === "channelMap") {
-          if (typeof channelMap !== "undefined") return channelMap;
-          if (typeof globalScope !== "undefined" && globalScope.channelMap) return globalScope.channelMap;
+          try { 
+            if (typeof channelMap !== "undefined") return channelMap; 
+          } catch (e) {}
+          try { 
+            if (global && global.channelMap) return global.channelMap; 
+          } catch (e) {}
         }
         if (name === "globalMap") {
-          if (typeof globalMap !== "undefined") return globalMap;
-          if (typeof globalScope !== "undefined" && globalScope.globalMap) return globalScope.globalMap;
+          try { 
+            if (typeof globalMap !== "undefined") return globalMap; 
+          } catch (e) {}
+          try { 
+            if (global && global.globalMap) return global.globalMap; 
+          } catch (e) {}
         }
         if (name === "connectorMap") {
-          if (typeof connectorMap !== "undefined") return connectorMap;
-          if (typeof globalScope !== "undefined" && globalScope.connectorMap) return globalScope.connectorMap;
+          try { 
+            if (typeof connectorMap !== "undefined") return connectorMap; 
+          } catch (e) {}
+          try { 
+            if (global && global.connectorMap) return global.connectorMap; 
+          } catch (e) {}
         }
         if (name === "responseMap") {
-          if (typeof responseMap !== "undefined") return responseMap;
-          if (typeof globalScope !== "undefined" && globalScope.responseMap) return globalScope.responseMap;
+          try { 
+            if (typeof responseMap !== "undefined") return responseMap; 
+          } catch (e) {}
+          try { 
+            if (global && global.responseMap) return global.responseMap; 
+          } catch (e) {}
         }
         if (name === "configurationMap") {
-          if (typeof configurationMap !== "undefined") return configurationMap;
-          if (typeof globalScope !== "undefined" && globalScope.configurationMap) return globalScope.configurationMap;
+          try { 
+            if (typeof configurationMap !== "undefined") return configurationMap; 
+          } catch (e) {}
+          try { 
+            if (global && global.configurationMap) return global.configurationMap; 
+          } catch (e) {}
         }
       } catch (e) {}
       return null;
