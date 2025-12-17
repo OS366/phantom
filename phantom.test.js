@@ -94,7 +94,7 @@ describe('Phantom.js Library', () => {
   describe('Initialization', () => {
     test('should initialize phantom object', () => {
       expect(phantom).toBeDefined();
-      expect(phantom.version).toBe('0.1.2');
+      expect(phantom.version).toBe('0.1.3');
     });
 
     test('should have default silent config', () => {
