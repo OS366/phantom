@@ -10,6 +10,7 @@ Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, 
 - **[Number Operations](Number-Operations)** - All number utilities and examples
 - **[JSON Operations](JSON-Operations)** - All JSON utilities and examples
 - **[Base64 Operations](Base64-Operations)** - Base64 encode/decode operations
+- **[XML Operations](XML-Operations)** - XML parse, stringify, query operations
 - **[Best Practices](Best-Practices)** - Tips and patterns for effective usage
 - **[Examples](Examples)** - Real-world usage examples
 - **[Troubleshooting](Troubleshooting)** - Common issues and solutions
