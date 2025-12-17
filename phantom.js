@@ -59,33 +59,48 @@
         // In Node.js test environment (VM context), access via the 'global' parameter passed to IIFE
         // The 'global' parameter is the context object in VM, so maps are on it
         var map = null;
-        if (name === "channelMap") {
-          try { 
-            if (typeof channelMap !== "undefined") { map = channelMap; }
-          } catch (e) {}
-          if (!map && global && global.channelMap) { map = global.channelMap; }
-        } else if (name === "globalMap") {
-          try { 
-            if (typeof globalMap !== "undefined") { map = globalMap; }
-          } catch (e) {}
-          if (!map && global && global.globalMap) { map = global.globalMap; }
-        } else if (name === "connectorMap") {
-          try { 
-            if (typeof connectorMap !== "undefined") { map = connectorMap; }
-          } catch (e) {}
-          if (!map && global && global.connectorMap) { map = global.connectorMap; }
-        } else if (name === "responseMap") {
-          try { 
-            if (typeof responseMap !== "undefined") { map = responseMap; }
-          } catch (e) {}
-          if (!map && global && global.responseMap) { map = global.responseMap; }
-        } else if (name === "configurationMap") {
-          try { 
-            if (typeof configurationMap !== "undefined") { map = configurationMap; }
-          } catch (e) {}
-          if (!map && global && global.configurationMap) { map = global.configurationMap; }
+        
+        // First try direct access (OIE/Rhino environment)
+        try {
+          if (name === "channelMap" && typeof channelMap !== "undefined") { 
+            return channelMap; 
+          }
+          if (name === "globalMap" && typeof globalMap !== "undefined") { 
+            return globalMap; 
+          }
+          if (name === "connectorMap" && typeof connectorMap !== "undefined") { 
+            return connectorMap; 
+          }
+          if (name === "responseMap" && typeof responseMap !== "undefined") { 
+            return responseMap; 
+          }
+          if (name === "configurationMap" && typeof configurationMap !== "undefined") { 
+            return configurationMap; 
+          }
+        } catch (e) {
+          // Direct access failed, try global object
         }
-        return map || null;
+        
+        // Fallback to global object (Node.js test environment)
+        if (global) {
+          if (name === "channelMap" && global.channelMap) { 
+            return global.channelMap; 
+          }
+          if (name === "globalMap" && global.globalMap) { 
+            return global.globalMap; 
+          }
+          if (name === "connectorMap" && global.connectorMap) { 
+            return global.connectorMap; 
+          }
+          if (name === "responseMap" && global.responseMap) { 
+            return global.responseMap; 
+          }
+          if (name === "configurationMap" && global.configurationMap) { 
+            return global.configurationMap; 
+          }
+        }
+        
+        return null;
       } catch (e) {
         return null;
       }
