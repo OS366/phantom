@@ -46,12 +46,9 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 ## Quick Start
 
 ```javascript
-// Copy phantom.js into your OIE script editor
+// Copy phantom.js into your OIE code templates
 
-// Initialize (optional)
-phantom.init();
-
-// Use string operations
+// Use string operations directly (no initialization needed)
 var result = phantom.strings.operation.trim("  hello  ");
 // Output: "hello"
 
