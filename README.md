@@ -1181,6 +1181,28 @@ phantom.json.operation.isObject([1, 2, 3]);
 // Output: false
 ```
 
+### toString
+
+Convert object/array to string for logging. In OIE/Rhino environment, objects/arrays show Java representation when logged directly. Use this method to get a readable string representation.
+
+```javascript
+var arr = phantom.json.operation.parse('[1,2,3]');
+
+// ❌ Don't do this - shows Java representation
+logger.info(arr);
+// Output: org.mozilla.javascript.NativeArray@4428d9fe
+
+// ✅ Do this instead
+logger.info(phantom.json.operation.toString(arr));
+// Output: [1,2,3]
+
+// Or use stringify directly
+logger.info(phantom.json.operation.stringify(arr));
+// Output: [1,2,3]
+```
+
+**Note:** `toString` is an alias for `stringify` - both methods work the same way.
+
 ---
 
 ## License

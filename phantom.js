@@ -716,6 +716,12 @@
       return typeof obj === "object" && !Array.isArray(obj);
     };
   
+    phantom.json.operation.toString = function (obj) {
+      // Helper method to convert JSON object/array to string for logging
+      // In OIE/Rhino environment, objects/arrays show Java representation when logged directly
+      return stringifyJsonSafe(obj);
+    };
+  
     // default init
     phantom.init({ silent: true });
   

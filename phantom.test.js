@@ -1113,6 +1113,18 @@ describe('Phantom.js Library', () => {
         expect(phantom.json.operation.isObject(null)).toBe(false);
       });
     });
+
+    describe('toString', () => {
+      test('should convert object to string for logging', () => {
+        expect(phantom.json.operation.toString({ name: 'John', age: 30 })).toBe('{"name":"John","age":30}');
+        expect(phantom.json.operation.toString([1, 2, 3])).toBe('[1,2,3]');
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.json.operation.toString(null)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.toString(undefined)).toThrow('Invalid operation');
+      });
+    });
   });
 });
 
