@@ -1,6 +1,6 @@
 {
   "name": "phantom",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lightweight helper library for OIE scripting",
   "main": "phantom.js",
   "scripts": {
@@ -8,7 +8,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": ["oie", "oracle", "integration"],
+  "keywords": [
+    "oie",
+    "oracle",
+    "integration"
+  ],
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
@@ -16,9 +20,14 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/*.test.js"],
-    "collectCoverageFrom": ["phantom.js"],
-    "coveragePathIgnorePatterns": ["/node_modules/"]
+    "testMatch": [
+      "**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "phantom.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }
-

@@ -1,5 +1,5 @@
 /*!
- * Phantom.js v0.1.0
+ * Phantom.js v0.1.1
  * ==================
  * Lightweight helper library for OIE scripting
  *
@@ -21,7 +21,7 @@
     var phantom = global.phantom || {};
     global.phantom = phantom;
   
-    phantom.version = "0.1.0";
+    phantom.version = "0.1.1";
   
     phantom.config = { silent: true };
   
@@ -740,6 +740,18 @@
       // Helper method to convert JSON object/array to string for logging
       // In OIE/Rhino environment, objects/arrays show Java representation when logged directly
       return stringifyJsonSafe(obj);
+    };
+  
+    phantom.json.operation.prettyPrint = function (obj, indent) {
+      // Pretty print JSON with indentation
+      try {
+        if (obj === null || typeof obj === "undefined") return fail("Object is null or undefined");
+        var indentSize = indent != null ? toNumStrict(indent) : 2;
+        if (indentSize < 0 || indentSize > 10) return fail("Indent size must be between 0 and 10, got: " + indentSize);
+        return JSON.stringify(obj, null, indentSize);
+      } catch (e) {
+        return fail("Failed to pretty print JSON: " + (e.message || String(e)));
+      }
     };
   
     // default init

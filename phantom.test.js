@@ -94,7 +94,7 @@ describe('Phantom.js Library', () => {
   describe('Initialization', () => {
     test('should initialize phantom object', () => {
       expect(phantom).toBeDefined();
-      expect(phantom.version).toBe('0.0.9');
+      expect(phantom.version).toBe('0.1.0');
     });
 
     test('should have default silent config', () => {
@@ -1125,6 +1125,40 @@ describe('Phantom.js Library', () => {
       test('should fail on null/undefined', () => {
         expect(() => phantom.json.operation.toString(null)).toThrow();
         expect(() => phantom.json.operation.toString(undefined)).toThrow();
+      });
+    });
+
+    describe('prettyPrint', () => {
+      test('should pretty print JSON with default indent', () => {
+        var obj = { name: 'John', age: 30 };
+        var result = phantom.json.operation.prettyPrint(obj);
+        expect(result).toContain('\n');
+        expect(result).toContain('"name"');
+        expect(result).toContain('"age"');
+      });
+
+      test('should pretty print JSON with custom indent', () => {
+        var obj = { name: 'John', age: 30 };
+        var result = phantom.json.operation.prettyPrint(obj, 4);
+        expect(result).toContain('\n');
+        expect(result).toContain('    '); // 4 spaces
+      });
+
+      test('should pretty print with indent 0 (compact)', () => {
+        var obj = { name: 'John', age: 30 };
+        var result = phantom.json.operation.prettyPrint(obj, 0);
+        expect(result).toBe('{"name":"John","age":30}');
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.json.operation.prettyPrint(null)).toThrow();
+        expect(() => phantom.json.operation.prettyPrint(undefined)).toThrow();
+      });
+
+      test('should fail on invalid indent size', () => {
+        var obj = { name: 'John' };
+        expect(() => phantom.json.operation.prettyPrint(obj, -1)).toThrow();
+        expect(() => phantom.json.operation.prettyPrint(obj, 11)).toThrow();
       });
     });
   });

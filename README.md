@@ -1203,6 +1203,38 @@ logger.info(phantom.json.operation.stringify(arr));
 
 **Note:** `toString` is an alias for `stringify` - both methods work the same way.
 
+### prettyPrint
+
+Pretty print JSON with indentation for better readability.
+
+```javascript
+var obj = { name: "John", age: 30, address: { city: "NYC", country: "USA" } };
+
+phantom.json.operation.prettyPrint(obj);
+// Output with default 2-space indent:
+// {
+//   "name": "John",
+//   "age": 30,
+//   "address": {
+//     "city": "NYC",
+//     "country": "USA"
+//   }
+// }
+
+phantom.json.operation.prettyPrint(obj, 4);
+// Output with 4-space indent
+
+phantom.json.operation.prettyPrint(obj, 0);
+// Output: {"name":"John","age":30,"address":{"city":"NYC","country":"USA"}}
+// (compact format, same as stringify)
+```
+
+**Parameters:**
+- `obj` (Object or Array): Object/array to pretty print
+- `indent` (Number, optional): Indentation size (0-10, default: 2)
+
+**Throws:** `Error` if object is null/undefined or indent is out of range
+
 ---
 
 ## License
