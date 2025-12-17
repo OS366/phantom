@@ -1,5 +1,5 @@
 /*!
- * Phantom.js v0.1.1
+ * Phantom.js v0.1.2
  * ==================
  * Lightweight helper library for OIE scripting
  *
@@ -21,7 +21,7 @@
     var phantom = global.phantom || {};
     global.phantom = phantom;
   
-    phantom.version = "0.1.1";
+    phantom.version = "0.1.2";
   
     phantom.config = { silent: true };
   
@@ -752,6 +752,123 @@
       } catch (e) {
         return fail("Failed to pretty print JSON: " + (e.message || String(e)));
       }
+    };
+  
+    /* --------------------------------------------------
+     * phantom.base64.operation.*
+     * (no logging on success; throw only on error)
+     * -------------------------------------------------- */
+  
+    phantom.base64 = { operation: {} };
+  
+    function encodeBase64Safe(str) {
+      try {
+        if (str === null || typeof str === "undefined") return fail("String is null or undefined");
+        var s = toStr(str);
+        
+        // Try Java Base64 first (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && java.util && java.util.Base64) {
+            var encoder = java.util.Base64.getEncoder();
+            var bytes = new java.lang.String(s).getBytes("UTF-8");
+            return encoder.encodeToString(bytes);
+          }
+        } catch (e) {}
+        
+        // Fallback to btoa with UTF-8 encoding (browser/Node.js)
+        if (typeof btoa !== "undefined") {
+          try {
+            // For unicode, encode to UTF-8 first
+            var utf8 = unescape(encodeURIComponent(s));
+            return btoa(utf8);
+          } catch (e) {
+            // Fallback to simple btoa for ASCII
+            return btoa(s);
+          }
+        }
+        
+        // Manual base64 encoding if neither is available (ASCII only)
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var result = "";
+        var i = 0;
+        while (i < s.length) {
+          var a = s.charCodeAt(i++);
+          var b = i < s.length ? s.charCodeAt(i++) : 0;
+          var c = i < s.length ? s.charCodeAt(i++) : 0;
+          var bitmap = (a << 16) | (b << 8) | c;
+          result += chars.charAt((bitmap >> 18) & 63);
+          result += chars.charAt((bitmap >> 12) & 63);
+          result += i - 2 < s.length ? chars.charAt((bitmap >> 6) & 63) : "=";
+          result += i - 1 < s.length ? chars.charAt(bitmap & 63) : "=";
+        }
+        return result;
+      } catch (e) {
+        return fail("Failed to encode base64: " + (e.message || String(e)));
+      }
+    }
+  
+    function decodeBase64Safe(str) {
+      try {
+        if (str === null || typeof str === "undefined") return fail("String is null or undefined");
+        var s = toStr(str);
+        if (s.length === 0) return fail("Base64 string is empty");
+        
+        // Try Java Base64 first (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && java.util && java.util.Base64) {
+            var decoder = java.util.Base64.getDecoder();
+            var bytes = decoder.decode(s);
+            return new java.lang.String(bytes, "UTF-8").toString();
+          }
+        } catch (e) {
+          return fail("Invalid base64 string: " + (e.message || String(e)));
+        }
+        
+        // Fallback to atob with UTF-8 decoding (browser/Node.js)
+        if (typeof atob !== "undefined") {
+          try {
+            var decoded = atob(s);
+            // Decode UTF-8 if needed
+            try {
+              return decodeURIComponent(escape(decoded));
+            } catch (e) {
+              return decoded;
+            }
+          } catch (e) {
+            return fail("Invalid base64 string: " + (e.message || String(e)));
+          }
+        }
+        
+        // Manual base64 decoding if neither is available (ASCII only)
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var result = "";
+        var i = 0;
+        s = s.replace(/[^A-Za-z0-9\+\/]/g, "");
+        while (i < s.length) {
+          var encoded1 = chars.indexOf(s.charAt(i++));
+          var encoded2 = chars.indexOf(s.charAt(i++));
+          var encoded3 = chars.indexOf(s.charAt(i++));
+          var encoded4 = chars.indexOf(s.charAt(i++));
+          if (encoded1 < 0 || encoded2 < 0 || encoded3 < 0 || encoded4 < 0) {
+            return fail("Invalid base64 string");
+          }
+          var bitmap = (encoded1 << 18) | (encoded2 << 12) | (encoded3 << 6) | encoded4;
+          if (encoded3 !== 64) result += String.fromCharCode((bitmap >> 16) & 255);
+          if (encoded4 !== 64) result += String.fromCharCode((bitmap >> 8) & 255);
+          result += String.fromCharCode(bitmap & 255);
+        }
+        return result;
+      } catch (e) {
+        return fail("Failed to decode base64: " + (e.message || String(e)));
+      }
+    }
+  
+    phantom.base64.operation.encode = function (str) {
+      return encodeBase64Safe(str);
+    };
+  
+    phantom.base64.operation.decode = function (str) {
+      return decodeBase64Safe(str);
     };
   
     // default init

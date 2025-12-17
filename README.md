@@ -940,6 +940,65 @@ phantom.numbers.operation.truncate(5);
 
 ---
 
+## Base64 Operations
+
+### encode
+
+Encode a string to base64.
+
+```javascript
+phantom.base64.operation.encode("hello");
+// Output: "aGVsbG8="
+
+phantom.base64.operation.encode("Hello World");
+// Output: "SGVsbG8gV29ybGQ="
+
+phantom.base64.operation.encode("");
+// Output: "" (empty string)
+```
+
+**Parameters:**
+- `str` (String): String to encode
+
+**Throws:** `Error` if string is null/undefined
+
+**Note:** Supports UTF-8 encoding. In OIE/Rhino environment, uses Java Base64. In browser/Node.js, uses btoa with UTF-8 encoding.
+
+### decode
+
+Decode a base64 string.
+
+```javascript
+phantom.base64.operation.decode("aGVsbG8=");
+// Output: "hello"
+
+phantom.base64.operation.decode("SGVsbG8gV29ybGQ=");
+// Output: "Hello World"
+
+phantom.base64.operation.decode("dGVzdA==");
+// Output: "test"
+```
+
+**Parameters:**
+- `str` (String): Base64 string to decode
+
+**Throws:** `Error` if string is null/undefined, empty, or invalid base64
+
+**Note:** Supports UTF-8 decoding. In OIE/Rhino environment, uses Java Base64. In browser/Node.js, uses atob with UTF-8 decoding.
+
+### Example: Encode/Decode Roundtrip
+
+```javascript
+var original = "Hello World!";
+var encoded = phantom.base64.operation.encode(original);
+// encoded: "SGVsbG8gV29ybGQh"
+
+var decoded = phantom.base64.operation.decode(encoded);
+// decoded: "Hello World!" (matches original)
+```
+
+---
+
 ## Error Handling
 
 All operations follow consistent error handling:

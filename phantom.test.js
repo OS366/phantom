@@ -94,7 +94,7 @@ describe('Phantom.js Library', () => {
   describe('Initialization', () => {
     test('should initialize phantom object', () => {
       expect(phantom).toBeDefined();
-      expect(phantom.version).toBe('0.1.0');
+      expect(phantom.version).toBe('0.1.1');
     });
 
     test('should have default silent config', () => {
@@ -1159,6 +1159,69 @@ describe('Phantom.js Library', () => {
         var obj = { name: 'John' };
         expect(() => phantom.json.operation.prettyPrint(obj, -1)).toThrow();
         expect(() => phantom.json.operation.prettyPrint(obj, 11)).toThrow();
+      });
+    });
+  });
+
+  describe('Base64 Operations', () => {
+    describe('encode', () => {
+      test('should encode string to base64', () => {
+        expect(phantom.base64.operation.encode('hello')).toBe('aGVsbG8=');
+        expect(phantom.base64.operation.encode('Hello World')).toBe('SGVsbG8gV29ybGQ=');
+        expect(phantom.base64.operation.encode('test')).toBe('dGVzdA==');
+      });
+
+      test('should encode empty string', () => {
+        expect(phantom.base64.operation.encode('')).toBe('');
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.base64.operation.encode(null)).toThrow();
+        expect(() => phantom.base64.operation.encode(undefined)).toThrow();
+      });
+    });
+
+    describe('decode', () => {
+      test('should decode base64 to string', () => {
+        expect(phantom.base64.operation.decode('aGVsbG8=')).toBe('hello');
+        expect(phantom.base64.operation.decode('SGVsbG8gV29ybGQ=')).toBe('Hello World');
+        expect(phantom.base64.operation.decode('dGVzdA==')).toBe('test');
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.base64.operation.decode(null)).toThrow();
+        expect(() => phantom.base64.operation.decode(undefined)).toThrow();
+      });
+
+      test('should fail on empty string', () => {
+        expect(() => phantom.base64.operation.decode('')).toThrow();
+      });
+
+      test('should fail on invalid base64', () => {
+        expect(() => phantom.base64.operation.decode('invalid!@#')).toThrow();
+      });
+    });
+
+    describe('encode/decode roundtrip', () => {
+      test('should encode and decode correctly', () => {
+        var original = 'Hello World!';
+        var encoded = phantom.base64.operation.encode(original);
+        var decoded = phantom.base64.operation.decode(encoded);
+        expect(decoded).toBe(original);
+      });
+
+      test('should handle special characters', () => {
+        var original = 'test@123#$%';
+        var encoded = phantom.base64.operation.encode(original);
+        var decoded = phantom.base64.operation.decode(encoded);
+        expect(decoded).toBe(original);
+      });
+
+      test('should handle unicode characters', () => {
+        var original = 'Hello 世界';
+        var encoded = phantom.base64.operation.encode(original);
+        var decoded = phantom.base64.operation.decode(encoded);
+        expect(decoded).toBe(original);
       });
     });
   });
