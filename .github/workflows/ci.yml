@@ -34,11 +34,6 @@ jobs:
         run: npm test
       
       - name: Test Results Summary
-        if: always()
+        if: success()
         run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ All tests passed!"
-          else
-            echo "❌ Tests failed! Please fix the failing tests before merging to main."
-            exit 1
-          fi
+          echo "✅ All tests passed!"
