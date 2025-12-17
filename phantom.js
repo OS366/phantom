@@ -530,6 +530,192 @@
       return n < 0 ? Math.ceil(n) : Math.floor(n);
     };
   
+    /* --------------------------------------------------
+     * phantom.json.operation.*
+     * (no logging on success; throw only on error)
+     * -------------------------------------------------- */
+  
+    phantom.json = { operation: {} };
+  
+    function parseJsonSafe(str) {
+      try {
+        if (str === null || typeof str === "undefined") return fail();
+        var s = toStr(str);
+        if (s.length === 0) return fail();
+        return JSON.parse(s);
+      } catch (e) {
+        return fail();
+      }
+    }
+  
+    function stringifyJsonSafe(obj) {
+      try {
+        if (obj === null || typeof obj === "undefined") return fail();
+        return JSON.stringify(obj);
+      } catch (e) {
+        return fail();
+      }
+    }
+  
+    function getNestedValue(obj, path) {
+      if (obj == null) return null;
+      var keys = path.split(".");
+      var current = obj;
+      for (var i = 0; i < keys.length; i++) {
+        if (current == null || typeof current !== "object") return null;
+        current = current[keys[i]];
+        if (current === undefined) return null;
+      }
+      return current;
+    }
+  
+    function setNestedValue(obj, path, value) {
+      if (obj == null || typeof obj !== "object") return fail();
+      var keys = path.split(".");
+      var current = obj;
+      for (var i = 0; i < keys.length - 1; i++) {
+        var key = keys[i];
+        if (current[key] == null || typeof current[key] !== "object") {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+      current[keys[keys.length - 1]] = value;
+      return obj;
+    }
+  
+    phantom.json.operation.parse = function (jsonString) {
+      return parseJsonSafe(jsonString);
+    };
+  
+    phantom.json.operation.stringify = function (obj) {
+      return stringifyJsonSafe(obj);
+    };
+  
+    phantom.json.operation.get = function (obj, keyPath) {
+      if (obj == null) return fail();
+      if (keyPath == null) return fail();
+      var path = toStr(keyPath);
+      if (path.length === 0) return fail();
+      return getNestedValue(obj, path);
+    };
+  
+    phantom.json.operation.set = function (obj, keyPath, value) {
+      if (obj == null) return fail();
+      if (keyPath == null) return fail();
+      var path = toStr(keyPath);
+      if (path.length === 0) return fail();
+      try {
+        var result = JSON.parse(JSON.stringify(obj)); // Deep clone
+        setNestedValue(result, path, value);
+        return result;
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.has = function (obj, keyPath) {
+      if (obj == null) return fail();
+      if (keyPath == null) return fail();
+      var path = toStr(keyPath);
+      if (path.length === 0) return fail();
+      var value = getNestedValue(obj, path);
+      return value !== null && typeof value !== "undefined";
+    };
+  
+    phantom.json.operation.remove = function (obj, keyPath) {
+      if (obj == null) return fail();
+      if (keyPath == null) return fail();
+      var path = toStr(keyPath);
+      if (path.length === 0) return fail();
+      try {
+        var result = JSON.parse(JSON.stringify(obj)); // Deep clone
+        var keys = path.split(".");
+        var current = result;
+        for (var i = 0; i < keys.length - 1; i++) {
+          if (current == null || typeof current !== "object") return fail();
+          current = current[keys[i]];
+        }
+        if (current == null || typeof current !== "object") return fail();
+        delete current[keys[keys.length - 1]];
+        return result;
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.keys = function (obj) {
+      if (obj == null || typeof obj !== "object") return fail();
+      if (Array.isArray(obj)) return fail();
+      try {
+        return Object.keys(obj);
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.values = function (obj) {
+      if (obj == null || typeof obj !== "object") return fail();
+      if (Array.isArray(obj)) return fail();
+      try {
+        var keys = Object.keys(obj);
+        var vals = [];
+        for (var i = 0; i < keys.length; i++) {
+          vals.push(obj[keys[i]]);
+        }
+        return vals;
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.size = function (obj) {
+      if (obj == null || typeof obj !== "object") return fail();
+      if (Array.isArray(obj)) return obj.length;
+      try {
+        return Object.keys(obj).length;
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.merge = function (obj1, obj2) {
+      if (obj1 == null || typeof obj1 !== "object") return fail();
+      if (obj2 == null || typeof obj2 !== "object") return fail();
+      if (Array.isArray(obj1) || Array.isArray(obj2)) return fail();
+      try {
+        var result = JSON.parse(JSON.stringify(obj1)); // Deep clone
+        var keys = Object.keys(obj2);
+        for (var i = 0; i < keys.length; i++) {
+          result[keys[i]] = obj2[keys[i]];
+        }
+        return result;
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.isEmpty = function (obj) {
+      if (obj == null) return true;
+      if (typeof obj !== "object") return fail();
+      if (Array.isArray(obj)) return obj.length === 0;
+      try {
+        return Object.keys(obj).length === 0;
+      } catch (e) {
+        return fail();
+      }
+    };
+  
+    phantom.json.operation.isArray = function (obj) {
+      if (obj == null) return false;
+      return Array.isArray(obj);
+    };
+  
+    phantom.json.operation.isObject = function (obj) {
+      if (obj == null) return false;
+      return typeof obj === "object" && !Array.isArray(obj);
+    };
+  
     // default init
     phantom.init({ silent: true });
   

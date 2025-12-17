@@ -1010,6 +1010,179 @@ var paddedId = phantom.strings.operation.leftPad(id.toString(), "0", 6);
 
 ---
 
+## JSON Operations
+
+### parse
+
+Parse a JSON string to an object.
+
+```javascript
+phantom.json.operation.parse('{"name":"John","age":30}');
+// Output: { name: "John", age: 30 }
+
+phantom.json.operation.parse('[1,2,3]');
+// Output: [1, 2, 3]
+
+phantom.json.operation.parse('invalid json');
+// Throws: Error("Invalid operation")
+```
+
+### stringify
+
+Convert an object to JSON string.
+
+```javascript
+phantom.json.operation.stringify({ name: "John", age: 30 });
+// Output: '{"name":"John","age":30}'
+
+phantom.json.operation.stringify([1, 2, 3]);
+// Output: '[1,2,3]'
+```
+
+### get
+
+Get a value by key path (supports nested keys with dot notation).
+
+```javascript
+var obj = { user: { name: "John", age: 30 } };
+
+phantom.json.operation.get(obj, "user.name");
+// Output: "John"
+
+phantom.json.operation.get(obj, "user.age");
+// Output: 30
+
+phantom.json.operation.get(obj, "user.city");
+// Output: null (key doesn't exist)
+```
+
+### set
+
+Set a value by key path (returns new object, doesn't modify original).
+
+```javascript
+var obj = { name: "John" };
+
+var result = phantom.json.operation.set(obj, "age", 30);
+// Output: { name: "John", age: 30 }
+
+// Nested path
+var result2 = phantom.json.operation.set({}, "user.name", "John");
+// Output: { user: { name: "John" } }
+```
+
+### has
+
+Check if a key path exists.
+
+```javascript
+var obj = { user: { name: "John" } };
+
+phantom.json.operation.has(obj, "user.name");
+// Output: true
+
+phantom.json.operation.has(obj, "user.age");
+// Output: false
+```
+
+### remove
+
+Remove a key from an object (returns new object).
+
+```javascript
+var obj = { name: "John", age: 30 };
+
+var result = phantom.json.operation.remove(obj, "age");
+// Output: { name: "John" }
+
+// Nested keys
+var result2 = phantom.json.operation.remove({ user: { name: "John", age: 30 } }, "user.age");
+// Output: { user: { name: "John" } }
+```
+
+### keys
+
+Get all keys from an object.
+
+```javascript
+phantom.json.operation.keys({ name: "John", age: 30 });
+// Output: ["name", "age"]
+```
+
+### values
+
+Get all values from an object.
+
+```javascript
+phantom.json.operation.values({ name: "John", age: 30 });
+// Output: ["John", 30]
+```
+
+### size
+
+Get the size (number of keys) of an object or length of an array.
+
+```javascript
+phantom.json.operation.size({ name: "John", age: 30 });
+// Output: 2
+
+phantom.json.operation.size([1, 2, 3]);
+// Output: 3
+```
+
+### merge
+
+Merge two objects (second object overwrites first).
+
+```javascript
+var obj1 = { name: "John", age: 30 };
+var obj2 = { city: "NYC", country: "USA" };
+
+phantom.json.operation.merge(obj1, obj2);
+// Output: { name: "John", age: 30, city: "NYC", country: "USA" }
+```
+
+### isEmpty
+
+Check if an object or array is empty.
+
+```javascript
+phantom.json.operation.isEmpty({});
+// Output: true
+
+phantom.json.operation.isEmpty({ name: "John" });
+// Output: false
+
+phantom.json.operation.isEmpty([]);
+// Output: true
+```
+
+### isArray
+
+Check if a value is an array.
+
+```javascript
+phantom.json.operation.isArray([1, 2, 3]);
+// Output: true
+
+phantom.json.operation.isArray({});
+// Output: false
+```
+
+### isObject
+
+Check if a value is an object (not array).
+
+```javascript
+phantom.json.operation.isObject({ name: "John" });
+// Output: true
+
+phantom.json.operation.isObject([1, 2, 3]);
+// Output: false
+```
+
+---
+
 ## License
 
 See LICENSE file for details.

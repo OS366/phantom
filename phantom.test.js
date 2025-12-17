@@ -883,5 +883,236 @@ describe('Phantom.js Library', () => {
       expect(mapWithSet.set).toHaveBeenCalledWith('key', 'value');
     });
   });
+
+  describe('JSON Operations', () => {
+    describe('parse', () => {
+      test('should parse valid JSON string', () => {
+        expect(phantom.json.operation.parse('{"name":"John","age":30}')).toEqual({ name: 'John', age: 30 });
+        expect(phantom.json.operation.parse('[1,2,3]')).toEqual([1, 2, 3]);
+        expect(phantom.json.operation.parse('"hello"')).toBe('hello');
+      });
+
+      test('should fail on invalid JSON', () => {
+        expect(() => phantom.json.operation.parse('invalid json')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.parse('{name:}')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.parse(null)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.parse('')).toThrow('Invalid operation');
+      });
+    });
+
+    describe('stringify', () => {
+      test('should stringify object to JSON', () => {
+        expect(phantom.json.operation.stringify({ name: 'John', age: 30 })).toBe('{"name":"John","age":30}');
+        expect(phantom.json.operation.stringify([1, 2, 3])).toBe('[1,2,3]');
+        expect(phantom.json.operation.stringify('hello')).toBe('"hello"');
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.json.operation.stringify(null)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.stringify(undefined)).toThrow('Invalid operation');
+      });
+    });
+
+    describe('get', () => {
+      test('should get value by simple key', () => {
+        var obj = { name: 'John', age: 30 };
+        expect(phantom.json.operation.get(obj, 'name')).toBe('John');
+        expect(phantom.json.operation.get(obj, 'age')).toBe(30);
+      });
+
+      test('should get nested value by path', () => {
+        var obj = { user: { name: 'John', address: { city: 'NYC' } } };
+        expect(phantom.json.operation.get(obj, 'user.name')).toBe('John');
+        expect(phantom.json.operation.get(obj, 'user.address.city')).toBe('NYC');
+      });
+
+      test('should return null for non-existent key', () => {
+        var obj = { name: 'John' };
+        expect(phantom.json.operation.get(obj, 'age')).toBeNull();
+        expect(phantom.json.operation.get(obj, 'user.name')).toBeNull();
+      });
+
+      test('should fail on invalid input', () => {
+        expect(() => phantom.json.operation.get(null, 'key')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.get({}, null)).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.get({}, '')).toThrow('Invalid operation');
+      });
+    });
+
+    describe('set', () => {
+      test('should set value by simple key', () => {
+        var obj = { name: 'John' };
+        var result = phantom.json.operation.set(obj, 'age', 30);
+        expect(result.age).toBe(30);
+        expect(obj.age).toBeUndefined(); // Original should not be modified
+      });
+
+      test('should set nested value by path', () => {
+        var obj = { user: { name: 'John' } };
+        var result = phantom.json.operation.set(obj, 'user.age', 30);
+        expect(result.user.age).toBe(30);
+        expect(result.user.name).toBe('John');
+      });
+
+      test('should create nested structure if needed', () => {
+        var obj = {};
+        var result = phantom.json.operation.set(obj, 'user.name', 'John');
+        expect(result.user.name).toBe('John');
+      });
+
+      test('should fail on invalid input', () => {
+        expect(() => phantom.json.operation.set(null, 'key', 'value')).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.set({}, null, 'value')).toThrow('Invalid operation');
+      });
+    });
+
+    describe('has', () => {
+      test('should check if key exists', () => {
+        var obj = { name: 'John', age: 30 };
+        expect(phantom.json.operation.has(obj, 'name')).toBe(true);
+        expect(phantom.json.operation.has(obj, 'age')).toBe(true);
+        expect(phantom.json.operation.has(obj, 'city')).toBe(false);
+      });
+
+      test('should check nested keys', () => {
+        var obj = { user: { name: 'John' } };
+        expect(phantom.json.operation.has(obj, 'user.name')).toBe(true);
+        expect(phantom.json.operation.has(obj, 'user.age')).toBe(false);
+      });
+
+      test('should fail on invalid input', () => {
+        expect(() => phantom.json.operation.has(null, 'key')).toThrow('Invalid operation');
+      });
+    });
+
+    describe('remove', () => {
+      test('should remove key from object', () => {
+        var obj = { name: 'John', age: 30 };
+        var result = phantom.json.operation.remove(obj, 'age');
+        expect(result.age).toBeUndefined();
+        expect(result.name).toBe('John');
+        expect(obj.age).toBe(30); // Original should not be modified
+      });
+
+      test('should remove nested keys', () => {
+        var obj = { user: { name: 'John', age: 30 } };
+        var result = phantom.json.operation.remove(obj, 'user.age');
+        expect(result.user.age).toBeUndefined();
+        expect(result.user.name).toBe('John');
+      });
+
+      test('should fail on invalid input', () => {
+        expect(() => phantom.json.operation.remove(null, 'key')).toThrow('Invalid operation');
+      });
+    });
+
+    describe('keys', () => {
+      test('should get all keys from object', () => {
+        var obj = { name: 'John', age: 30, city: 'NYC' };
+        var keys = phantom.json.operation.keys(obj);
+        expect(keys).toContain('name');
+        expect(keys).toContain('age');
+        expect(keys).toContain('city');
+        expect(keys.length).toBe(3);
+      });
+
+      test('should fail on arrays', () => {
+        expect(() => phantom.json.operation.keys([1, 2, 3])).toThrow('Invalid operation');
+      });
+
+      test('should fail on invalid input', () => {
+        expect(() => phantom.json.operation.keys(null)).toThrow('Invalid operation');
+      });
+    });
+
+    describe('values', () => {
+      test('should get all values from object', () => {
+        var obj = { name: 'John', age: 30 };
+        var values = phantom.json.operation.values(obj);
+        expect(values).toContain('John');
+        expect(values).toContain(30);
+        expect(values.length).toBe(2);
+      });
+
+      test('should fail on arrays', () => {
+        expect(() => phantom.json.operation.values([1, 2, 3])).toThrow('Invalid operation');
+      });
+    });
+
+    describe('size', () => {
+      test('should get size of object', () => {
+        expect(phantom.json.operation.size({ name: 'John', age: 30 })).toBe(2);
+        expect(phantom.json.operation.size({})).toBe(0);
+      });
+
+      test('should get length of array', () => {
+        expect(phantom.json.operation.size([1, 2, 3])).toBe(3);
+        expect(phantom.json.operation.size([])).toBe(0);
+      });
+
+      test('should fail on invalid input', () => {
+        expect(() => phantom.json.operation.size(null)).toThrow('Invalid operation');
+      });
+    });
+
+    describe('merge', () => {
+      test('should merge two objects', () => {
+        var obj1 = { name: 'John', age: 30 };
+        var obj2 = { city: 'NYC', country: 'USA' };
+        var result = phantom.json.operation.merge(obj1, obj2);
+        expect(result.name).toBe('John');
+        expect(result.age).toBe(30);
+        expect(result.city).toBe('NYC');
+        expect(result.country).toBe('USA');
+      });
+
+      test('should overwrite with second object values', () => {
+        var obj1 = { name: 'John', age: 30 };
+        var obj2 = { age: 31 };
+        var result = phantom.json.operation.merge(obj1, obj2);
+        expect(result.age).toBe(31);
+        expect(result.name).toBe('John');
+      });
+
+      test('should fail on arrays', () => {
+        expect(() => phantom.json.operation.merge({}, [])).toThrow('Invalid operation');
+        expect(() => phantom.json.operation.merge([], {})).toThrow('Invalid operation');
+      });
+    });
+
+    describe('isEmpty', () => {
+      test('should check if object is empty', () => {
+        expect(phantom.json.operation.isEmpty({})).toBe(true);
+        expect(phantom.json.operation.isEmpty({ name: 'John' })).toBe(false);
+      });
+
+      test('should check if array is empty', () => {
+        expect(phantom.json.operation.isEmpty([])).toBe(true);
+        expect(phantom.json.operation.isEmpty([1, 2, 3])).toBe(false);
+      });
+
+      test('should return true for null', () => {
+        expect(phantom.json.operation.isEmpty(null)).toBe(true);
+      });
+    });
+
+    describe('isArray', () => {
+      test('should check if value is array', () => {
+        expect(phantom.json.operation.isArray([1, 2, 3])).toBe(true);
+        expect(phantom.json.operation.isArray([])).toBe(true);
+        expect(phantom.json.operation.isArray({})).toBe(false);
+        expect(phantom.json.operation.isArray(null)).toBe(false);
+      });
+    });
+
+    describe('isObject', () => {
+      test('should check if value is object', () => {
+        expect(phantom.json.operation.isObject({})).toBe(true);
+        expect(phantom.json.operation.isObject({ name: 'John' })).toBe(true);
+        expect(phantom.json.operation.isObject([1, 2, 3])).toBe(false);
+        expect(phantom.json.operation.isObject(null)).toBe(false);
+      });
+    });
+  });
 });
 
