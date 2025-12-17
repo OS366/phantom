@@ -17,7 +17,7 @@ Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, 
 
 ## What is Phantom.js?
 
-Phantom.js is a lightweight helper library designed specifically for OIE scripting environments. It provides:
+Phantom.js is a lightweight helper library designed specifically for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. It provides:
 
 - **26 String Operations** - Manipulation, transformation, and validation
 - **27 Number Operations** - Mathematical operations, rounding, and validation
