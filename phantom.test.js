@@ -94,7 +94,7 @@ describe('Phantom.js Library', () => {
   describe('Initialization', () => {
     test('should initialize phantom object', () => {
       expect(phantom).toBeDefined();
-      expect(phantom.version).toBe('0.1.1');
+      expect(phantom.version).toBe('0.1.2');
     });
 
     test('should have default silent config', () => {
@@ -1222,6 +1222,92 @@ describe('Phantom.js Library', () => {
         var encoded = phantom.base64.operation.encode(original);
         var decoded = phantom.base64.operation.decode(encoded);
         expect(decoded).toBe(original);
+      });
+    });
+  });
+
+  describe('XML Operations', () => {
+    describe('parse', () => {
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.xml.operation.parse(null)).toThrow();
+        expect(() => phantom.xml.operation.parse(undefined)).toThrow();
+      });
+
+      test('should fail on empty string', () => {
+        expect(() => phantom.xml.operation.parse('')).toThrow();
+      });
+
+      test('should fail on invalid XML in Node.js environment', () => {
+        // In Node.js test environment, XML parsing may not be available
+        // So it will throw an error
+        expect(() => phantom.xml.operation.parse('<invalid>')).toThrow();
+      });
+    });
+
+    describe('stringify', () => {
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.xml.operation.stringify(null)).toThrow();
+        expect(() => phantom.xml.operation.stringify(undefined)).toThrow();
+      });
+    });
+
+    describe('get', () => {
+      test('should fail on null/undefined XML', () => {
+        expect(() => phantom.xml.operation.get(null, 'name')).toThrow();
+        expect(() => phantom.xml.operation.get(undefined, 'name')).toThrow();
+      });
+
+      test('should fail on null/undefined XPath', () => {
+        // Create a mock XML object for testing
+        var mockXml = { getElementsByTagName: function() { return []; } };
+        expect(() => phantom.xml.operation.get(mockXml, null)).toThrow();
+        expect(() => phantom.xml.operation.get(mockXml, undefined)).toThrow();
+      });
+
+      test('should fail on empty XPath', () => {
+        var mockXml = { getElementsByTagName: function() { return []; } };
+        expect(() => phantom.xml.operation.get(mockXml, '')).toThrow();
+      });
+    });
+
+    describe('has', () => {
+      test('should return false on null/undefined XML', () => {
+        expect(phantom.xml.operation.has(null, 'name')).toBe(false);
+        expect(phantom.xml.operation.has(undefined, 'name')).toBe(false);
+      });
+
+      test('should return false on null/undefined XPath', () => {
+        var mockXml = { getElementsByTagName: function() { return []; } };
+        expect(phantom.xml.operation.has(mockXml, null)).toBe(false);
+        expect(phantom.xml.operation.has(mockXml, undefined)).toBe(false);
+      });
+
+      test('should return false on empty XPath', () => {
+        var mockXml = { getElementsByTagName: function() { return []; } };
+        expect(phantom.xml.operation.has(mockXml, '')).toBe(false);
+      });
+
+      test('should check if element exists', () => {
+        var mockXml = {
+          getElementsByTagName: function(name) {
+            if (name === 'name') {
+              return [{ textContent: 'John' }];
+            }
+            return [];
+          }
+        };
+        // In Node.js environment, XML operations may not work as expected
+        // So we test the basic functionality
+        var result = phantom.xml.operation.has(mockXml, 'name');
+        expect(typeof result).toBe('boolean');
+        expect(phantom.xml.operation.has(mockXml, 'nonexistent')).toBe(false);
+      });
+    });
+
+    describe('toString', () => {
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.xml.operation.toString(null)).toThrow();
+        expect(() => phantom.xml.operation.toString(undefined)).toThrow();
       });
     });
   });

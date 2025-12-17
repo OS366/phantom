@@ -866,6 +866,167 @@
       return decodeBase64Safe(str);
     };
   
+    /* --------------------------------------------------
+     * phantom.xml.operation.*
+     * (no logging on success; throw only on error)
+     * -------------------------------------------------- */
+  
+    phantom.xml = { operation: {} };
+  
+    function parseXmlSafe(str) {
+      try {
+        if (str === null || typeof str === "undefined") return fail("XML string is null or undefined");
+        var s = toStr(str);
+        if (s.length === 0) return fail("XML string is empty");
+        
+        // Try Java XML parsing first (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && java.io && java.io.StringReader) {
+            var factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            var builder = factory.newDocumentBuilder();
+            var reader = new java.io.StringReader(s);
+            var source = new javax.xml.transform.stream.StreamSource(reader);
+            var doc = builder.parse(new org.xml.sax.InputSource(reader));
+            return doc;
+          }
+        } catch (e) {}
+        
+        // Fallback to DOMParser (browser)
+        if (typeof DOMParser !== "undefined") {
+          var parser = new DOMParser();
+          return parser.parseFromString(s, "text/xml");
+        }
+        
+        // Fallback: return as string if no parser available
+        return fail("XML parsing not available in this environment");
+      } catch (e) {
+        return fail("Failed to parse XML: " + (e.message || String(e)));
+      }
+    }
+  
+    function stringifyXmlSafe(obj) {
+      try {
+        if (obj === null || typeof obj === "undefined") return fail("XML object is null or undefined");
+        
+        // Try Java XML serialization (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && obj.getDocumentElement) {
+            var transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer();
+            var source = new javax.xml.transform.dom.DOMSource(obj);
+            var writer = new java.io.StringWriter();
+            var result = new javax.xml.transform.stream.StreamResult(writer);
+            transformer.transform(source, result);
+            return writer.toString();
+          }
+        } catch (e) {}
+        
+        // Fallback to XMLSerializer (browser)
+        if (typeof XMLSerializer !== "undefined") {
+          var serializer = new XMLSerializer();
+          return serializer.serializeToString(obj);
+        }
+        
+        // If it's already a string, return it
+        if (typeof obj === "string") return obj;
+        
+        return fail("XML stringification not available in this environment");
+      } catch (e) {
+        return fail("Failed to stringify XML: " + (e.message || String(e)));
+      }
+    }
+  
+    function getXmlValue(xml, xpath) {
+      try {
+        if (xml == null) return fail("XML object is null or undefined");
+        if (xpath == null) return fail("XPath is null or undefined");
+        var path = toStr(xpath);
+        if (path.length === 0) return fail("XPath is empty");
+        
+        // Try Java XPath (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && javax.xml.xpath) {
+            var xpathFactory = javax.xml.xpath.XPathFactory.newInstance();
+            var xpathObj = xpathFactory.newXPath();
+            var expr = xpathObj.compile(path);
+            var result = expr.evaluate(xml, javax.xml.xpath.XPathConstants.STRING);
+            if (result == null || result === "") return fail("XPath '" + path + "' not found or empty");
+            return String(result);
+          }
+        } catch (e) {
+          return fail("XPath evaluation failed: " + (e.message || String(e)));
+        }
+        
+        // Fallback: simple element name lookup (no XPath support)
+        if (xml.getElementsByTagName) {
+          var elements = xml.getElementsByTagName(path);
+          if (elements.length > 0) {
+            var text = elements[0].textContent || elements[0].text;
+            if (text == null || text === "") return fail("Element '" + path + "' found but has no text content");
+            return String(text);
+          }
+          return fail("Element '" + path + "' not found");
+        }
+        
+        return fail("XML querying not available in this environment");
+      } catch (e) {
+        return fail("Failed to get XML value: " + (e.message || String(e)));
+      }
+    }
+  
+    function hasXmlValue(xml, xpath) {
+      try {
+        if (xml == null) return false;
+        if (xpath == null) return false;
+        var path = toStr(xpath);
+        if (path.length === 0) return false;
+        
+        // Try Java XPath (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && javax.xml.xpath) {
+            var xpathFactory = javax.xml.xpath.XPathFactory.newInstance();
+            var xpathObj = xpathFactory.newXPath();
+            var expr = xpathObj.compile(path);
+            var result = expr.evaluate(xml, javax.xml.xpath.XPathConstants.NODE);
+            return result != null;
+          }
+        } catch (e) {
+          return false;
+        }
+        
+        // Fallback: simple element name lookup
+        if (xml.getElementsByTagName) {
+          var elements = xml.getElementsByTagName(path);
+          return elements.length > 0;
+        }
+        
+        return false;
+      } catch (e) {
+        return false;
+      }
+    }
+  
+    phantom.xml.operation.parse = function (xmlString) {
+      return parseXmlSafe(xmlString);
+    };
+  
+    phantom.xml.operation.stringify = function (xmlObj) {
+      return stringifyXmlSafe(xmlObj);
+    };
+  
+    phantom.xml.operation.get = function (xml, xpath) {
+      return getXmlValue(xml, xpath);
+    };
+  
+    phantom.xml.operation.has = function (xml, xpath) {
+      return hasXmlValue(xml, xpath);
+    };
+  
+    phantom.xml.operation.toString = function (xmlObj) {
+      // Helper method to convert XML object to string for logging
+      return stringifyXmlSafe(xmlObj);
+    };
+  
     // default init
     phantom.init({ silent: true });
   

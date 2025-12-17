@@ -6,16 +6,17 @@ A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), a
 
 ## Overview
 
-Phantom.js provides a comprehensive set of utilities for working with maps, strings, numbers, JSON, and base64 operations in Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. All operations follow a consistent API pattern and include proper error handling.
+Phantom.js provides a comprehensive set of utilities for working with maps, strings, numbers, JSON, base64, and XML operations in Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. All operations follow a consistent API pattern and include proper error handling.
 
 ## Statistics
 
-- **Total Functions:** 88
+- **Total Functions:** 93
   - Map Operations: 18 (5 maps with save/get/exists/delete methods)
   - String Operations: 26
   - Number Operations: 27
   - JSON Operations: 15
   - Base64 Operations: 2
+  - XML Operations: 5
 - **Test Cases:** 174
 - **Test Coverage:** Comprehensive coverage for all operations
 
@@ -29,6 +30,7 @@ For detailed documentation, examples, and best practices, visit the [Phantom.js 
 - **[Number Operations](https://github.com/OS366/phantom/wiki/Number-Operations)** - All number utilities and examples
 - **[JSON Operations](https://github.com/OS366/phantom/wiki/JSON-Operations)** - All JSON utilities and examples
 - **[Base64 Operations](https://github.com/OS366/phantom/wiki/Base64-Operations)** - Base64 encode/decode operations
+- **[XML Operations](https://github.com/OS366/phantom/wiki/XML-Operations)** - XML parse, stringify, query operations
 - **[Best Practices](https://github.com/OS366/phantom/wiki/Best-Practices)** - Tips and patterns for effective usage
 - **[Examples](https://github.com/OS366/phantom/wiki/Examples)** - Real-world usage examples
 - **[Troubleshooting](https://github.com/OS366/phantom/wiki/Troubleshooting)** - Common issues and solutions
@@ -39,7 +41,7 @@ For detailed documentation, examples, and best practices, visit the [Phantom.js 
 - **No logging on normal operations** - Operations run silently by default
 - **Error logging only** - Only logs when there is an error
 - **Specific error messages** - Errors show detailed messages when available
-- **Full file** - Includes maps + strings + numbers + JSON + base64 utilities
+- **Full file** - Includes maps + strings + numbers + JSON + base64 + XML utilities
 
 ## Warning
 
@@ -148,6 +150,12 @@ See [JSON Operations Wiki](https://github.com/OS366/phantom/wiki/JSON-Operations
 2 operations: encode, decode.
 
 See [Base64 Operations Wiki](https://github.com/OS366/phantom/wiki/Base64-Operations) for details.
+
+### XML Operations
+
+5 operations: parse, stringify, get, has, toString.
+
+See [XML Operations Wiki](https://github.com/OS366/phantom/wiki/XML-Operations) for details.
 
 ---
 
