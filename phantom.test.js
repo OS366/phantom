@@ -1237,9 +1237,9 @@ describe('Phantom.js Library', () => {
         expect(() => phantom.xml.operation.parse('')).toThrow();
       });
 
-      test('should fail on invalid XML in Node.js environment', () => {
-        // In Node.js test environment, XML parsing may not be available
-        // So it will throw an error
+      test('should fail on invalid XML or when Java APIs not available', () => {
+        // In Node.js test environment, Java XML APIs are not available
+        // So it will throw an error about environment requirement
         expect(() => phantom.xml.operation.parse('<invalid>')).toThrow();
       });
     });
