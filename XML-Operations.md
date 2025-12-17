@@ -304,10 +304,7 @@ try {
 - Java DocumentBuilder for parsing
 - Java XML Transformer for stringification
 
-### Browser/Node.js Environment
-- DOMParser for parsing
-- XMLSerializer for stringification
-- Simple element name lookup (no XPath support)
+**Note:** XML operations require Java XML APIs and are designed for OIE/Mirth Connect/BridgeLink environments. They will not work in browser or Node.js environments.
 
 ## Related Operations
 
