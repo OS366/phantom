@@ -28,8 +28,12 @@ if (result.error) {
   process.exit(1);
 }
 
-// Add banner
-const banner = '/*! Phantom - a product by David Labs */\n';
+// Read version from package.json
+const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const version = packageJson.version;
+
+// Add banner with version
+const banner = `/*! Phantom.js v${version} - a product by David Labs */\n`;
 const minified = banner + result.code;
 
 fs.writeFileSync('phantom.min.js', minified, 'utf8');
