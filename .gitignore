@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Test coverage
+coverage/
+*.lcov
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Wiki files (wiki is in separate repository)
+wiki/
+
+# Wiki setup scripts (no longer needed)
+push-wiki.sh
+setup-wiki.sh
+WIKI-SETUP.md
+
