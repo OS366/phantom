@@ -96,18 +96,20 @@ npm run test:coverage
 
 ---
 
-## Initialization
+## Usage
+
+Phantom.js is a plug-and-play library - no initialization required! Once installed, it's immediately available in your scripts.
 
 ```javascript
-// Initialize with default settings (silent: true)
-phantom.init();
-
-// Initialize with custom settings
-phantom.init({ silent: false });
-
-// Get version
+// Get version (optional)
 phantom.version;  // "0.1.2"
+
+// Use any operation directly
+var result = phantom.strings.operation.trim("  hello  ");
+// Output: "hello"
 ```
+
+**Note:** Initialization with `phantom.init()` is optional and only needed if you want to customize settings (e.g., `phantom.init({ silent: false })`).
 
 ---
 
