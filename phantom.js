@@ -1,5 +1,5 @@
 /*!
- * Phantom.js v0.1.3 - A product of David Labs
+ * Phantom.js v0.1.4-BETA - A product of David Labs
  * ============================================
  * Lightweight helper library for OIE scripting
  *
@@ -16,7 +16,7 @@
     var phantom = global.phantom || {};
     global.phantom = phantom;
   
-    phantom.version = "0.1.3";
+    phantom.version = "0.1.4-BETA";
   
     phantom.config = { silent: true };
   
@@ -998,6 +998,641 @@
     phantom.xml.operation.toString = function (xmlObj) {
       // Helper method to convert XML object to string for logging
       return stringifyXmlSafe(xmlObj);
+    };
+  
+    /* --------------------------------------------------
+     * phantom.dates.operation.*
+     * (no logging on success; throw only on error)
+     * -------------------------------------------------- */
+  
+    phantom.dates = { operation: {} };
+  
+    // Date format constants (enum-like)
+    phantom.dates.FORMAT = {
+      ISO_DATE: "yyyy-MM-dd",
+      ISO_DATETIME: "yyyy-MM-dd'T'HH:mm:ss",
+      ISO_DATETIME_MS: "yyyy-MM-dd'T'HH:mm:ss.SSS",
+      US_DATE: "MM/dd/yyyy",
+      US_DATETIME: "MM/dd/yyyy HH:mm:ss",
+      EU_DATE: "dd/MM/yyyy",
+      EU_DATETIME: "dd/MM/yyyy HH:mm:ss"
+    };
+  
+    // ChronoUnit constants (Java.time enum values)
+    phantom.dates.UNIT = {
+      DAYS: "DAYS",
+      HOURS: "HOURS",
+      MINUTES: "MINUTES",
+      SECONDS: "SECONDS",
+      MILLIS: "MILLIS",
+      WEEKS: "WEEKS",
+      MONTHS: "MONTHS",
+      YEARS: "YEARS"
+    };
+  
+    function getJavaLocalDate(dateInput) {
+      try {
+        if (dateInput == null) return fail("Date input is null or undefined");
+        
+        // Try Java.time APIs first (for OIE/Rhino environment)
+        try {
+          if (typeof java !== "undefined" && java.time) {
+            // If already a LocalDate
+            if (dateInput.getClass && dateInput.getClass().getName() === "java.time.LocalDate") {
+              return dateInput;
+            }
+            // If already a LocalDateTime
+            if (dateInput.getClass && dateInput.getClass().getName() === "java.time.LocalDateTime") {
+              return dateInput.toLocalDate();
+            }
+            // If string, try to parse
+            if (typeof dateInput === "string" || (dateInput.getClass && dateInput.getClass().getName() === "java.lang.String")) {
+              var s = String(dateInput);
+              if (s.length === 0) return fail("Date string is empty");
+              // Try ISO format first
+              try {
+                return java.time.LocalDate.parse(s);
+              } catch (e) {
+                // Try common formats
+                var formatters = [
+                  java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                  java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"),
+                  java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                ];
+                for (var i = 0; i < formatters.length; i++) {
+                  try {
+                    return java.time.LocalDate.parse(s, formatters[i]);
+                  } catch (e2) {}
+                }
+                return fail("Failed to parse date string: " + s);
+              }
+            }
+            // If number (timestamp), convert
+            if (typeof dateInput === "number" || (dateInput.getClass && dateInput.getClass().getName() === "java.lang.Long")) {
+              var timestamp = Number(dateInput);
+              var instant = java.time.Instant.ofEpochMilli(timestamp);
+              return java.time.LocalDate.ofInstant(instant, java.time.ZoneId.systemDefault());
+            }
+          }
+        } catch (e) {}
+        
+        // Fallback to JavaScript Date
+        if (dateInput instanceof Date) {
+          try {
+            if (typeof java !== "undefined" && java.time) {
+              var year = dateInput.getFullYear();
+              var month = dateInput.getMonth() + 1; // JS months are 0-based
+              var day = dateInput.getDate();
+              return java.time.LocalDate.of(year, month, day);
+            }
+          } catch (e) {}
+        }
+        
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get date: " + (e.message || String(e)));
+      }
+    }
+  
+    function getJavaLocalDateTime(dateInput) {
+      try {
+        if (dateInput == null) return fail("Date input is null or undefined");
+        
+        // Try Java.time APIs first
+        try {
+          if (typeof java !== "undefined" && java.time) {
+            // If already a LocalDateTime
+            if (dateInput.getClass && dateInput.getClass().getName() === "java.time.LocalDateTime") {
+              return dateInput;
+            }
+            // If already a LocalDate
+            if (dateInput.getClass && dateInput.getClass().getName() === "java.time.LocalDate") {
+              return dateInput.atStartOfDay();
+            }
+            // If string, try to parse
+            if (typeof dateInput === "string" || (dateInput.getClass && dateInput.getClass().getName() === "java.lang.String")) {
+              var s = String(dateInput);
+              if (s.length === 0) return fail("Date string is empty");
+              // Try ISO format first
+              try {
+                return java.time.LocalDateTime.parse(s);
+              } catch (e) {
+                // Try common formats
+                var formatters = [
+                  java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
+                  java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                  java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss")
+                ];
+                for (var i = 0; i < formatters.length; i++) {
+                  try {
+                    return java.time.LocalDateTime.parse(s, formatters[i]);
+                  } catch (e2) {}
+                }
+                return fail("Failed to parse datetime string: " + s);
+              }
+            }
+            // If number (timestamp), convert
+            if (typeof dateInput === "number" || (dateInput.getClass && dateInput.getClass().getName() === "java.lang.Long")) {
+              var timestamp = Number(dateInput);
+              var instant = java.time.Instant.ofEpochMilli(timestamp);
+              return java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault());
+            }
+          }
+        } catch (e) {}
+        
+        // Fallback to JavaScript Date
+        if (dateInput instanceof Date) {
+          try {
+            if (typeof java !== "undefined" && java.time) {
+              var year = dateInput.getFullYear();
+              var month = dateInput.getMonth() + 1;
+              var day = dateInput.getDate();
+              var hour = dateInput.getHours();
+              var minute = dateInput.getMinutes();
+              var second = dateInput.getSeconds();
+              return java.time.LocalDateTime.of(year, month, day, hour, minute, second);
+            }
+          } catch (e) {}
+        }
+        
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get datetime: " + (e.message || String(e)));
+      }
+    }
+  
+    function getChronoUnit(unit) {
+      if (unit == null) return fail("Unit is null or undefined");
+      var unitStr = String(unit).toUpperCase();
+      try {
+        if (typeof java !== "undefined" && java.time.temporal) {
+          return java.time.temporal.ChronoUnit.valueOf(unitStr);
+        }
+      } catch (e) {
+        return fail("Invalid unit: " + unitStr + ". Use DAYS, HOURS, MINUTES, SECONDS, MILLIS, WEEKS, MONTHS, or YEARS");
+      }
+      return fail("ChronoUnit not available - Java.time APIs required");
+    }
+  
+    phantom.dates.operation.now = function () {
+      try {
+        if (typeof java !== "undefined" && java.time) {
+          return java.time.LocalDateTime.now();
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get current date: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.today = function () {
+      try {
+        if (typeof java !== "undefined" && java.time) {
+          return java.time.LocalDate.now();
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get today's date: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.parse = function (dateString, format) {
+      try {
+        if (dateString == null) return fail("Date string is null or undefined");
+        var s = toStr(dateString);
+        if (s.length === 0) return fail("Date string is empty");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (format == null) {
+            // Try ISO format first
+            try {
+              return java.time.LocalDate.parse(s);
+            } catch (e) {
+              // Try common formats
+              var formatters = [
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"),
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+              ];
+              for (var i = 0; i < formatters.length; i++) {
+                try {
+                  return java.time.LocalDate.parse(s, formatters[i]);
+                } catch (e2) {}
+              }
+              return fail("Failed to parse date string: " + s);
+            }
+          } else {
+            var formatter = java.time.format.DateTimeFormatter.ofPattern(toStr(format));
+            return java.time.LocalDate.parse(s, formatter);
+          }
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to parse date: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.parseDateTime = function (dateTimeString, format) {
+      try {
+        if (dateTimeString == null) return fail("DateTime string is null or undefined");
+        var s = toStr(dateTimeString);
+        if (s.length === 0) return fail("DateTime string is empty");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (format == null) {
+            // Try ISO format first
+            try {
+              return java.time.LocalDateTime.parse(s);
+            } catch (e) {
+              // Try common formats
+              var formatters = [
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss")
+              ];
+              for (var i = 0; i < formatters.length; i++) {
+                try {
+                  return java.time.LocalDateTime.parse(s, formatters[i]);
+                } catch (e2) {}
+              }
+              return fail("Failed to parse datetime string: " + s);
+            }
+          } else {
+            var formatter = java.time.format.DateTimeFormatter.ofPattern(toStr(format));
+            return java.time.LocalDateTime.parse(s, formatter);
+          }
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to parse datetime: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.format = function (date, format) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (format == null) return fail("Format is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var formatter = java.time.format.DateTimeFormatter.ofPattern(toStr(format));
+          var localDate = getJavaLocalDate(date);
+          return localDate.format(formatter);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to format date: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.formatDateTime = function (dateTime, format) {
+      try {
+        if (dateTime == null) return fail("DateTime is null or undefined");
+        if (format == null) return fail("Format is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var formatter = java.time.format.DateTimeFormatter.ofPattern(toStr(format));
+          var localDateTime = getJavaLocalDateTime(dateTime);
+          return localDateTime.format(formatter);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to format datetime: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.getYear = function (date) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          return localDate.getYear();
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get year: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.getMonth = function (date) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          return localDate.getMonthValue(); // 1-12
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get month: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.getDay = function (date) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          return localDate.getDayOfMonth();
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get day: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.getDayOfWeek = function (date) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          return localDate.getDayOfWeek().toString(); // MONDAY, TUESDAY, etc.
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get day of week: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.add = function (date, amount, unit) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (amount == null) return fail("Amount is null or undefined");
+        if (unit == null) return fail("Unit is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          var amt = toNumStrict(amount);
+          var chronoUnit = getChronoUnit(unit);
+          return localDate.plus(amt, chronoUnit);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to add to date: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.subtract = function (date, amount, unit) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (amount == null) return fail("Amount is null or undefined");
+        if (unit == null) return fail("Unit is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          var amt = toNumStrict(amount);
+          var chronoUnit = getChronoUnit(unit);
+          return localDate.minus(amt, chronoUnit);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to subtract from date: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.between = function (date1, date2, unit) {
+      try {
+        if (date1 == null) return fail("First date is null or undefined");
+        if (date2 == null) return fail("Second date is null or undefined");
+        if (unit == null) return fail("Unit is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDate1 = getJavaLocalDate(date1);
+          var localDate2 = getJavaLocalDate(date2);
+          var chronoUnit = getChronoUnit(unit);
+          return chronoUnit.between(localDate1, localDate2);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to calculate between dates: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.isBefore = function (date1, date2) {
+      try {
+        if (date1 == null) return fail("First date is null or undefined");
+        if (date2 == null) return fail("Second date is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDate1 = getJavaLocalDate(date1);
+          var localDate2 = getJavaLocalDate(date2);
+          return localDate1.isBefore(localDate2);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to compare dates: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.isAfter = function (date1, date2) {
+      try {
+        if (date1 == null) return fail("First date is null or undefined");
+        if (date2 == null) return fail("Second date is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDate1 = getJavaLocalDate(date1);
+          var localDate2 = getJavaLocalDate(date2);
+          return localDate1.isAfter(localDate2);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to compare dates: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.isEqual = function (date1, date2) {
+      try {
+        if (date1 == null) return fail("First date is null or undefined");
+        if (date2 == null) return fail("Second date is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDate1 = getJavaLocalDate(date1);
+          var localDate2 = getJavaLocalDate(date2);
+          return localDate1.isEqual(localDate2);
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to compare dates: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.startOfDay = function (date) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          return localDate.atStartOfDay();
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get start of day: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.operation.endOfDay = function (date) {
+      try {
+        if (date == null) return fail("Date is null or undefined");
+        if (typeof java !== "undefined" && java.time) {
+          var localDate = getJavaLocalDate(date);
+          return localDate.atTime(23, 59, 59, 999000000); // 23:59:59.999
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to get end of day: " + (e.message || String(e)));
+      }
+    };
+  
+    /* --------------------------------------------------
+     * phantom.dates.duration.*
+     * (no logging on success; throw only on error)
+     * -------------------------------------------------- */
+  
+    phantom.dates.duration = {};
+  
+    phantom.dates.duration.between = function (dateTime1, dateTime2) {
+      try {
+        if (dateTime1 == null) return fail("First datetime is null or undefined");
+        if (dateTime2 == null) return fail("Second datetime is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDateTime1 = getJavaLocalDateTime(dateTime1);
+          var localDateTime2 = getJavaLocalDateTime(dateTime2);
+          return java.time.Duration.between(localDateTime1, localDateTime2);
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to calculate duration: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.of = function (amount, unit) {
+      try {
+        if (amount == null) return fail("Amount is null or undefined");
+        if (unit == null) return fail("Unit is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var amt = toNumStrict(amount);
+          var chronoUnit = getChronoUnit(unit);
+          return java.time.Duration.of(amt, chronoUnit);
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to create duration: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.add = function (dateTime, duration) {
+      try {
+        if (dateTime == null) return fail("DateTime is null or undefined");
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDateTime = getJavaLocalDateTime(dateTime);
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return localDateTime.plus(duration);
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to add duration: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.subtract = function (dateTime, duration) {
+      try {
+        if (dateTime == null) return fail("DateTime is null or undefined");
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          var localDateTime = getJavaLocalDateTime(dateTime);
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return localDateTime.minus(duration);
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to subtract duration: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.toDays = function (duration) {
+      try {
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return duration.toDays();
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to convert duration to days: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.toHours = function (duration) {
+      try {
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return duration.toHours();
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to convert duration to hours: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.toMinutes = function (duration) {
+      try {
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return duration.toMinutes();
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to convert duration to minutes: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.toSeconds = function (duration) {
+      try {
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return duration.toSeconds();
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to convert duration to seconds: " + (e.message || String(e)));
+      }
+    };
+  
+    phantom.dates.duration.toMillis = function (duration) {
+      try {
+        if (duration == null) return fail("Duration is null or undefined");
+        
+        if (typeof java !== "undefined" && java.time) {
+          if (duration.getClass && duration.getClass().getName() === "java.time.Duration") {
+            return duration.toMillis();
+          }
+          return fail("Duration must be a Java Duration object");
+        }
+        return fail("Duration operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to convert duration to milliseconds: " + (e.message || String(e)));
+      }
     };
   
     // default init

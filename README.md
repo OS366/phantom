@@ -2,7 +2,7 @@
 
 A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
-**Version:** 0.1.3
+**Version:** 0.1.4
 
 ## Overview
 
@@ -10,14 +10,16 @@ Phantom.js provides a comprehensive set of utilities for working with maps, stri
 
 ## Statistics
 
-- **Total Functions:** 93
+- **Total Functions:** 115
   - Map Operations: 18 (5 maps with save/get/exists/delete methods)
   - String Operations: 26
   - Number Operations: 27
   - JSON Operations: 15
   - Base64 Operations: 2
   - XML Operations: 5
-- **Test Cases:** 174
+  - Date Operations: 15
+  - Duration Operations: 7
+- **Test Cases:** 221
 - **Test Coverage:** Comprehensive coverage for all operations
 
 ## Documentation
@@ -31,6 +33,7 @@ For detailed documentation, examples, and best practices, visit the [Phantom.js 
 - **[JSON Operations](https://github.com/OS366/phantom/wiki/JSON-Operations)** - All JSON utilities and examples
 - **[Base64 Operations](https://github.com/OS366/phantom/wiki/Base64-Operations)** - Base64 encode/decode operations
 - **[XML Operations](https://github.com/OS366/phantom/wiki/XML-Operations)** - XML parse, stringify, query operations
+- **[Date Operations](https://github.com/OS366/phantom/wiki/Date-Operations)** - Date and duration operations using Java.time
 - **[Best Practices](https://github.com/OS366/phantom/wiki/Best-Practices)** - Tips and patterns for effective usage
 - **[Examples](https://github.com/OS366/phantom/wiki/Examples)** - Real-world usage examples
 - **[Troubleshooting](https://github.com/OS366/phantom/wiki/Troubleshooting)** - Common issues and solutions
@@ -54,6 +57,14 @@ Drag and drop is not possible for variables saved using `phantom.maps.*`
 ### For Mirth Connect / Open Integration Engine / BridgeLink
 
 **Compatible with version 4.5.2 and above**
+
+**JavaScript Engine Requirements:**
+- **Minimum:** ES5 (ECMAScript 5) / JavaScript 1.8.5
+- **Recommended:** Rhino 1.7R4+ (bundled with Java 8+)
+- **Java Version:** Java 8+ required for full functionality (Base64, XML operations)
+- **Tested With:** Mirth Connect 4.5.2+ (Java 8+), OIE (Rhino), BridgeLink
+
+> **Important:** Different Mirth Connect forks may use different JavaScript engine versions. See [JavaScript Version Requirements](JAVASCRIPT_VERSION_REQUIREMENTS.md) for detailed compatibility information.
 
 #### Step-by-Step Instructions:
 
@@ -104,7 +115,7 @@ Phantom.js is a plug-and-play library - no initialization required! Once install
 
 ```javascript
 // Get version (optional)
-phantom.version;  // "0.1.3"
+phantom.version;  // "0.1.4"
 
 // Use any operation directly
 var result = phantom.strings.operation.trim("  hello  ");
@@ -156,6 +167,18 @@ See [Base64 Operations Wiki](https://github.com/OS366/phantom/wiki/Base64-Operat
 5 operations: parse, stringify, get, has, toString.
 
 See [XML Operations Wiki](https://github.com/OS366/phantom/wiki/XML-Operations) for details.
+
+### Date Operations
+
+15 operations: now, today, parse, parseDateTime, format, formatDateTime, getYear, getMonth, getDay, getDayOfWeek, add, subtract, between, isBefore, isAfter, isEqual, startOfDay, endOfDay.
+
+**Duration Operations (7):** between, of, add, subtract, toDays, toHours, toMinutes, toSeconds, toMillis.
+
+**Constants:**
+- `phantom.dates.FORMAT` - Date format constants (ISO_DATE, ISO_DATETIME, US_DATE, etc.)
+- `phantom.dates.UNIT` - Time unit constants (DAYS, HOURS, MINUTES, SECONDS, etc.)
+
+See [Date Operations Wiki](https://github.com/OS366/phantom/wiki/Date-Operations) for details.
 
 ---
 

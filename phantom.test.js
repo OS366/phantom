@@ -94,7 +94,7 @@ describe('Phantom.js Library', () => {
   describe('Initialization', () => {
     test('should initialize phantom object', () => {
       expect(phantom).toBeDefined();
-      expect(phantom.version).toBe('0.1.3');
+      expect(phantom.version).toBe('0.1.4');
     });
 
     test('should have default silent config', () => {
@@ -1308,6 +1308,341 @@ describe('Phantom.js Library', () => {
       test('should fail on null/undefined', () => {
         expect(() => phantom.xml.operation.toString(null)).toThrow();
         expect(() => phantom.xml.operation.toString(undefined)).toThrow();
+      });
+    });
+  });
+
+  describe('Date Operations', () => {
+    let mockJavaTime, mockLocalDate, mockLocalDateTime, mockDuration, mockChronoUnit;
+
+    beforeEach(() => {
+      // Mock Java.time APIs
+      mockLocalDate = {
+        getClass: () => ({ getName: () => 'java.time.LocalDate' }),
+        getYear: jest.fn(() => 2024),
+        getMonthValue: jest.fn(() => 12),
+        getDayOfMonth: jest.fn(() => 16),
+        getDayOfWeek: jest.fn(() => ({ toString: () => 'MONDAY' })),
+        format: jest.fn(() => '2024-12-16'),
+        isBefore: jest.fn(() => false),
+        isAfter: jest.fn(() => false),
+        isEqual: jest.fn(() => true),
+        plus: jest.fn(function(amount, unit) { return this; }),
+        minus: jest.fn(function(amount, unit) { return this; }),
+        atStartOfDay: jest.fn(() => mockLocalDateTime),
+        atTime: jest.fn(() => mockLocalDateTime)
+      };
+
+      mockLocalDateTime = {
+        getClass: () => ({ getName: () => 'java.time.LocalDateTime' }),
+        toLocalDate: jest.fn(() => mockLocalDate),
+        format: jest.fn(() => '2024-12-16T10:30:00'),
+        plus: jest.fn(function(duration) { return this; }),
+        minus: jest.fn(function(duration) { return this; })
+      };
+
+      mockDuration = {
+        getClass: () => ({ getName: () => 'java.time.Duration' }),
+        toDays: jest.fn(() => 5),
+        toHours: jest.fn(() => 120),
+        toMinutes: jest.fn(() => 7200),
+        toSeconds: jest.fn(() => 432000),
+        toMillis: jest.fn(() => 432000000)
+      };
+
+      mockChronoUnit = {
+        between: jest.fn(() => 5)
+      };
+
+      mockJavaTime = {
+        LocalDate: {
+          now: jest.fn(() => mockLocalDate),
+          parse: jest.fn(() => mockLocalDate),
+          of: jest.fn(() => mockLocalDate),
+          ofInstant: jest.fn(() => mockLocalDate)
+        },
+        LocalDateTime: {
+          now: jest.fn(() => mockLocalDateTime),
+          parse: jest.fn(() => mockLocalDateTime),
+          of: jest.fn(() => mockLocalDateTime),
+          ofInstant: jest.fn(() => mockLocalDateTime)
+        },
+        Duration: {
+          between: jest.fn(() => mockDuration),
+          of: jest.fn(() => mockDuration)
+        },
+        format: {
+          DateTimeFormatter: {
+            ofPattern: jest.fn(() => ({}))
+          }
+        },
+        ZoneId: {
+          systemDefault: jest.fn(() => ({}))
+        },
+        Instant: {
+          ofEpochMilli: jest.fn(() => ({}))
+        },
+        temporal: {
+          ChronoUnit: {
+            valueOf: jest.fn(() => mockChronoUnit),
+            DAYS: mockChronoUnit,
+            HOURS: mockChronoUnit,
+            MINUTES: mockChronoUnit,
+            SECONDS: mockChronoUnit,
+            MILLIS: mockChronoUnit,
+            WEEKS: mockChronoUnit,
+            MONTHS: mockChronoUnit,
+            YEARS: mockChronoUnit
+          }
+        }
+      };
+
+      global.java = {
+        ...global.java,
+        time: mockJavaTime
+      };
+    });
+
+    describe('FORMAT constants', () => {
+      test('should have format constants', () => {
+        expect(phantom.dates.FORMAT.ISO_DATE).toBe('yyyy-MM-dd');
+        expect(phantom.dates.FORMAT.ISO_DATETIME).toBe("yyyy-MM-dd'T'HH:mm:ss");
+        expect(phantom.dates.FORMAT.US_DATE).toBe('MM/dd/yyyy');
+      });
+    });
+
+    describe('UNIT constants', () => {
+      test('should have unit constants', () => {
+        expect(phantom.dates.UNIT.DAYS).toBe('DAYS');
+        expect(phantom.dates.UNIT.HOURS).toBe('HOURS');
+        expect(phantom.dates.UNIT.MINUTES).toBe('MINUTES');
+        expect(phantom.dates.UNIT.SECONDS).toBe('SECONDS');
+      });
+    });
+
+    describe('now', () => {
+      test('should get current datetime', () => {
+        var result = phantom.dates.operation.now();
+        expect(mockJavaTime.LocalDateTime.now).toHaveBeenCalled();
+      });
+
+      test('should fail without Java.time', () => {
+        delete global.java.time;
+        expect(() => phantom.dates.operation.now()).toThrow();
+        global.java.time = mockJavaTime;
+      });
+    });
+
+    describe('today', () => {
+      test('should get current date', () => {
+        var result = phantom.dates.operation.today();
+        expect(mockJavaTime.LocalDate.now).toHaveBeenCalled();
+      });
+    });
+
+    describe('parse', () => {
+      test('should parse ISO date string', () => {
+        var result = phantom.dates.operation.parse('2024-12-16');
+        expect(mockJavaTime.LocalDate.parse).toHaveBeenCalled();
+      });
+
+      test('should parse with custom format', () => {
+        var result = phantom.dates.operation.parse('12/16/2024', 'MM/dd/yyyy');
+        expect(mockJavaTime.format.DateTimeFormatter.ofPattern).toHaveBeenCalled();
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.dates.operation.parse(null)).toThrow();
+        expect(() => phantom.dates.operation.parse(undefined)).toThrow();
+        expect(() => phantom.dates.operation.parse('')).toThrow();
+      });
+    });
+
+    describe('parseDateTime', () => {
+      test('should parse ISO datetime string', () => {
+        var result = phantom.dates.operation.parseDateTime('2024-12-16T10:30:00');
+        expect(mockJavaTime.LocalDateTime.parse).toHaveBeenCalled();
+      });
+
+      test('should fail on null/undefined', () => {
+        expect(() => phantom.dates.operation.parseDateTime(null)).toThrow();
+        expect(() => phantom.dates.operation.parseDateTime('')).toThrow();
+      });
+    });
+
+    describe('format', () => {
+      test('should format date', () => {
+        var result = phantom.dates.operation.format(mockLocalDate, 'yyyy-MM-dd');
+        expect(mockLocalDate.format).toHaveBeenCalled();
+      });
+
+      test('should fail on null', () => {
+        expect(() => phantom.dates.operation.format(null, 'yyyy-MM-dd')).toThrow();
+        expect(() => phantom.dates.operation.format(mockLocalDate, null)).toThrow();
+      });
+    });
+
+    describe('getYear', () => {
+      test('should get year from date', () => {
+        var result = phantom.dates.operation.getYear(mockLocalDate);
+        expect(result).toBe(2024);
+        expect(mockLocalDate.getYear).toHaveBeenCalled();
+      });
+    });
+
+    describe('getMonth', () => {
+      test('should get month from date', () => {
+        var result = phantom.dates.operation.getMonth(mockLocalDate);
+        expect(result).toBe(12);
+        expect(mockLocalDate.getMonthValue).toHaveBeenCalled();
+      });
+    });
+
+    describe('getDay', () => {
+      test('should get day from date', () => {
+        var result = phantom.dates.operation.getDay(mockLocalDate);
+        expect(result).toBe(16);
+        expect(mockLocalDate.getDayOfMonth).toHaveBeenCalled();
+      });
+    });
+
+    describe('getDayOfWeek', () => {
+      test('should get day of week', () => {
+        var result = phantom.dates.operation.getDayOfWeek(mockLocalDate);
+        expect(result).toBe('MONDAY');
+      });
+    });
+
+    describe('add', () => {
+      test('should add to date', () => {
+        var result = phantom.dates.operation.add(mockLocalDate, 5, 'DAYS');
+        expect(mockLocalDate.plus).toHaveBeenCalledWith(5, mockChronoUnit);
+      });
+
+      test('should fail on null', () => {
+        expect(() => phantom.dates.operation.add(null, 5, 'DAYS')).toThrow();
+        expect(() => phantom.dates.operation.add(mockLocalDate, null, 'DAYS')).toThrow();
+        expect(() => phantom.dates.operation.add(mockLocalDate, 5, null)).toThrow();
+      });
+    });
+
+    describe('subtract', () => {
+      test('should subtract from date', () => {
+        var result = phantom.dates.operation.subtract(mockLocalDate, 5, 'DAYS');
+        expect(mockLocalDate.minus).toHaveBeenCalledWith(5, mockChronoUnit);
+      });
+    });
+
+    describe('between', () => {
+      test('should calculate difference between dates', () => {
+        var result = phantom.dates.operation.between(mockLocalDate, mockLocalDate, 'DAYS');
+        expect(mockChronoUnit.between).toHaveBeenCalled();
+      });
+    });
+
+    describe('isBefore', () => {
+      test('should check if date is before', () => {
+        var result = phantom.dates.operation.isBefore(mockLocalDate, mockLocalDate);
+        expect(mockLocalDate.isBefore).toHaveBeenCalled();
+      });
+    });
+
+    describe('isAfter', () => {
+      test('should check if date is after', () => {
+        var result = phantom.dates.operation.isAfter(mockLocalDate, mockLocalDate);
+        expect(mockLocalDate.isAfter).toHaveBeenCalled();
+      });
+    });
+
+    describe('isEqual', () => {
+      test('should check if dates are equal', () => {
+        var result = phantom.dates.operation.isEqual(mockLocalDate, mockLocalDate);
+        expect(mockLocalDate.isEqual).toHaveBeenCalled();
+      });
+    });
+
+    describe('startOfDay', () => {
+      test('should get start of day', () => {
+        var result = phantom.dates.operation.startOfDay(mockLocalDate);
+        expect(mockLocalDate.atStartOfDay).toHaveBeenCalled();
+      });
+    });
+
+    describe('endOfDay', () => {
+      test('should get end of day', () => {
+        var result = phantom.dates.operation.endOfDay(mockLocalDate);
+        expect(mockLocalDate.atTime).toHaveBeenCalledWith(23, 59, 59, 999000000);
+      });
+    });
+
+    describe('Duration Operations', () => {
+      describe('between', () => {
+        test('should calculate duration between datetimes', () => {
+          var result = phantom.dates.duration.between(mockLocalDateTime, mockLocalDateTime);
+          expect(mockJavaTime.Duration.between).toHaveBeenCalled();
+        });
+
+        test('should fail on null', () => {
+          expect(() => phantom.dates.duration.between(null, mockLocalDateTime)).toThrow();
+          expect(() => phantom.dates.duration.between(mockLocalDateTime, null)).toThrow();
+        });
+      });
+
+      describe('of', () => {
+        test('should create duration', () => {
+          var result = phantom.dates.duration.of(5, 'DAYS');
+          expect(mockJavaTime.Duration.of).toHaveBeenCalledWith(5, mockChronoUnit);
+        });
+      });
+
+      describe('add', () => {
+        test('should add duration to datetime', () => {
+          var result = phantom.dates.duration.add(mockLocalDateTime, mockDuration);
+          expect(mockLocalDateTime.plus).toHaveBeenCalledWith(mockDuration);
+        });
+      });
+
+      describe('subtract', () => {
+        test('should subtract duration from datetime', () => {
+          var result = phantom.dates.duration.subtract(mockLocalDateTime, mockDuration);
+          expect(mockLocalDateTime.minus).toHaveBeenCalledWith(mockDuration);
+        });
+      });
+
+      describe('toDays', () => {
+        test('should convert duration to days', () => {
+          var result = phantom.dates.duration.toDays(mockDuration);
+          expect(result).toBe(5);
+          expect(mockDuration.toDays).toHaveBeenCalled();
+        });
+      });
+
+      describe('toHours', () => {
+        test('should convert duration to hours', () => {
+          var result = phantom.dates.duration.toHours(mockDuration);
+          expect(result).toBe(120);
+        });
+      });
+
+      describe('toMinutes', () => {
+        test('should convert duration to minutes', () => {
+          var result = phantom.dates.duration.toMinutes(mockDuration);
+          expect(result).toBe(7200);
+        });
+      });
+
+      describe('toSeconds', () => {
+        test('should convert duration to seconds', () => {
+          var result = phantom.dates.duration.toSeconds(mockDuration);
+          expect(result).toBe(432000);
+        });
+      });
+
+      describe('toMillis', () => {
+        test('should convert duration to milliseconds', () => {
+          var result = phantom.dates.duration.toMillis(mockDuration);
+          expect(result).toBe(432000000);
+        });
       });
     });
   });

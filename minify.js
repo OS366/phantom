@@ -32,8 +32,9 @@ if (result.error) {
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const version = packageJson.version;
 
-// Add banner with version
-const banner = `/*! Phantom.js v${version} - a product by David Labs */\n`;
+// Add banner with version (uppercase BETA for consistency)
+const versionBanner = version.replace(/-beta$/i, '-BETA');
+const banner = `/*! Phantom.js v${versionBanner} - a product by David Labs */\n`;
 const minified = banner + result.code;
 
 fs.writeFileSync('phantom.min.js', minified, 'utf8');
