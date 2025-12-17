@@ -8,6 +8,7 @@ Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, 
 - **[Map Operations](Map-Operations)** - Complete guide to working with maps
 - **[String Operations](String-Operations)** - All string utilities and examples
 - **[Number Operations](Number-Operations)** - All number utilities and examples
+- **[JSON Operations](JSON-Operations)** - All JSON utilities and examples
 - **[Best Practices](Best-Practices)** - Tips and patterns for effective usage
 - **[Examples](Examples)** - Real-world usage examples
 - **[Troubleshooting](Troubleshooting)** - Common issues and solutions
@@ -19,6 +20,7 @@ Phantom.js is a lightweight helper library designed specifically for OIE scripti
 
 - **28 String Operations** - Manipulation, transformation, and validation
 - **25 Number Operations** - Mathematical operations, rounding, and validation
+- **14 JSON Operations** - Parse, manipulate, and query JSON objects
 - **5 Map Types** - Channel, Global, Connector, Response, and Configuration maps
 - **Consistent API** - All operations follow the same pattern
 - **Error Handling** - Proper error handling with generic messages
@@ -28,7 +30,7 @@ Phantom.js is a lightweight helper library designed specifically for OIE scripti
 
 ✅ **Zero Dependencies** - Pure JavaScript, no external libraries  
 ✅ **OIE Optimized** - Designed specifically for Oracle Integration Enterprise  
-✅ **Comprehensive Testing** - 123 tests covering all operations  
+✅ **Comprehensive Testing** - 157 tests covering all operations  
 ✅ **Well Documented** - Complete documentation with examples  
 ✅ **Error Safe** - Consistent error handling throughout  
 
@@ -56,6 +58,11 @@ var sum = phantom.numbers.operation.add(5, 3);
 phantom.maps.channel.save("key", "value");
 var value = phantom.maps.channel.get("key");
 // Output: "value"
+
+// Use JSON operations
+var obj = phantom.json.operation.parse('{"name":"John","age":30}');
+var name = phantom.json.operation.get(obj, "name");
+// Output: "John"
 ```
 
 ## Contributing

@@ -8,6 +8,7 @@ Complete API reference for all Phantom.js operations.
 - [Map Operations](#map-operations)
 - [String Operations](#string-operations)
 - [Number Operations](#number-operations)
+- [JSON Operations](#json-operations)
 
 ## Initialization
 
@@ -723,6 +724,157 @@ All operations that can fail will throw `Error("Invalid operation")` with the fo
 - Invalid ranges (e.g., min > max)
 
 Always wrap operations in try-catch blocks when appropriate.
+
+---
+
+## JSON Operations
+
+All JSON operations are under `phantom.json.operation.*`
+
+### `parse(jsonString)`
+
+Parse JSON string to object.
+
+**Parameters:**
+- `jsonString` (String): JSON string to parse
+
+**Returns:** Object or Array
+
+**Throws:** `Error("Invalid operation")` if string is invalid JSON
+
+### `stringify(obj)`
+
+Convert object to JSON string.
+
+**Parameters:**
+- `obj` (Object or Array): Object to stringify
+
+**Returns:** String
+
+**Throws:** `Error("Invalid operation")` if obj is null or undefined
+
+### `get(obj, keyPath)`
+
+Get value by key path (supports nested keys with dot notation).
+
+**Parameters:**
+- `obj` (Object): Object to query
+- `keyPath` (String): Key path (e.g., "user.name")
+
+**Returns:** Value or null if not found
+
+**Throws:** `Error("Invalid operation")` if obj is null or keyPath is invalid
+
+### `set(obj, keyPath, value)`
+
+Set value by key path. Returns new object (doesn't modify original).
+
+**Parameters:**
+- `obj` (Object): Object to modify
+- `keyPath` (String): Key path (e.g., "user.name")
+- `value` (Any): Value to set
+
+**Returns:** New object with updated value
+
+**Throws:** `Error("Invalid operation")` if obj is null or keyPath is invalid
+
+### `has(obj, keyPath)`
+
+Check if key path exists.
+
+**Parameters:**
+- `obj` (Object): Object to check
+- `keyPath` (String): Key path to check
+
+**Returns:** Boolean
+
+**Throws:** `Error("Invalid operation")` if obj is null or keyPath is invalid
+
+### `remove(obj, keyPath)`
+
+Remove key from object. Returns new object (doesn't modify original).
+
+**Parameters:**
+- `obj` (Object): Object to modify
+- `keyPath` (String): Key path to remove
+
+**Returns:** New object with key removed
+
+**Throws:** `Error("Invalid operation")` if obj is null or keyPath is invalid
+
+### `keys(obj)`
+
+Get all keys from object.
+
+**Parameters:**
+- `obj` (Object): Object
+
+**Returns:** Array of strings
+
+**Throws:** `Error("Invalid operation")` if obj is null, not an object, or is an array
+
+### `values(obj)`
+
+Get all values from object.
+
+**Parameters:**
+- `obj` (Object): Object
+
+**Returns:** Array of values
+
+**Throws:** `Error("Invalid operation")` if obj is null, not an object, or is an array
+
+### `size(obj)`
+
+Get size of object (number of keys) or length of array.
+
+**Parameters:**
+- `obj` (Object or Array): Object or array
+
+**Returns:** Number
+
+**Throws:** `Error("Invalid operation")` if obj is null or not an object/array
+
+### `merge(obj1, obj2)`
+
+Merge two objects. Second object overwrites first.
+
+**Parameters:**
+- `obj1` (Object): First object
+- `obj2` (Object): Second object (overwrites obj1)
+
+**Returns:** Merged object
+
+**Throws:** `Error("Invalid operation")` if inputs are invalid or are arrays
+
+### `isEmpty(obj)`
+
+Check if object or array is empty.
+
+**Parameters:**
+- `obj` (Object or Array): Object or array
+
+**Returns:** Boolean
+
+**Throws:** `Error("Invalid operation")` if obj is not an object/array
+
+### `isArray(obj)`
+
+Check if value is an array.
+
+**Parameters:**
+- `obj` (Any): Value to check
+
+**Returns:** Boolean
+
+### `isObject(obj)`
+
+Check if value is an object (not array).
+
+**Parameters:**
+- `obj` (Any): Value to check
+
+**Returns:** Boolean
 
 ## Related Topics
 

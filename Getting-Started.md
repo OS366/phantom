@@ -94,6 +94,24 @@ if (phantom.maps.channel.exists("userId")) {
 }
 ```
 
+### JSON Operations
+
+```javascript
+// Parse JSON string
+var obj = phantom.json.operation.parse('{"name":"John","age":30}');
+
+// Get nested value
+var name = phantom.json.operation.get(obj, "name");
+// Output: "John"
+
+// Set value
+var updated = phantom.json.operation.set(obj, "city", "NYC");
+
+// Check if key exists
+phantom.json.operation.has(obj, "name");
+// Output: true
+```
+
 ## Common Patterns
 
 ### Pattern 1: Data Transformation

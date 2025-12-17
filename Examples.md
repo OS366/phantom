@@ -317,11 +317,124 @@ try {
 }
 ```
 
+## Example 11: JSON Data Processing
+
+Parse and manipulate JSON data from API responses.
+
+```javascript
+// Get JSON string from map
+var jsonString = phantom.maps.channel.get("apiResponse");
+
+try {
+    // Parse JSON
+    var obj = phantom.json.operation.parse(jsonString);
+    
+    // Extract nested values
+    var userName = phantom.json.operation.get(obj, "user.name");
+    var userEmail = phantom.json.operation.get(obj, "user.email");
+    var userId = phantom.json.operation.get(obj, "user.id");
+    
+    // Validate required fields
+    if (phantom.json.operation.has(obj, "user.name") && 
+        phantom.json.operation.has(obj, "user.email")) {
+        
+        // Save extracted data
+        phantom.maps.channel.save("userName", userName);
+        phantom.maps.channel.save("userEmail", userEmail);
+        phantom.maps.channel.save("userId", userId);
+    }
+} catch (e) {
+    phantom.maps.channel.save("error", "Failed to parse JSON");
+}
+```
+
+## Example 12: JSON Transformation
+
+Transform JSON structure for different systems.
+
+```javascript
+// Get source JSON
+var sourceJson = phantom.maps.channel.get("sourceData");
+var source = phantom.json.operation.parse(sourceJson);
+
+// Create new structure
+var transformed = {};
+transformed = phantom.json.operation.set(transformed, "firstName", 
+    phantom.json.operation.get(source, "user.firstName"));
+transformed = phantom.json.operation.set(transformed, "lastName", 
+    phantom.json.operation.get(source, "user.lastName"));
+transformed = phantom.json.operation.set(transformed, "fullName",
+    phantom.strings.operation.join(
+        phantom.json.operation.get(transformed, "firstName"),
+        phantom.json.operation.get(transformed, "lastName"),
+        " "
+    )
+);
+
+// Save transformed JSON
+phantom.maps.channel.save("transformedData", 
+    phantom.json.operation.stringify(transformed));
+```
+
+## Example 13: JSON Configuration Merge
+
+Merge base configuration with overrides.
+
+```javascript
+// Get base configuration
+var baseConfigJson = phantom.maps.configuration.get("baseConfig");
+var baseConfig = phantom.json.operation.parse(baseConfigJson);
+
+// Get override configuration
+var overrideJson = phantom.maps.channel.get("overrides");
+var overrides = phantom.json.operation.parse(overrideJson);
+
+// Merge (overrides take precedence)
+var finalConfig = phantom.json.operation.merge(baseConfig, overrides);
+
+// Save final configuration
+phantom.maps.channel.save("finalConfig", 
+    phantom.json.operation.stringify(finalConfig));
+```
+
+## Example 14: Dynamic JSON Key Processing
+
+Process all keys in a JSON object dynamically.
+
+```javascript
+// Get JSON object
+var jsonString = phantom.maps.channel.get("data");
+var obj = phantom.json.operation.parse(jsonString);
+
+// Get all keys
+var keys = phantom.json.operation.keys(obj);
+
+// Process each key-value pair
+var processed = {};
+for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var value = phantom.json.operation.get(obj, key);
+    
+    // Transform value (example: uppercase strings)
+    if (phantom.strings.operation.isBlank(value) === false) {
+        var transformed = phantom.strings.operation.toUpperCase(
+            phantom.strings.operation.trim(value)
+        );
+        processed = phantom.json.operation.set(processed, key, transformed);
+    }
+}
+
+// Save processed data
+phantom.maps.channel.save("processedData", 
+    phantom.json.operation.stringify(processed));
+```
+
 ## Related Topics
 
 - [Getting Started](Getting-Started) - Learn the basics
 - [String Operations](String-Operations) - All string utilities
 - [Number Operations](Number-Operations) - All number utilities
+- [JSON Operations](JSON-Operations) - All JSON utilities
 - [Map Operations](Map-Operations) - Working with maps
 - [Best Practices](Best-Practices) - Tips and patterns
 
