@@ -2,7 +2,7 @@
 
 A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
-**Version:** 0.1.2
+**Version:** 0.1.3
 
 ## Overview
 
@@ -104,7 +104,7 @@ Phantom.js is a plug-and-play library - no initialization required! Once install
 
 ```javascript
 // Get version (optional)
-phantom.version;  // "0.1.2"
+phantom.version;  // "0.1.3"
 
 // Use any operation directly
 var result = phantom.strings.operation.trim("  hello  ");
