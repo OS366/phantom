@@ -58,30 +58,8 @@
         // In OIE/Rhino, these are global variables accessible directly
         // In Node.js test environment (VM context), access via the 'global' parameter passed to IIFE
         // The 'global' parameter is the context object in VM, so maps are on it
-        var map = null;
         
-        // First try direct access (OIE/Rhino environment)
-        try {
-          if (name === "channelMap" && typeof channelMap !== "undefined") { 
-            return channelMap; 
-          }
-          if (name === "globalMap" && typeof globalMap !== "undefined") { 
-            return globalMap; 
-          }
-          if (name === "connectorMap" && typeof connectorMap !== "undefined") { 
-            return connectorMap; 
-          }
-          if (name === "responseMap" && typeof responseMap !== "undefined") { 
-            return responseMap; 
-          }
-          if (name === "configurationMap" && typeof configurationMap !== "undefined") { 
-            return configurationMap; 
-          }
-        } catch (e) {
-          // Direct access failed, try global object
-        }
-        
-        // Fallback to global object (Node.js test environment)
+        // Try global object first (works in both environments)
         if (global) {
           if (name === "channelMap" && global.channelMap) { 
             return global.channelMap; 
@@ -98,6 +76,33 @@
           if (name === "configurationMap" && global.configurationMap) { 
             return global.configurationMap; 
           }
+        }
+        
+        // Fallback: try direct access (OIE/Rhino environment where variables are in global scope)
+        // Use eval to safely check without throwing ReferenceError in strict mode
+        try {
+          if (name === "channelMap") {
+            var result = eval("typeof channelMap !== 'undefined' ? channelMap : null");
+            if (result) return result;
+          }
+          if (name === "globalMap") {
+            var result = eval("typeof globalMap !== 'undefined' ? globalMap : null");
+            if (result) return result;
+          }
+          if (name === "connectorMap") {
+            var result = eval("typeof connectorMap !== 'undefined' ? connectorMap : null");
+            if (result) return result;
+          }
+          if (name === "responseMap") {
+            var result = eval("typeof responseMap !== 'undefined' ? responseMap : null");
+            if (result) return result;
+          }
+          if (name === "configurationMap") {
+            var result = eval("typeof configurationMap !== 'undefined' ? configurationMap : null");
+            if (result) return result;
+          }
+        } catch (e) {
+          // Direct access failed, return null
         }
         
         return null;
