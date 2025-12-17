@@ -6,7 +6,7 @@ A lightweight helper library for OIE (Open Integration Engine) scripting.
 
 ## Overview
 
-Phantom.js provides a comprehensive set of utilities for working with maps, strings, numbers, JSON, and base64 operations in OIE scripting environments. All operations follow a consistent API pattern and include proper error handling.
+Phantom.js provides a comprehensive set of utilities for working with maps, strings, numbers, JSON, and base64 operations in Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. All operations follow a consistent API pattern and include proper error handling.
 
 ## Statistics
 
