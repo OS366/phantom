@@ -3,6 +3,8 @@
  * ==================
  * Lightweight helper library for OIE scripting
  *
+ * Documentation: https://github.com/OS366/phantom/wiki
+ *
  * RULES (as requested)
  * --------------------
  * - Do NOT log normal operations (no "numbers.add" logs, etc.)
