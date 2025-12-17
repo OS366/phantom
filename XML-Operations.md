@@ -124,8 +124,8 @@ phantom.xml.operation.get(parsed, 'nonexistent');
 ```
 
 **Notes:**
-- In OIE/Rhino environment, supports full XPath expressions
-- In browser environment, uses simple element name lookup
+- Requires Java XML APIs (OIE/Rhino environment)
+- Supports full XPath expressions via Java XPath API
 - Returns text content of the first matching element
 
 ### has
