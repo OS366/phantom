@@ -49,11 +49,33 @@ Drag and drop is not possible for variables saved using `phantom.maps.*`
 
 ## Installation
 
-### For OIE Scripting
+### For Mirth Connect / Open Integration Engine / BridgeLink
 
-1. Copy the contents of `phantom.js` into your OIE script editor
-2. The library will be available as `phantom` in your script context
-3. No additional setup required
+**Compatible with version 4.5.2 and above**
+
+#### Step-by-Step Instructions:
+
+1. **Copy the library code:**
+   - Open `phantom.js` or `phantom.min.js` from this repository
+   - Copy the entire contents of the file
+
+2. **Navigate to Code Templates:**
+   - Go to **Channels** → **Edit Code Template**
+   - Click **New Library**
+   - Select **New Code Templates**
+
+3. **Create the library:**
+   - Paste the copied Phantom.js code into the editor
+   - Set **Context** to **Select All Context** (or choose specific contexts as needed)
+   - Give it a name (e.g., "Phantom.js Library")
+   - Click **Save**
+
+4. **Use in your scripts:**
+   - The library will be available as `phantom` in your script context
+   - No additional setup required
+   - You can now use all Phantom.js operations in your channel scripts
+
+**Note:** You can use either `phantom.js` (readable) or `phantom.min.js` (minified, smaller size). Both work identically.
 
 ### For Development/Testing
 
