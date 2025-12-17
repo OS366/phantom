@@ -1,16 +1,9 @@
 /*!
- * Phantom.js v0.1.2
- * ==================
+ * Phantom.js v0.1.2 - A product of David Labs
+ * ============================================
  * Lightweight helper library for OIE scripting
  *
  * Documentation: https://github.com/OS366/phantom/wiki
- *
- * RULES (as requested)
- * --------------------
- * - Do NOT log normal operations (no "numbers.add" logs, etc.)
- * - Only log when there is an error
- * - Errors should show specific error messages when available
- * - Keep full file: maps + strings + numbers
  *
  * WARNING
  * -------
