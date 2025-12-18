@@ -2,7 +2,7 @@
 
 A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
-**Version:** 0.1.4-BETA
+**Version:** 0.1.6-BETA
 
 ## Overview
 
@@ -19,7 +19,7 @@ Phantom.js provides a comprehensive set of utilities for working with maps, stri
   - XML Operations: 5
   - Date Operations: 15
   - Duration Operations: 7
-- **Test Cases:** 229
+- **Test Cases:** 284
 - **Test Coverage:** 100% - Comprehensive coverage for all operations
 
 ## Documentation

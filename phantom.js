@@ -16,7 +16,7 @@
     var phantom = global.phantom || {};
     global.phantom = phantom;
   
-    phantom.version = "0.1.5-BETA";
+    phantom.version = "0.1.6-BETA";
   
     phantom.config = { silent: true };
   
