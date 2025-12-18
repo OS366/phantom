@@ -609,6 +609,172 @@ describe('phantom.strings', () => {
       expect(phantom.strings.operation.reverseWords(undefined)).toBe('');
     });
   });
+
+  describe('chain', () => {
+    test('should chain trim, toLowerCase, and capitalize', () => {
+      const result = phantom.strings.chain("  HELLO WORLD  ")
+        .trim()
+        .toLowerCase()
+        .capitalize()
+        .value();
+      expect(result).toBe("Hello world");
+    });
+
+    test('should chain multiple operations', () => {
+      const result = phantom.strings.chain("  hello world  ")
+        .trim()
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HELLO WORLD");
+    });
+
+    test('should support toString() method', () => {
+      const result = phantom.strings.chain("  test  ")
+        .trim()
+        .toUpperCase()
+        .toString();
+      expect(result).toBe("TEST");
+    });
+
+    test('should chain replace operations', () => {
+      const result = phantom.strings.chain("hello hello")
+        .replaceAll("hello", "hi")
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HI HI");
+    });
+
+    test('should chain replace and capitalize', () => {
+      const result = phantom.strings.chain("hello world")
+        .replace("world", "universe")
+        .capitalize()
+        .value();
+      expect(result).toBe("Hello universe");
+    });
+
+    test('should chain remove operation', () => {
+      const result = phantom.strings.chain("hello world")
+        .remove("lo")
+        .trim()
+        .value();
+      expect(result).toBe("hel world");
+    });
+
+    test('should chain reverse operations', () => {
+      const result = phantom.strings.chain("hello")
+        .reverse()
+        .toUpperCase()
+        .value();
+      expect(result).toBe("OLLEH");
+    });
+
+    test('should chain reverseWords', () => {
+      const result = phantom.strings.chain("hello world")
+        .reverseWords()
+        .capitalize()
+        .value();
+      expect(result).toBe("World hello");
+    });
+
+    test('should chain leftTrim and rightTrim', () => {
+      const result = phantom.strings.chain("  hello  ")
+        .leftTrim()
+        .rightTrim()
+        .value();
+      expect(result).toBe("hello");
+    });
+
+    test('should chain padding operations', () => {
+      const result = phantom.strings.chain("5")
+        .leftPad("0", 2)
+        .value();
+      expect(result).toBe("005");
+    });
+
+    test('should chain substring', () => {
+      const result = phantom.strings.chain("hello world")
+        .substring(0, 5)
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HELLO");
+    });
+
+    test('should chain wordwrap', () => {
+      const longText = "a".repeat(100);
+      const result = phantom.strings.chain(longText)
+        .wordwrap(10)
+        .value();
+      expect(result).toContain('\n');
+      expect(result.split('\n')[0].length).toBeLessThanOrEqual(10);
+    });
+
+    test('should handle empty string in chain', () => {
+      const result = phantom.strings.chain("")
+        .trim()
+        .toUpperCase()
+        .value();
+      expect(result).toBe("");
+    });
+
+    test('should handle null in chain', () => {
+      const result = phantom.strings.chain(null)
+        .trim()
+        .toLowerCase()
+        .value();
+      expect(result).toBe("");
+    });
+
+    test('should handle undefined in chain', () => {
+      const result = phantom.strings.chain(undefined)
+        .trim()
+        .capitalize()
+        .value();
+      expect(result).toBe("");
+    });
+
+    test('should allow complex chaining', () => {
+      const result = phantom.strings.chain("  Hello World  ")
+        .trim()
+        .toLowerCase()
+        .replace("world", "universe")
+        .capitalize()
+        .value();
+      expect(result).toBe("Hello universe");
+    });
+
+    test('should allow multiple replace operations', () => {
+      const result = phantom.strings.chain("hello hello hello")
+        .replaceAll("hello", "hi")
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HI HI HI");
+    });
+
+    test('should chain operations in different order', () => {
+      const result1 = phantom.strings.chain("  HELLO  ")
+        .trim()
+        .toLowerCase()
+        .capitalize()
+        .value();
+      
+      const result2 = phantom.strings.chain("  HELLO  ")
+        .toLowerCase()
+        .trim()
+        .capitalize()
+        .value();
+      
+      expect(result1).toBe("Hello");
+      expect(result2).toBe("Hello");
+    });
+
+    test('should return same chainable object for method chaining', () => {
+      const chain = phantom.strings.chain("test");
+      const chain1 = chain.trim();
+      const chain2 = chain1.toLowerCase();
+      expect(chain1).toBe(chain2);
+      expect(chain.value()).toBe("test");
+    });
+  });
 });
 
 describe('phantom.numbers', () => {

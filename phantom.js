@@ -457,6 +457,106 @@
       var words = s.split(/\s+/);
       return words.reverse().join(" ");
     };
+
+    /* --------------------------------------------------
+     * phantom.strings.chain() - Chaining API
+     * Allows chaining multiple string operations
+     * -------------------------------------------------- */
+    
+    phantom.strings.chain = function (input) {
+      var value = toStr(input);
+      
+      // Chainable wrapper object
+      var chainable = {
+        // Get the final value
+        value: function () {
+          return value;
+        },
+        
+        // Get the final value (alias for .value())
+        toString: function () {
+          return value;
+        },
+        
+        // String operations that can be chained
+        trim: function () {
+          value = phantom.strings.operation.trim(value);
+          return chainable;
+        },
+        
+        toUpperCase: function () {
+          value = phantom.strings.operation.toUpperCase(value);
+          return chainable;
+        },
+        
+        toLowerCase: function () {
+          value = phantom.strings.operation.toLowerCase(value);
+          return chainable;
+        },
+        
+        capitalize: function () {
+          value = phantom.strings.operation.capitalize(value);
+          return chainable;
+        },
+        
+        reverse: function () {
+          value = phantom.strings.operation.reverse(value);
+          return chainable;
+        },
+        
+        reverseWords: function () {
+          value = phantom.strings.operation.reverseWords(value);
+          return chainable;
+        },
+        
+        leftTrim: function () {
+          value = phantom.strings.operation.leftTrim(value);
+          return chainable;
+        },
+        
+        rightTrim: function () {
+          value = phantom.strings.operation.rightTrim(value);
+          return chainable;
+        },
+        
+        replace: function (searchString, replaceString) {
+          value = phantom.strings.operation.replace(value, searchString, replaceString);
+          return chainable;
+        },
+        
+        replaceAll: function (searchString, replaceString) {
+          value = phantom.strings.operation.replaceAll(value, searchString, replaceString);
+          return chainable;
+        },
+        
+        remove: function (stringToRemove) {
+          value = phantom.strings.operation.remove(value, stringToRemove);
+          return chainable;
+        },
+        
+        leftPad: function (padChar, count) {
+          value = phantom.strings.operation.leftPad(value, padChar, count);
+          return chainable;
+        },
+        
+        rightPad: function (padChar, count) {
+          value = phantom.strings.operation.rightPad(value, padChar, count);
+          return chainable;
+        },
+        
+        substring: function (start, end) {
+          value = phantom.strings.operation.substring(value, start, end);
+          return chainable;
+        },
+        
+        wordwrap: function (size, cut, everything) {
+          value = phantom.strings.operation.wordwrap(value, size, cut, everything);
+          return chainable;
+        }
+      };
+      
+      return chainable;
+    };
   
     /* --------------------------------------------------
      * phantom.numbers.operation.*
