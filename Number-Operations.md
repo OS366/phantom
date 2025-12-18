@@ -352,10 +352,147 @@ phantom.numbers.operation.sign(0);
 // Output: 0 (zero)
 ```
 
+---
+
+## Chaining API (NEW in v0.1.5-BETA) 🚀
+
+The chaining API allows you to perform multiple number operations in a fluent, readable way.
+
+### Basic Usage
+
+```javascript
+// Start a chain
+var result = phantom.numbers.chain(10)
+    .add(5)
+    .multiply(2)
+    .round(0)
+    .value();
+// Returns: 30
+```
+
+### Available Chain Methods
+
+**Unary Operations (modify the value):**
+- `abs()` - Get absolute value
+- `round(decimals)` - Round to decimal places
+- `ceil()` - Round up
+- `floor()` - Round down
+- `truncate()` - Truncate decimal part
+- `sqrt()` - Calculate square root
+
+**Binary Operations (take second operand as parameter):**
+- `add(b)` - Add a number
+- `subtract(b)` - Subtract a number
+- `multiply(b)` - Multiply by a number
+- `divide(b)` - Divide by a number
+- `mod(divisor)` - Calculate modulo
+- `pow(exponent)` - Raise to power
+- `min(b)` - Get minimum
+- `max(b)` - Get maximum
+- `clamp(min, max)` - Clamp between min and max
+
+**Formatting:**
+- `toFixed(decimals)` - Format to fixed decimals (returns string chain)
+
+**Validation (return boolean, break chain):**
+- `isEven()` - Check if even
+- `isOdd()` - Check if odd
+- `isPositive()` - Check if positive
+- `isNegative()` - Check if negative
+- `isZero()` - Check if zero
+- `isNumber()` - Check if valid number
+- `between(min, max)` - Check if between range
+- `sign()` - Get sign (-1, 0, or 1)
+
+**Cross-Module Chaining:**
+- `toStringChain()` - Convert to string and continue with string chain
+
+### Examples
+
+**Basic Math Chain:**
+```javascript
+var result = phantom.numbers.chain(10)
+    .add(5)        // 15
+    .multiply(2)   // 30
+    .subtract(10)  // 20
+    .divide(4)     // 5
+    .value();
+// Returns: 5
+```
+
+**Rounding and Formatting:**
+```javascript
+var formatted = phantom.numbers.chain(123.456)
+    .round(2)      // 123.46
+    .toFixed(2)    // Returns string chain: "123.46"
+    .leftPad("0", 6)
+    .value();
+// Returns: "0123.46"
+```
+
+**Cross-Module Chaining:**
+```javascript
+// Number to String
+var str = phantom.numbers.chain(123.45)
+    .round(1)
+    .toStringChain()
+    .leftPad("0", 6)
+    .value();
+// Returns: "0123.5"
+
+// String to Number
+var num = phantom.strings.chain("123.45")
+    .trim()
+    .toNumberChain()
+    .round(1)
+    .value();
+// Returns: 123.5
+```
+
+**Complex Calculation:**
+```javascript
+var price = phantom.numbers.chain(100)
+    .multiply(1.08)  // Add 8% tax
+    .round(2)        // Round to 2 decimals
+    .value();
+// Returns: 108
+```
+
+**Validation in Chain:**
+```javascript
+var isValid = phantom.numbers.chain(15)
+    .isPositive()  // Returns: true (breaks chain)
+    .value();      // This won't execute
+```
+
+---
+
 ## Common Patterns
 
 ### Pattern 1: Price Calculation
 
+**Using Chaining (Recommended - v0.1.5-BETA+):**
+```javascript
+var price = phantom.maps.channel.get("price");
+var quantity = phantom.maps.channel.get("quantity");
+var taxRate = 0.08; // 8%
+
+// Calculate using chaining
+var total = phantom.numbers.chain(price)
+    .toNumberChain()  // Parse if string
+    .multiply(quantity)
+    .multiply(1 + taxRate)
+    .round(2)
+    .value();
+
+// Format for display
+var formattedTotal = phantom.numbers.chain(total)
+    .toFixed(2)
+    .value();
+// Output: "21.60"
+```
+
+**Traditional Way (Still Works):**
 ```javascript
 var price = phantom.maps.channel.get("price");
 var quantity = phantom.maps.channel.get("quantity");

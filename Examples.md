@@ -429,11 +429,115 @@ phantom.maps.channel.save("processedData",
     phantom.json.operation.stringify(processed));
 ```
 
+## Example 21: Number Chaining - Price Calculation (NEW in v0.1.5-BETA)
+
+Calculate prices with tax and discounts using number chaining.
+
+```javascript
+// Get order data
+var price = phantom.maps.channel.get("price");
+var quantity = phantom.maps.channel.get("quantity");
+var discountPercent = 10; // 10%
+var taxRate = 0.08; // 8%
+
+// Calculate total using chaining
+var total = phantom.numbers.chain(price)
+    .multiply(quantity)
+    .multiply(1 - discountPercent / 100)  // Apply discount
+    .multiply(1 + taxRate)                // Add tax
+    .round(2)
+    .value();
+
+phantom.maps.channel.save("total", total);
+```
+
+## Example 22: Number Chaining - Cross-Module Formatting
+
+Format numbers and continue with string operations.
+
+```javascript
+// Get numeric value
+var amount = phantom.maps.channel.get("amount");
+
+// Format: round, convert to string, pad
+var formatted = phantom.numbers.chain(amount)
+    .round(2)
+    .toFixed(2)        // Returns string chain
+    .leftPad("0", 8)
+    .value();
+
+phantom.maps.channel.save("formattedAmount", formatted);
+// Example: "00123.45"
+```
+
+## Example 23: Number Chaining - String to Number Processing
+
+Parse and process numeric strings using chaining.
+
+```javascript
+// Get string value
+var priceStr = phantom.maps.channel.get("priceStr"); // "123.456"
+
+// Parse, round, and format
+var result = phantom.strings.chain(priceStr)
+    .trim()
+    .toNumberChain()   // Convert to number chain
+    .round(2)
+    .multiply(1.1)     // Add 10%
+    .toFixed(2)        // Back to string chain
+    .value();
+
+phantom.maps.channel.save("processedPrice", result);
+```
+
+## Example 24: Number Chaining - Complex Calculation
+
+Perform complex mathematical operations in a chain.
+
+```javascript
+// Get base value
+var base = phantom.maps.channel.get("baseValue");
+
+// Complex calculation: sqrt((base^2 + 100) * 2)
+var result = phantom.numbers.chain(base)
+    .pow(2)           // base^2
+    .add(100)         // base^2 + 100
+    .multiply(2)      // (base^2 + 100) * 2
+    .sqrt()           // sqrt((base^2 + 100) * 2)
+    .round(2)
+    .value();
+
+phantom.maps.channel.save("calculatedValue", result);
+```
+
+## Example 25: Number Chaining - Validation and Clamping
+
+Validate and clamp values within a range.
+
+```javascript
+// Get user input
+var userValue = phantom.maps.channel.get("userValue");
+
+// Clamp between 0 and 100, then round
+var clamped = phantom.numbers.chain(userValue)
+    .clamp(0, 100)
+    .round(0)
+    .value();
+
+// Check if valid
+var isValid = phantom.numbers.chain(clamped)
+    .between(0, 100);
+
+if (isValid) {
+    phantom.maps.channel.save("validValue", clamped);
+}
+```
+
 ## Related Topics
 
 - [Getting Started](Getting-Started) - Learn the basics
-- [String Operations](String-Operations) - All string utilities
-- [Number Operations](Number-Operations) - All number utilities
+- [String Operations](String-Operations) - All string utilities including chaining API
+- [Number Operations](Number-Operations) - All number utilities including chaining API
 - [JSON Operations](JSON-Operations) - All JSON utilities
 - [Map Operations](Map-Operations) - Working with maps
 - [Best Practices](Best-Practices) - Tips and patterns
