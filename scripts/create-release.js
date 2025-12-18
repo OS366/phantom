@@ -10,7 +10,20 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const VERSION = '0.1.4-BETA';
+// Get version from package.json or environment variable
+function getVersion() {
+  // Check if version is provided via environment variable (for CI)
+  if (process.env.RELEASE_VERSION) {
+    return process.env.RELEASE_VERSION;
+  }
+  
+  // Get from package.json
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return packageJson.version;
+}
+
+const VERSION = getVersion();
 const RELEASE_DIR = path.join(__dirname, '..', 'release');
 const ZIP_NAME = `phantom-v${VERSION}.zip`;
 const ZIP_PATH = path.join(RELEASE_DIR, ZIP_NAME);
