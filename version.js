@@ -72,3 +72,4 @@ updateVersionInFile(phantomJsPath, currentVersion, newVersion);
 
 console.log(`Version updated to ${newVersion} in package.json and phantom.js`);
 
+
