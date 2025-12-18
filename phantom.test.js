@@ -1091,6 +1091,253 @@ describe('phantom.numbers', () => {
       expect(phantom.numbers.operation.truncate(5)).toBe(5);
     });
   });
+
+  describe('chain', () => {
+    test('should chain basic operations', () => {
+      const result = phantom.numbers.chain(10)
+        .add(5)
+        .multiply(2)
+        .value();
+      expect(result).toBe(30);
+    });
+
+    test('should chain subtract and divide', () => {
+      const result = phantom.numbers.chain(100)
+        .subtract(20)
+        .divide(4)
+        .value();
+      expect(result).toBe(20);
+    });
+
+    test('should chain abs operation', () => {
+      const result = phantom.numbers.chain(-10)
+        .abs()
+        .value();
+      expect(result).toBe(10);
+    });
+
+    test('should chain round operation', () => {
+      const result = phantom.numbers.chain(123.456)
+        .round(2)
+        .value();
+      expect(result).toBe(123.46);
+    });
+
+    test('should chain ceil operation', () => {
+      const result = phantom.numbers.chain(123.1)
+        .ceil()
+        .value();
+      expect(result).toBe(124);
+    });
+
+    test('should chain floor operation', () => {
+      const result = phantom.numbers.chain(123.9)
+        .floor()
+        .value();
+      expect(result).toBe(123);
+    });
+
+    test('should chain truncate operation', () => {
+      const result = phantom.numbers.chain(123.9)
+        .truncate()
+        .value();
+      expect(result).toBe(123);
+    });
+
+    test('should chain sqrt operation', () => {
+      const result = phantom.numbers.chain(16)
+        .sqrt()
+        .value();
+      expect(result).toBe(4);
+    });
+
+    test('should chain mod operation', () => {
+      const result = phantom.numbers.chain(10)
+        .mod(3)
+        .value();
+      expect(result).toBe(1);
+    });
+
+    test('should chain pow operation', () => {
+      const result = phantom.numbers.chain(2)
+        .pow(3)
+        .value();
+      expect(result).toBe(8);
+    });
+
+    test('should chain min operation', () => {
+      const result = phantom.numbers.chain(10)
+        .min(5)
+        .value();
+      expect(result).toBe(5);
+    });
+
+    test('should chain max operation', () => {
+      const result = phantom.numbers.chain(10)
+        .max(5)
+        .value();
+      expect(result).toBe(10);
+    });
+
+    test('should chain clamp operation', () => {
+      const result1 = phantom.numbers.chain(5)
+        .clamp(0, 10)
+        .value();
+      expect(result1).toBe(5);
+
+      const result2 = phantom.numbers.chain(-5)
+        .clamp(0, 10)
+        .value();
+      expect(result2).toBe(0);
+
+      const result3 = phantom.numbers.chain(15)
+        .clamp(0, 10)
+        .value();
+      expect(result3).toBe(10);
+    });
+
+    test('should chain complex calculation', () => {
+      const result = phantom.numbers.chain(10)
+        .add(5)        // 15
+        .multiply(2)   // 30
+        .subtract(10)  // 20
+        .divide(4)     // 5
+        .round(0)
+        .value();
+      expect(result).toBe(5);
+    });
+
+    test('should chain multiple rounding operations', () => {
+      const result = phantom.numbers.chain(123.456)
+        .round(1)      // 123.5
+        .ceil()        // 124
+        .value();
+      expect(result).toBe(124);
+    });
+
+    test('should convert to string chain with toFixed', () => {
+      const result = phantom.numbers.chain(123.456)
+        .round(2)
+        .toFixed(2)    // Returns string chain: "123.46"
+        .leftPad("0", 6)  // Adds 6 zeros: "000000123.46"
+        .value();
+      expect(result).toBe("000000123.46");
+    });
+
+    test('should convert to string chain with toStringChain', () => {
+      const result = phantom.numbers.chain(123.45)
+        .round(1)
+        .toStringChain()  // "123.5"
+        .leftPad("0", 6)  // Adds 6 zeros: "000000123.5"
+        .value();
+      expect(result).toBe("000000123.5");
+    });
+
+    test('should convert from string chain to number chain', () => {
+      const result = phantom.strings.chain("123.45")
+        .trim()
+        .toNumberChain()
+        .round(1)
+        .value();
+      expect(result).toBe(123.5);
+    });
+
+    test('should return boolean for isEven', () => {
+      const result = phantom.numbers.chain(10)
+        .isEven();
+      expect(result).toBe(true);
+    });
+
+    test('should return boolean for isOdd', () => {
+      const result = phantom.numbers.chain(11)
+        .isOdd();
+      expect(result).toBe(true);
+    });
+
+    test('should return boolean for isPositive', () => {
+      const result = phantom.numbers.chain(10)
+        .isPositive();
+      expect(result).toBe(true);
+    });
+
+    test('should return boolean for isNegative', () => {
+      const result = phantom.numbers.chain(-10)
+        .isNegative();
+      expect(result).toBe(true);
+    });
+
+    test('should return boolean for isZero', () => {
+      const result = phantom.numbers.chain(0)
+        .isZero();
+      expect(result).toBe(true);
+    });
+
+    test('should return boolean for between', () => {
+      const result = phantom.numbers.chain(5)
+        .between(0, 10);
+      expect(result).toBe(true);
+    });
+
+    test('should return sign value', () => {
+      const result1 = phantom.numbers.chain(10)
+        .sign();
+      expect(result1).toBe(1);
+
+      const result2 = phantom.numbers.chain(-10)
+        .sign();
+      expect(result2).toBe(-1);
+
+      const result3 = phantom.numbers.chain(0)
+        .sign();
+      expect(result3).toBe(0);
+    });
+
+    test('should return string with toString', () => {
+      const result = phantom.numbers.chain(123.45)
+        .toString();
+      expect(result).toBe("123.45");
+    });
+
+    test('should handle zero in chain', () => {
+      const result = phantom.numbers.chain(0)
+        .add(10)
+        .multiply(2)
+        .value();
+      expect(result).toBe(20);
+    });
+
+    test('should handle negative numbers in chain', () => {
+      const result = phantom.numbers.chain(-10)
+        .abs()
+        .multiply(2)
+        .value();
+      expect(result).toBe(20);
+    });
+
+    test('should handle decimal operations', () => {
+      const result = phantom.numbers.chain(10.5)
+        .add(5.3)
+        .round(1)
+        .value();
+      expect(result).toBe(15.8);
+    });
+
+    test('should calculate price with tax using chain', () => {
+      const result = phantom.numbers.chain(100)
+        .multiply(1.08)  // Add 8% tax
+        .round(2)
+        .value();
+      expect(result).toBe(108);
+    });
+
+    test('should format ID with number and string chaining', () => {
+      const result = phantom.numbers.chain(123)
+        .toFixed(0)  // "123"
+        .leftPad("0", 6)  // Adds 6 zeros: "000000123"
+        .value();
+      expect(result).toBe("000000123");
+    });
+  });
 });
 
 describe('Error Handling', () => {
