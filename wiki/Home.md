@@ -4,15 +4,21 @@ Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, 
 
 ## Quick Navigation
 
+### Getting Started
 - **[Getting Started](Getting-Started)** - Installation and basic usage
+
+### Core Operations
 - **[Map Operations](Map-Operations)** - Complete guide to working with maps
-- **[String Operations](String-Operations)** - All string utilities and examples
-- **[Number Operations](Number-Operations)** - All number utilities and examples
+- **[String Operations](String-Operations)** - All string utilities and examples (includes chaining API)
+- **[Number Operations](Number-Operations)** - All number utilities and examples (includes chaining API)
 - **[JSON Operations](JSON-Operations)** - All JSON utilities and examples
 - **[Base64 Operations](Base64-Operations)** - Base64 encode/decode operations
 - **[XML Operations](XML-Operations)** - XML parse, stringify, query operations
-- **[Best Practices](Best-Practices)** - Tips and patterns for effective usage
+- **[Date Operations](Date-Operations)** - Date and duration operations using Java.time
+
+### Resources
 - **[Examples](Examples)** - Real-world usage examples
+- **[Best Practices](Best-Practices)** - Tips and patterns for effective usage
 - **[Troubleshooting](Troubleshooting)** - Common issues and solutions
 - **[API Reference](API-Reference)** - Complete API documentation
 
@@ -20,8 +26,8 @@ Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, 
 
 Phantom.js is a lightweight helper library designed specifically for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. It provides:
 
-- **26 String Operations** - Manipulation, transformation, and validation
-- **27 Number Operations** - Mathematical operations, rounding, and validation
+- **26 String Operations** - Manipulation, transformation, and validation (with chaining API)
+- **27 Number Operations** - Mathematical operations, rounding, and validation (with chaining API)
 - **15 JSON Operations** - Parse, manipulate, and query JSON objects
 - **2 Base64 Operations** - Encode and decode base64 strings
 - **5 XML Operations** - Parse, stringify, query XML documents
@@ -34,14 +40,14 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 
 ✅ **Zero Dependencies** - Pure JavaScript, no external libraries  
 ✅ **OIE Optimized** - Designed specifically for Oracle Integration Enterprise  
-✅ **Comprehensive Testing** - 186 tests covering all operations  
+✅ **Comprehensive Testing** - 284 tests covering all operations  
 ✅ **Well Documented** - Complete documentation with examples  
 ✅ **Error Safe** - Consistent error handling throughout  
-✅ **93 Total Functions** - Comprehensive utility library
+✅ **104+ Total Functions** - Comprehensive utility library with chaining APIs
 
 ## Version
 
-**Current Version:** 0.1.3
+**Current Version:** 0.1.5-BETA
 
 ## Quick Start
 
