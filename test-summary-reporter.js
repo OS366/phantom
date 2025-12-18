@@ -26,36 +26,33 @@ class TestSummaryReporter {
   }
 
   onRunComplete(contexts, results) {
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 TEST SUMMARY REPORT');
-    console.log('='.repeat(60));
-    
     let totalPassed = 0;
     let totalFailed = 0;
     let totalTests = 0;
 
-    // Sort suites for better readability
     const sortedSuites = Object.keys(this.suiteStats).sort();
-
+    
     sortedSuites.forEach((suiteName) => {
       const stats = this.suiteStats[suiteName];
       totalPassed += stats.passed;
       totalFailed += stats.failed;
       totalTests += stats.total;
-
-      const status = stats.failed === 0 ? '✅' : '❌';
-      const percentage = ((stats.passed / stats.total) * 100).toFixed(1);
-      
-      console.log(
-        `${status} ${suiteName.padEnd(30)} ${stats.passed.toString().padStart(3)}/${stats.total} passed (${percentage}%)`
-      );
     });
 
-    console.log('='.repeat(60));
-    console.log(
-      `📈 TOTAL: ${totalPassed} passed, ${totalFailed} failed, ${totalTests} total`
-    );
-    console.log('='.repeat(60) + '\n');
+    console.log('\n┌─ Test Summary ────────────────────────────────┐');
+    
+    sortedSuites.forEach((suiteName) => {
+      const stats = this.suiteStats[suiteName];
+      const status = stats.failed === 0 ? '✓' : '✗';
+      const name = suiteName.replace('phantom.', '');
+      const pct = ((stats.passed / stats.total) * 100).toFixed(0);
+      console.log(`│ ${status} ${name.padEnd(22)} ${String(stats.passed).padStart(2)}/${stats.total} (${pct}%) │`);
+    });
+
+    const status = totalFailed === 0 ? '✓' : '✗';
+    console.log(`├───────────────────────────────────────────────┤`);
+    console.log(`│ ${status} Total: ${totalPassed}/${totalTests}${totalFailed > 0 ? ` (${totalFailed} failed)` : ''}${' '.repeat(25)}│`);
+    console.log('└───────────────────────────────────────────────┘\n');
   }
 }
 

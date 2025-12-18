@@ -526,6 +526,65 @@ describe('phantom.strings', () => {
       expect(phantom.strings.operation.isBlank('hello')).toBe(false);
     });
   });
+
+  describe('wordwrap', () => {
+    test('should wrap text at default size (80)', () => {
+      const longText = 'a'.repeat(100);
+      const result = phantom.strings.operation.wordwrap(longText);
+      expect(result).toContain('\n');
+      expect(result.split('\n')[0].length).toBeLessThanOrEqual(80);
+    });
+
+    test('should wrap text at specified size', () => {
+      const text = 'hello world test';
+      const result = phantom.strings.operation.wordwrap(text, 5);
+      expect(result).toContain('\n');
+      const lines = result.split('\n');
+      lines.forEach(line => {
+        expect(line.length).toBeLessThanOrEqual(5);
+      });
+    });
+
+    test('should not wrap if text is shorter than size', () => {
+      const text = 'hello';
+      const result = phantom.strings.operation.wordwrap(text, 10);
+      expect(result).toBe('hello');
+      expect(result).not.toContain('\n');
+    });
+
+    test('should cut words when cut is true', () => {
+      const text = 'hello world';
+      const result = phantom.strings.operation.wordwrap(text, 3, true);
+      expect(result).toContain('\n');
+      const lines = result.split('\n');
+      expect(lines[0].length).toBe(3);
+    });
+
+    test('should wrap at word boundaries when cut is false', () => {
+      const text = 'hello world test';
+      const result = phantom.strings.operation.wordwrap(text, 7, false);
+      expect(result).toContain('\n');
+      // Should break at word boundaries, not in middle of words
+      expect(result.split('\n')[0]).toBe('hello');
+    });
+
+    test('should handle empty string', () => {
+      const result = phantom.strings.operation.wordwrap('', 10);
+      expect(result).toBe('');
+    });
+
+    test('should handle null/undefined', () => {
+      expect(phantom.strings.operation.wordwrap(null, 10)).toBe('');
+      expect(phantom.strings.operation.wordwrap(undefined, 10)).toBe('');
+    });
+
+    test('should use default size if invalid size provided', () => {
+      const longText = 'a'.repeat(100);
+      const result = phantom.strings.operation.wordwrap(longText, -5);
+      expect(result).toContain('\n');
+      expect(result.split('\n')[0].length).toBeLessThanOrEqual(80);
+    });
+  });
 });
 
 describe('phantom.numbers', () => {
