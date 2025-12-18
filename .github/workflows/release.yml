@@ -44,19 +44,20 @@ jobs:
         id: release_notes
         run: |
           if [ -f "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md" ]; then
-            NOTES=$(cat "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md")
+            cat "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md" > /tmp/release_notes.txt
           else
-            NOTES="## Release v${{ steps.version.outputs.version }}"
-            NOTES="${NOTES}"$'\n\n'"This release includes bug fixes and improvements."
-            NOTES="${NOTES}"$'\n\n'"### Changes"
-            NOTES="${NOTES}"$'\n'"- See commit history for details"
+            cat > /tmp/release_notes.txt << 'NOTESEOF'
+          ## Release v${{ steps.version.outputs.version }}
+
+          This release includes bug fixes and improvements.
+
+          ### Changes
+          - See commit history for details
+          NOTESEOF
           fi
-          NOTES="${NOTES//'%'/'%25'}"
-          NOTES="${NOTES//$'\n'/'%0A'}"
-          NOTES="${NOTES//$'\r'/'%0D'}"
           {
             echo "notes<<EOF"
-            echo "$NOTES"
+            cat /tmp/release_notes.txt
             echo "EOF"
           } >> $GITHUB_OUTPUT
       
