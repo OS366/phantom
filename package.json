@@ -1,6 +1,6 @@
 {
   "name": "phantom",
-  "version": "0.1.4-beta",
+  "version": "0.1.5-beta",
   "description": "Lightweight helper library for OIE scripting",
   "main": "phantom.js",
   "scripts": {
@@ -9,7 +9,9 @@
     "test:coverage": "jest --coverage",
     "test:check": "node scripts/check-test-coverage.js --strict",
     "test:check-diff": "node scripts/check-test-coverage.js --strict --diff",
-    "minify": "node minify.js"
+    "minify": "node minify.js",
+    "release": "node scripts/create-release.js",
+    "release:prepare": "node scripts/prepare-release.js"
   },
   "keywords": [
     "oie",

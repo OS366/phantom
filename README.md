@@ -2,25 +2,25 @@
 
 A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
-**Version:** 0.1.4
+**Version:** 0.1.4-BETA
 
 ## Overview
 
-Phantom.js provides a comprehensive set of utilities for working with maps, strings, numbers, JSON, base64, and XML operations in Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. All operations follow a consistent API pattern and include proper error handling.
+Phantom.js provides a comprehensive set of utilities for working with maps, strings, numbers, JSON, base64, XML, and date operations in Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting environments. All operations follow a consistent API pattern and include proper error handling.
 
 ## Statistics
 
-- **Total Functions:** 115
-  - Map Operations: 18 (5 maps with save/get/exists/delete methods)
-  - String Operations: 26
+- **Total Functions:** 104
+  - Map Operations: 20 (5 maps with save/get/exists/delete methods)
+  - String Operations: 27 (including new wordwrap function)
   - Number Operations: 27
   - JSON Operations: 15
   - Base64 Operations: 2
   - XML Operations: 5
   - Date Operations: 15
   - Duration Operations: 7
-- **Test Cases:** 221
-- **Test Coverage:** Comprehensive coverage for all operations
+- **Test Cases:** 229
+- **Test Coverage:** 100% - Comprehensive coverage for all operations
 
 ## Documentation
 
@@ -115,7 +115,7 @@ Phantom.js is a plug-and-play library - no initialization required! Once install
 
 ```javascript
 // Get version (optional)
-phantom.version;  // "0.1.4"
+phantom.version;  // "0.1.4-BETA"
 
 // Use any operation directly
 var result = phantom.strings.operation.trim("  hello  ");
@@ -140,7 +140,7 @@ See [Map Operations Wiki](https://github.com/OS366/phantom/wiki/Map-Operations) 
 
 ### String Operations
 
-26 operations including: find, leftPad, rightPad, trim, split, replace, substring, toUpperCase, toLowerCase, capitalize, reverse, length, startsWith, endsWith, contains, repeat, remove, isEmpty, isBlank, and more.
+27 operations including: find, leftPad, rightPad, trim, split, replace, substring, toUpperCase, toLowerCase, capitalize, reverse, length, startsWith, endsWith, contains, repeat, remove, isEmpty, isBlank, wordwrap, and more.
 
 See [String Operations Wiki](https://github.com/OS366/phantom/wiki/String-Operations) for details.
 

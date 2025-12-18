@@ -27,6 +27,7 @@ npm-debug.log*
 
 # Generated files
 phantom.min.js
+release/
 
 # Wiki files (wiki is in separate repository)
 wiki/
