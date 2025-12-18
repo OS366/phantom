@@ -585,6 +585,30 @@ describe('phantom.strings', () => {
       expect(result.split('\n')[0].length).toBeLessThanOrEqual(80);
     });
   });
+
+  describe('reverseWords', () => {
+    test('should reverse words in a string', () => {
+      expect(phantom.strings.operation.reverseWords('hello world')).toBe('world hello');
+      expect(phantom.strings.operation.reverseWords('one two three')).toBe('three two one');
+    });
+
+    test('should handle single word', () => {
+      expect(phantom.strings.operation.reverseWords('hello')).toBe('hello');
+    });
+
+    test('should handle empty string', () => {
+      expect(phantom.strings.operation.reverseWords('')).toBe('');
+    });
+
+    test('should handle multiple spaces', () => {
+      expect(phantom.strings.operation.reverseWords('hello   world')).toBe('world hello');
+    });
+
+    test('should handle null/undefined', () => {
+      expect(phantom.strings.operation.reverseWords(null)).toBe('');
+      expect(phantom.strings.operation.reverseWords(undefined)).toBe('');
+    });
+  });
 });
 
 describe('phantom.numbers', () => {
