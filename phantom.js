@@ -450,6 +450,13 @@
       }
       return result;
     };
+
+    phantom.strings.operation.reverseWords = function (input) {
+      var s = toStr(input);
+      if (s.length === 0) return s;
+      var words = s.split(/\s+/);
+      return words.reverse().join(" ");
+    };
   
     /* --------------------------------------------------
      * phantom.numbers.operation.*
