@@ -126,18 +126,34 @@ function getDiff(baseCommit = 'HEAD') {
     let diff = '';
     
     // For PRs, compare with base branch
-    if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
+    if (process.env.GITHUB_EVENT_NAME === 'pull_request' || process.env.CI) {
       try {
-        execSync(`git fetch origin ${baseBranch}:${baseBranch} 2>/dev/null || true`, { encoding: 'utf8' });
-        const mergeBase = execSync(`git merge-base HEAD origin/${baseBranch} 2>/dev/null || echo HEAD~1`, { encoding: 'utf8' }).trim();
-        diff = execSync(`git diff ${mergeBase} -- phantom.js`, { encoding: 'utf8' });
+        // First, fetch the base branch
+        execSync(`git fetch origin ${baseBranch}:refs/remotes/origin/${baseBranch} 2>/dev/null || true`, { encoding: 'utf8', stdio: 'ignore' });
+        // Try to get merge base
+        let mergeBase;
+        try {
+          mergeBase = execSync(`git merge-base HEAD origin/${baseBranch} 2>/dev/null`, { encoding: 'utf8' }).trim();
+        } catch (e) {
+          // If merge-base fails, try HEAD~1
+          mergeBase = 'HEAD~1';
+        }
+        diff = execSync(`git diff ${mergeBase} -- phantom.js 2>/dev/null || echo ""`, { encoding: 'utf8' });
       } catch (e) {
         // Fallback to HEAD~1
-        diff = execSync(`git diff HEAD~1 -- phantom.js`, { encoding: 'utf8' });
+        try {
+          diff = execSync(`git diff HEAD~1 -- phantom.js 2>/dev/null || echo ""`, { encoding: 'utf8' });
+        } catch (e2) {
+          diff = '';
+        }
       }
     } else {
       // For regular commits, compare with previous commit
-      diff = execSync(`git diff ${baseCommit} -- phantom.js`, { encoding: 'utf8' });
+      try {
+        diff = execSync(`git diff ${baseCommit} -- phantom.js 2>/dev/null || echo ""`, { encoding: 'utf8' });
+      } catch (e) {
+        diff = '';
+      }
     }
     return diff;
   } catch (e) {

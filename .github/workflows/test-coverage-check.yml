@@ -30,8 +30,11 @@ jobs:
       
       - name: Check test coverage for new functions
         run: |
-          echo "Checking for new functions and their test coverage..."
-          BASE_SHA=$(git merge-base HEAD ${{ github.base_ref }})
+          echo "🔍 Checking for new functions and their test coverage..."
+          # Fetch the base branch
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} || true
+          # Get the merge base
+          BASE_SHA=$(git merge-base HEAD origin/${{ github.base_ref }} 2>/dev/null || echo "HEAD~1")
           echo "Comparing against base: $BASE_SHA"
           git diff $BASE_SHA -- phantom.js > /tmp/phantom.diff || echo "No changes in phantom.js"
           
