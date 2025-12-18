@@ -295,6 +295,21 @@ phantom.strings.operation.remove("hello world", "l");
 
 ### Pattern 1: Data Cleaning Pipeline
 
+**Using Chaining (Recommended - v0.1.5-BETA+):**
+```javascript
+var raw = phantom.maps.channel.get("rawData");
+
+// Clean and normalize using chaining
+var cleanedData = phantom.strings.chain(raw)
+    .trim()
+    .toLowerCase()
+    .capitalize()
+    .value();
+
+phantom.maps.channel.save("cleanedData", cleanedData);
+```
+
+**Traditional Way (Still Works):**
 ```javascript
 var raw = phantom.maps.channel.get("rawData");
 
