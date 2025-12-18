@@ -419,6 +419,37 @@
       var s = toStr(input);
       return s.length === 0 || /^\s*$/.test(s);
     };
+
+    phantom.strings.operation.wordwrap = function (input, size, cut, everything) {
+      var s = toStr(input);
+      var wrapSize = size != null ? parseInt(size, 10) : 80;
+      if (isNaN(wrapSize) || wrapSize <= 0) wrapSize = 80;
+      var shouldCut = cut === true;
+      var wrapEverything = everything === true;
+      
+      if (s.length <= wrapSize) return s;
+      
+      var result = "";
+      var i = 0;
+      while (i < s.length) {
+        if (i > 0) result += "\n";
+        var chunk = s.substring(i, i + wrapSize);
+        if (shouldCut || wrapEverything) {
+          result += chunk;
+          i += wrapSize;
+        } else {
+          var lastSpace = chunk.lastIndexOf(" ");
+          if (lastSpace > 0 && i + lastSpace < s.length) {
+            result += chunk.substring(0, lastSpace);
+            i += lastSpace + 1;
+          } else {
+            result += chunk;
+            i += wrapSize;
+          }
+        }
+      }
+      return result;
+    };
   
     /* --------------------------------------------------
      * phantom.numbers.operation.*
