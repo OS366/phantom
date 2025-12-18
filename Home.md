@@ -40,10 +40,10 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 
 ✅ **Zero Dependencies** - Pure JavaScript, no external libraries  
 ✅ **OIE Optimized** - Designed specifically for Oracle Integration Enterprise  
-✅ **Comprehensive Testing** - 186 tests covering all operations  
+✅ **Comprehensive Testing** - 284 tests covering all operations  
 ✅ **Well Documented** - Complete documentation with examples  
 ✅ **Error Safe** - Consistent error handling throughout  
-✅ **93 Total Functions** - Comprehensive utility library
+✅ **104+ Total Functions** - Comprehensive utility library with chaining APIs
 
 ## Version
 
