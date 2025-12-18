@@ -33,8 +33,12 @@ jobs:
         run: |
           # Extract version from tag (e.g., v0.1.4-BETA -> 0.1.4-BETA)
           VERSION=${GITHUB_REF#refs/tags/v}
+          # Create filename-safe version (replace dots with underscores)
+          VERSION_FILENAME=$(echo "$VERSION" | tr '.' '_')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_filename=$VERSION_FILENAME" >> $GITHUB_OUTPUT
           echo "📦 Release version: $VERSION"
+          echo "📁 Filename version: $VERSION_FILENAME"
           echo "🏷️  Tag: v$VERSION"
       
       - name: Generate minified file
@@ -62,7 +66,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            release/phantom-${{ steps.version.outputs.version }}.zip
+            release/phantom-${{ steps.version.outputs.version_filename }}.zip
           body: ${{ steps.release_notes.outputs.notes }}
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, 'BETA') || contains(steps.version.outputs.version, 'ALPHA') || contains(steps.version.outputs.version, 'RC') }}
@@ -74,6 +78,6 @@ jobs:
         run: |
           echo "✅ Release created successfully!"
           echo "📦 Version: v${{ steps.version.outputs.version }}"
-          echo "📁 Package: release/phantom-${{ steps.version.outputs.version }}.zip"
+          echo "📁 Package: release/phantom-${{ steps.version.outputs.version_filename }}.zip"
           echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
 
