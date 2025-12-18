@@ -1,5 +1,5 @@
 /*!
- * Phantom.js v0.1.4-BETA - A product of David Labs
+ * Phantom.js v0.1.5-BETA - A product of David Labs
  * ============================================
  * Lightweight helper library for OIE scripting
  *
@@ -16,7 +16,7 @@
     var phantom = global.phantom || {};
     global.phantom = phantom;
   
-    phantom.version = "0.1.4-BETA";
+    phantom.version = "0.1.5-BETA";
   
     phantom.config = { silent: true };
   
