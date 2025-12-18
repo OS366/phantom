@@ -12,11 +12,13 @@ This release introduces comprehensive chaining support for number operations, co
 #### New Features
 
 1. **`phantom.numbers.chain()` API**
+
    - Full chaining support for all 27 number operations
    - Fluent, readable API for complex calculations
    - Seamless integration with existing operations
 
 2. **Cross-Module Chaining**
+
    - `toNumberChain()` - Convert string chains to number chains
    - `toStringChain()` - Convert number chains to string chains
    - `toFixed()` - Returns string chain for continued formatting
@@ -36,60 +38,67 @@ This release introduces comprehensive chaining support for number operations, co
 ## 🔧 Available Chain Methods
 
 ### Unary Operations
+
 - `abs()`, `round(decimals)`, `ceil()`, `floor()`, `truncate()`, `sqrt()`
 
 ### Binary Operations
+
 - `add(b)`, `subtract(b)`, `multiply(b)`, `divide(b)`, `mod(divisor)`, `pow(exponent)`
 - `min(b)`, `max(b)`, `clamp(min, max)`
 
 ### Formatting
+
 - `toFixed(decimals)` - Returns string chain
 
 ### Validation (return boolean)
+
 - `isEven()`, `isOdd()`, `isPositive()`, `isNegative()`, `isZero()`
 - `isNumber()`, `between(min, max)`, `sign()`
 
 ### Cross-Module
+
 - `toStringChain()` - Convert to string chain
 - `toNumberChain()` - Available in `phantom.strings.chain()`
 
 ## 💡 Examples
 
 ### Basic Number Chaining
+
 ```javascript
-var result = phantom.numbers.chain(10)
-    .add(5)
-    .multiply(2)
-    .round(0)
-    .value();
+var result = phantom.numbers.chain(10).add(5).multiply(2).round(0).value();
 // Returns: 30
 ```
 
 ### Cross-Module Chaining
+
 ```javascript
 // Number to String
-var formatted = phantom.numbers.chain(123.456)
-    .round(2)
-    .toFixed(2)    // Returns string chain
-    .leftPad("0", 6)
-    .value();
+var formatted = phantom.numbers
+  .chain(123.456)
+  .round(2)
+  .toFixed(2) // Returns string chain
+  .leftPad("0", 6)
+  .value();
 // Returns: "000000123.46"
 
 // String to Number
-var result = phantom.strings.chain("123.45")
-    .trim()
-    .toNumberChain()
-    .round(1)
-    .value();
+var result = phantom.strings
+  .chain("123.45")
+  .trim()
+  .toNumberChain()
+  .round(1)
+  .value();
 // Returns: 123.5
 ```
 
 ### Complex Calculation
+
 ```javascript
-var price = phantom.numbers.chain(100)
-    .multiply(1.08)  // Add 8% tax
-    .round(2)
-    .value();
+var price = phantom.numbers
+  .chain(100)
+  .multiply(1.08) // Add 8% tax
+  .round(2)
+  .value();
 // Returns: 108
 ```
 
@@ -112,6 +121,7 @@ var price = phantom.numbers.chain(100)
 No breaking changes. The new chaining API is additive and fully backward compatible.
 
 **Before:**
+
 ```javascript
 var step1 = phantom.numbers.operation.add(10, 5);
 var step2 = phantom.numbers.operation.multiply(step1, 2);
@@ -119,12 +129,9 @@ var result = phantom.numbers.operation.round(step2, 0);
 ```
 
 **After (Optional - Chaining):**
+
 ```javascript
-var result = phantom.numbers.chain(10)
-    .add(5)
-    .multiply(2)
-    .round(0)
-    .value();
+var result = phantom.numbers.chain(10).add(5).multiply(2).round(0).value();
 ```
 
 ## 📦 Files Changed
@@ -149,4 +156,3 @@ Thank you for using Phantom.js! Your feedback and contributions help make this l
 ---
 
 **Full Changelog:** [Compare v0.1.5-BETA...v0.1.6-BETA](https://github.com/OS366/phantom/compare/v0.1.5-BETA...v0.1.6-BETA)
-
