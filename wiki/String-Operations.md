@@ -418,21 +418,142 @@ var reversed = phantom.strings.operation.reverseWords(sentence);
 ```
 
 ### Data Cleaning
-```javascript
-// Clean and validate input
-var input = "  user@example.com  ";
-if (!phantom.strings.operation.isBlank(input)) {
-  var cleaned = phantom.strings.operation.trim(input);
-  // Process cleaned input
-}
-```
 
 ---
 
-## Version History
+## Chaining API (NEW in v0.1.5-BETA) 🚀
 
-- **v0.1.5-BETA**: Added `reverseWords` function
-- **v0.1.4-BETA**: Added `wordwrap` function
+### `phantom.strings.chain(input)`
+
+Chain multiple string operations together for cleaner, more readable code!
+
+**Before (without chaining):**
+```javascript
+var step1 = phantom.strings.operation.trim(raw);
+var step2 = phantom.strings.operation.toLowerCase(step1);
+var step3 = phantom.strings.operation.capitalize(step2);
+```
+
+**After (with chaining):**
+```javascript
+var result = phantom.strings.chain(raw)
+  .trim()
+  .toLowerCase()
+  .capitalize()
+  .value();
+```
+
+### Available Chainable Methods
+
+All string operations that return a string can be chained:
+
+- `trim()` - Remove leading/trailing whitespace
+- `toUpperCase()` - Convert to uppercase
+- `toLowerCase()` - Convert to lowercase
+- `capitalize()` - Capitalize first letter
+- `reverse()` - Reverse entire string
+- `reverseWords()` - Reverse word order
+- `leftTrim()` - Remove leading whitespace
+- `rightTrim()` - Remove trailing whitespace
+- `replace(searchString, replaceString)` - Replace first occurrence
+- `replaceAll(searchString, replaceString)` - Replace all occurrences
+- `remove(stringToRemove)` - Remove substring
+- `leftPad(padChar, count)` - Pad on the left
+- `rightPad(padChar, count)` - Pad on the right
+- `substring(start, end)` - Extract substring
+- `wordwrap(size, cut, everything)` - Wrap text to line length
+
+### Getting the Result
+
+Use `.value()` or `.toString()` to get the final result:
+
+```javascript
+// Method 1: Using .value()
+var result = phantom.strings.chain("  HELLO  ")
+  .trim()
+  .toUpperCase()
+  .value();
+
+// Method 2: Using .toString()
+var result = phantom.strings.chain("  HELLO  ")
+  .trim()
+  .toUpperCase()
+  .toString();
+
+// Both return: "HELLO"
+```
+
+### Examples
+
+#### Clean and Normalize
+```javascript
+var cleaned = phantom.strings.chain("  HELLO WORLD  ")
+  .trim()
+  .toLowerCase()
+  .capitalize()
+  .value();
+// Returns: "Hello world"
+```
+
+#### Complex Chaining
+```javascript
+var result = phantom.strings.chain("hello hello")
+  .replaceAll("hello", "hi")
+  .toUpperCase()
+  .value();
+// Returns: "HI HI"
+```
+
+#### Replace and Transform
+```javascript
+var result = phantom.strings.chain("hello world")
+  .replace("world", "universe")
+  .capitalize()
+  .value();
+// Returns: "Hello universe"
+```
+
+#### Word Manipulation
+```javascript
+var result = phantom.strings.chain("The quick brown fox")
+  .reverseWords()
+  .toUpperCase()
+  .value();
+// Returns: "FOX BROWN QUICK THE"
+```
+
+#### Text Formatting
+```javascript
+var result = phantom.strings.chain("  user@example.com  ")
+  .trim()
+  .toLowerCase()
+  .value();
+// Returns: "user@example.com"
+```
+
+#### Multiple Replacements
+```javascript
+var result = phantom.strings.chain("hello hello hello")
+  .replaceAll("hello", "hi")
+  .toUpperCase()
+  .value();
+// Returns: "HI HI HI"
+```
+
+### Benefits
+
+✅ **Cleaner Code** - No need for intermediate variables  
+✅ **More Readable** - Operations flow naturally  
+✅ **Less Error-Prone** - Fewer variables to manage  
+✅ **Flexible** - Chain any combination of operations  
+
+### Notes
+
+- The old way (individual function calls) still works! Chaining is optional.
+- Chaining is particularly useful when applying multiple transformations.
+- All chainable methods return the chainable object, allowing continuous chaining.
+- Use `.value()` or `.toString()` to get the final result.
+
 - **v0.1.3**: Initial release with 25 string operations
 
 ---
