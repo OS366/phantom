@@ -25,7 +25,8 @@ function getVersion() {
 
 const VERSION = getVersion();
 const RELEASE_DIR = path.join(__dirname, '..', 'release');
-const ZIP_NAME = `phantom-v${VERSION}.zip`;
+// Use shorter filename format: phantom-0.1.5-beta.zip instead of phantom-v0.1.5-beta.zip
+const ZIP_NAME = `phantom-${VERSION}.zip`;
 const ZIP_PATH = path.join(RELEASE_DIR, ZIP_NAME);
 
 // Files to include in release

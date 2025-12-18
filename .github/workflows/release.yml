@@ -62,7 +62,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            release/phantom-v${{ steps.version.outputs.version }}.zip
+            release/phantom-${{ steps.version.outputs.version }}.zip
           body: ${{ steps.release_notes.outputs.notes }}
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, 'BETA') || contains(steps.version.outputs.version, 'ALPHA') || contains(steps.version.outputs.version, 'RC') }}
@@ -74,6 +74,6 @@ jobs:
         run: |
           echo "✅ Release created successfully!"
           echo "📦 Version: v${{ steps.version.outputs.version }}"
-          echo "📁 Package: release/phantom-v${{ steps.version.outputs.version }}.zip"
+          echo "📁 Package: release/phantom-${{ steps.version.outputs.version }}.zip"
           echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
 
