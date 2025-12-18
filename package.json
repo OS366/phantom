@@ -9,7 +9,8 @@
     "test:coverage": "jest --coverage",
     "test:check": "node scripts/check-test-coverage.js --strict",
     "test:check-diff": "node scripts/check-test-coverage.js --strict --diff",
-    "minify": "node minify.js"
+    "minify": "node minify.js",
+    "release": "node scripts/create-release.js"
   },
   "keywords": [
     "oie",
