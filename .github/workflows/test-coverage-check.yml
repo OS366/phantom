@@ -1,0 +1,46 @@
+name: Test Coverage Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'phantom.js'
+      - 'phantom.test.js'
+
+jobs:
+  check-coverage:
+    name: Verify Test Coverage for New Functions
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for diff comparison
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check test coverage for new functions
+        run: |
+          echo "Checking for new functions and their test coverage..."
+          BASE_SHA=$(git merge-base HEAD ${{ github.base_ref }})
+          echo "Comparing against base: $BASE_SHA"
+          git diff $BASE_SHA -- phantom.js > /tmp/phantom.diff || echo "No changes in phantom.js"
+          
+          # Run coverage check in diff mode
+          npm run test:check-diff || {
+            echo "⚠️ Some new functions may be missing tests. Running full check..."
+            npm run test:check
+          }
+      
+      - name: Run existing tests
+        run: npm test
+

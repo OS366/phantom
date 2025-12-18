@@ -30,6 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
+      - name: Check test coverage for new functions
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "🔍 Checking if new functions have test coverage..."
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} || true
+          BASE_SHA=$(git merge-base HEAD origin/${{ github.base_ref }} 2>/dev/null || echo "HEAD~1")
+          echo "Comparing against: $BASE_SHA"
+          npm run test:check-diff || npm run test:check
+      
       - name: Run tests
         run: npm test
       
