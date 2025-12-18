@@ -478,6 +478,11 @@
           return value;
         },
         
+        // Convert to number chain
+        toNumberChain: function () {
+          return phantom.numbers.chain(value);
+        },
+        
         // String operations that can be chained
         trim: function () {
           value = phantom.strings.operation.trim(value);
@@ -718,6 +723,151 @@
     phantom.numbers.operation.truncate = function (value) {
       var n = toNumStrict(value);
       return n < 0 ? Math.ceil(n) : Math.floor(n);
+    };
+
+    /* --------------------------------------------------
+     * phantom.numbers.chain() - Chaining API
+     * Allows chaining multiple number operations
+     * -------------------------------------------------- */
+    
+    phantom.numbers.chain = function (input) {
+      var value = toNumStrict(input);
+      
+      // Chainable wrapper object
+      var chainable = {
+        // Get the final value
+        value: function () {
+          return value;
+        },
+        
+        // Get the final value as string
+        toString: function () {
+          return String(value);
+        },
+        
+        // Convert to string chain
+        toStringChain: function () {
+          return phantom.strings.chain(String(value));
+        },
+        
+        // Unary operations (modify the value)
+        abs: function () {
+          value = phantom.numbers.operation.abs(value);
+          return chainable;
+        },
+        
+        round: function (decimals) {
+          value = phantom.numbers.operation.round(value, decimals);
+          return chainable;
+        },
+        
+        ceil: function () {
+          value = phantom.numbers.operation.ceil(value);
+          return chainable;
+        },
+        
+        floor: function () {
+          value = phantom.numbers.operation.floor(value);
+          return chainable;
+        },
+        
+        truncate: function () {
+          value = phantom.numbers.operation.truncate(value);
+          return chainable;
+        },
+        
+        sqrt: function () {
+          value = phantom.numbers.operation.sqrt(value);
+          return chainable;
+        },
+        
+        // Binary operations (take second operand as parameter)
+        add: function (b) {
+          value = phantom.numbers.operation.add(value, b);
+          return chainable;
+        },
+        
+        subtract: function (b) {
+          value = phantom.numbers.operation.subtract(value, b);
+          return chainable;
+        },
+        
+        multiply: function (b) {
+          value = phantom.numbers.operation.multiply(value, b);
+          return chainable;
+        },
+        
+        divide: function (b) {
+          value = phantom.numbers.operation.divide(value, b);
+          return chainable;
+        },
+        
+        mod: function (divisor) {
+          value = phantom.numbers.operation.mod(value, divisor);
+          return chainable;
+        },
+        
+        pow: function (exponent) {
+          value = phantom.numbers.operation.pow(value, exponent);
+          return chainable;
+        },
+        
+        min: function (b) {
+          value = phantom.numbers.operation.min(value, b);
+          return chainable;
+        },
+        
+        max: function (b) {
+          value = phantom.numbers.operation.max(value, b);
+          return chainable;
+        },
+        
+        clamp: function (min, max) {
+          value = phantom.numbers.operation.clamp(value, min, max);
+          return chainable;
+        },
+        
+        // Formatting (returns string chain)
+        toFixed: function (decimals) {
+          var str = phantom.numbers.operation.toFixed(value, decimals);
+          return phantom.strings.chain(str);
+        },
+        
+        // Validation operations (return boolean, break chain)
+        isEven: function () {
+          return phantom.numbers.operation.isEven(value);
+        },
+        
+        isOdd: function () {
+          return phantom.numbers.operation.isOdd(value);
+        },
+        
+        isPositive: function () {
+          return phantom.numbers.operation.isPositive(value);
+        },
+        
+        isNegative: function () {
+          return phantom.numbers.operation.isNegative(value);
+        },
+        
+        isZero: function () {
+          return phantom.numbers.operation.isZero(value);
+        },
+        
+        isNumber: function () {
+          return phantom.numbers.operation.isNumber(value);
+        },
+        
+        between: function (min, max) {
+          return phantom.numbers.operation.between(value, min, max);
+        },
+        
+        sign: function () {
+          return phantom.numbers.operation.sign(value);
+        }
+      };
+      
+      return chainable;
     };
   
     /* --------------------------------------------------

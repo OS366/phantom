@@ -1218,19 +1218,19 @@ describe('phantom.numbers', () => {
     test('should convert to string chain with toFixed', () => {
       const result = phantom.numbers.chain(123.456)
         .round(2)
-        .toFixed(2)    // Returns string chain
-        .leftPad("0", 6)
+        .toFixed(2)    // Returns string chain: "123.46"
+        .leftPad("0", 6)  // Adds 6 zeros: "000000123.46"
         .value();
-      expect(result).toBe("0123.46");
+      expect(result).toBe("000000123.46");
     });
 
     test('should convert to string chain with toStringChain', () => {
       const result = phantom.numbers.chain(123.45)
         .round(1)
-        .toStringChain()
-        .leftPad("0", 6)
+        .toStringChain()  // "123.5"
+        .leftPad("0", 6)  // Adds 6 zeros: "000000123.5"
         .value();
-      expect(result).toBe("0123.5");
+      expect(result).toBe("000000123.5");
     });
 
     test('should convert from string chain to number chain', () => {
@@ -1332,10 +1332,10 @@ describe('phantom.numbers', () => {
 
     test('should format ID with number and string chaining', () => {
       const result = phantom.numbers.chain(123)
-        .toFixed(0)
-        .leftPad("0", 6)
+        .toFixed(0)  // "123"
+        .leftPad("0", 6)  // Adds 6 zeros: "000000123"
         .value();
-      expect(result).toBe("000123");
+      expect(result).toBe("000000123");
     });
   });
 });
