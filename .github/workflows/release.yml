@@ -47,17 +47,18 @@ jobs:
             NOTES=$(cat "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md")
           else
             NOTES="## Release v${{ steps.version.outputs.version }}"
-            NOTES="$NOTES"$'\n\n'"This release includes bug fixes and improvements."
-            NOTES="$NOTES"$'\n\n'"### Changes"
-            NOTES="$NOTES"$'\n'"- See commit history for details"
+            NOTES="${NOTES}"$'\n\n'"This release includes bug fixes and improvements."
+            NOTES="${NOTES}"$'\n\n'"### Changes"
+            NOTES="${NOTES}"$'\n'"- See commit history for details"
           fi
-          # Escape for GitHub Actions
           NOTES="${NOTES//'%'/'%25'}"
           NOTES="${NOTES//$'\n'/'%0A'}"
           NOTES="${NOTES//$'\r'/'%0D'}"
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
