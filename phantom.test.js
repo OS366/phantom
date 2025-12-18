@@ -99,7 +99,7 @@ describe('Initialization', () => {
 
   test('should initialize phantom object', () => {
     expect(global.phantom).toBeDefined();
-    expect(global.phantom.version).toBe('0.1.4-BETA');
+    expect(global.phantom.version).toBe('0.1.5-BETA');
   });
 
   test('should have default silent config', () => {
