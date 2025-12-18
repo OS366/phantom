@@ -12,21 +12,14 @@ var firstName = phantom.maps.channel.get("firstName");
 var lastName = phantom.maps.channel.get("lastName");
 var email = phantom.maps.channel.get("email");
 
-// Clean and normalize names (using chaining)
-var cleanFirstName = phantom.strings.chain(firstName)
-    .trim()
-    .capitalize()
-    .value();
+// Clean and normalize names
+var cleanFirstName = phantom.strings.operation.capitalize(
+    phantom.strings.operation.trim(firstName)
+);
 
-var cleanLastName = phantom.strings.chain(lastName)
-    .trim()
-    .capitalize()
-    .value();
-
-// Alternative: Traditional way (still works)
-// var cleanFirstName = phantom.strings.operation.capitalize(
-//     phantom.strings.operation.trim(firstName)
-// );
+var cleanLastName = phantom.strings.operation.capitalize(
+    phantom.strings.operation.trim(lastName)
+);
 
 // Validate email
 if (phantom.strings.operation.contains(email, "@") && 
@@ -123,23 +116,20 @@ Validate and clean incoming data.
 // Get raw data
 var rawData = phantom.maps.channel.get("rawData");
 
-// Validation pipeline (using chaining - cleaner!)
+// Validation pipeline
 if (!phantom.strings.operation.isBlank(rawData)) {
-    // Clean and normalize in one chain
-    var cleaned = phantom.strings.chain(rawData)
-        .trim()
-        .remove("@")
-        .remove("#")
-        .toLowerCase()
-        .capitalize()
-        .value();
+    // Step 1: Trim whitespace
+    var step1 = phantom.strings.operation.trim(rawData);
     
-    // Alternative: Traditional way (still works)
-    // var step1 = phantom.strings.operation.trim(rawData);
-    // var step2 = phantom.strings.operation.remove(step1, "@");
-    // var step3 = phantom.strings.operation.remove(step2, "#");
-    // var step4 = phantom.strings.operation.toLowerCase(step3);
-    // var cleaned = phantom.strings.operation.capitalize(step4);
+    // Step 2: Remove special characters
+    var step2 = phantom.strings.operation.remove(step1, "@");
+    var step3 = phantom.strings.operation.remove(step2, "#");
+    
+    // Step 3: Normalize case
+    var step4 = phantom.strings.operation.toLowerCase(step3);
+    
+    // Step 4: Capitalize
+    var cleaned = phantom.strings.operation.capitalize(step4);
     
     // Validate length
     if (phantom.strings.operation.length(cleaned) > 0 && 
@@ -257,21 +247,13 @@ Find and replace patterns in text.
 // Get text content
 var content = phantom.maps.channel.get("content");
 
-// Replace placeholders (using chaining)
-var processedContent = phantom.strings.chain(content)
-    .replaceAll("${name}", "John")
-    .replaceAll("${date}", "2024-01-15")
-    .replaceAll("${company}", "Acme Corp")
-    .value();
+// Replace placeholders
+var step1 = phantom.strings.operation.replaceAll(content, "${name}", "John");
+var step2 = phantom.strings.operation.replaceAll(step1, "${date}", "2024-01-15");
+var step3 = phantom.strings.operation.replaceAll(step2, "${company}", "Acme Corp");
 
 // Save processed content
-phantom.maps.channel.save("processedContent", processedContent);
-
-// Alternative: Traditional way (still works)
-// var step1 = phantom.strings.operation.replaceAll(content, "${name}", "John");
-// var step2 = phantom.strings.operation.replaceAll(step1, "${date}", "2024-01-15");
-// var step3 = phantom.strings.operation.replaceAll(step2, "${company}", "Acme Corp");
-// phantom.maps.channel.save("processedContent", step3);
+phantom.maps.channel.save("processedContent", step3);
 ```
 
 ## Example 9: Number Formatting for Display
@@ -318,19 +300,12 @@ try {
         throw new Error("Input is required");
     }
     
-    // Process data (using chaining)
-    var result = phantom.strings.chain(input)
-        .trim()
-        .toUpperCase()
-        .value();
+    // Process data
+    var processed = phantom.strings.operation.trim(input);
+    var upper = phantom.strings.operation.toUpperCase(processed);
     
     // Save result
-    phantom.maps.channel.save("result", result);
-    
-    // Alternative: Traditional way (still works)
-    // var processed = phantom.strings.operation.trim(input);
-    // var upper = phantom.strings.operation.toUpperCase(processed);
-    // phantom.maps.channel.save("result", upper);
+    phantom.maps.channel.save("result", upper);
     
 } catch (e) {
     // Handle errors
@@ -440,19 +415,13 @@ for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     var value = phantom.json.operation.get(obj, key);
     
-    // Transform value (using chaining)
+    // Transform value (example: uppercase strings)
     if (phantom.strings.operation.isBlank(value) === false) {
-        var transformed = phantom.strings.chain(value)
-            .trim()
-            .toUpperCase()
-            .value();
+        var transformed = phantom.strings.operation.toUpperCase(
+            phantom.strings.operation.trim(value)
+        );
         processed = phantom.json.operation.set(processed, key, transformed);
     }
-    
-    // Alternative: Traditional way (still works)
-    // var transformed = phantom.strings.operation.toUpperCase(
-    //     phantom.strings.operation.trim(value)
-    // );
 }
 
 // Save processed data
@@ -460,130 +429,12 @@ phantom.maps.channel.save("processedData",
     phantom.json.operation.stringify(processed));
 ```
 
-## Example 15: String Chaining - Clean User Input (NEW in v0.1.5-BETA)
-
-Use the chaining API for cleaner, more readable code when applying multiple string transformations.
-
-```javascript
-// Get user input
-var userInput = phantom.maps.channel.get("userInput");
-
-// Clean and normalize using chaining
-var cleaned = phantom.strings.chain(userInput)
-    .trim()
-    .toLowerCase()
-    .capitalize()
-    .value();
-
-phantom.maps.channel.save("cleanedInput", cleaned);
-```
-
-## Example 16: String Chaining - Email Normalization
-
-Normalize email addresses using chaining.
-
-```javascript
-// Get email
-var email = phantom.maps.channel.get("email");
-
-// Normalize email (trim, lowercase)
-var normalized = phantom.strings.chain(email)
-    .trim()
-    .toLowerCase()
-    .value();
-
-phantom.maps.channel.save("normalizedEmail", normalized);
-```
-
-## Example 17: String Chaining - Text Template Processing
-
-Process text templates with multiple replacements using chaining.
-
-```javascript
-// Get template
-var template = phantom.maps.channel.get("template");
-// Template: "Hello ${name}, your order ${orderId} is ready!"
-
-// Replace all placeholders in one chain
-var processed = phantom.strings.chain(template)
-    .replaceAll("${name}", "John Doe")
-    .replaceAll("${orderId}", "ORD-12345")
-    .replaceAll("${date}", "2024-01-15")
-    .value();
-
-phantom.maps.channel.save("processedTemplate", processed);
-// Output: "Hello John Doe, your order ORD-12345 is ready!"
-```
-
-## Example 18: String Chaining - ID Formatting
-
-Format and pad IDs using chaining.
-
-```javascript
-// Get raw ID
-var rawId = phantom.maps.channel.get("rawId");
-
-// Format ID: trim, pad, add prefix
-var formattedId = phantom.strings.chain(rawId)
-    .trim()
-    .leftPad("0", 6)
-    .value();
-
-var finalId = "ID-" + formattedId;
-phantom.maps.channel.save("formattedId", finalId);
-```
-
-## Example 19: String Chaining - Data Sanitization
-
-Sanitize user input by removing unwanted characters and normalizing.
-
-```javascript
-// Get user input
-var userInput = phantom.maps.channel.get("userInput");
-
-// Sanitize: remove special chars, trim, normalize
-var sanitized = phantom.strings.chain(userInput)
-    .trim()
-    .remove("@")
-    .remove("#")
-    .remove("$")
-    .toLowerCase()
-    .capitalize()
-    .value();
-
-phantom.maps.channel.save("sanitizedInput", sanitized);
-```
-
-## Example 20: String Chaining - Complex Text Transformation
-
-Apply multiple transformations in sequence using chaining.
-
-```javascript
-// Get text content
-var content = phantom.maps.channel.get("content");
-
-// Complex transformation chain
-var transformed = phantom.strings.chain(content)
-    .trim()
-    .replaceAll("oldTerm", "newTerm")
-    .toLowerCase()
-    .capitalize()
-    .substring(0, 100)  // Limit to 100 chars
-    .value();
-
-phantom.maps.channel.save("transformedContent", transformed);
-```
-
 ## Related Topics
 
 - [Getting Started](Getting-Started) - Learn the basics
-- [String Operations](String-Operations) - All string utilities including chaining API
+- [String Operations](String-Operations) - All string utilities
 - [Number Operations](Number-Operations) - All number utilities
 - [JSON Operations](JSON-Operations) - All JSON utilities
 - [Map Operations](Map-Operations) - Working with maps
 - [Best Practices](Best-Practices) - Tips and patterns
-
----
-
-**Note:** Examples 15-20 demonstrate the new chaining API (v0.1.5-BETA). The chaining API provides a cleaner syntax for multiple string operations. Traditional function calls still work and are shown as alternatives in earlier examples.
 
