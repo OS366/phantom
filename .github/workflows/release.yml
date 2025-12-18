@@ -46,12 +46,10 @@ jobs:
           if [ -f "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md" ]; then
             NOTES=$(cat "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md")
           else
-            NOTES="## Release v${{ steps.version.outputs.version }}
-
-This release includes bug fixes and improvements.
-
-### Changes
-- See commit history for details"
+            NOTES="## Release v${{ steps.version.outputs.version }}"
+            NOTES="$NOTES"$'\n\n'"This release includes bug fixes and improvements."
+            NOTES="$NOTES"$'\n\n'"### Changes"
+            NOTES="$NOTES"$'\n'"- See commit history for details"
           fi
           # Escape for GitHub Actions
           NOTES="${NOTES//'%'/'%25'}"
