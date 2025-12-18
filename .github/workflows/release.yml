@@ -43,17 +43,11 @@ jobs:
       - name: Get release notes
         id: release_notes
         run: |
-          if [ -f "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md" ]; then
-            cat "docs/RELEASE_NOTES_v${{ steps.version.outputs.version }}.md" > /tmp/release_notes.txt
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ -f "docs/RELEASE_NOTES_v${VERSION}.md" ]; then
+            cat "docs/RELEASE_NOTES_v${VERSION}.md" > /tmp/release_notes.txt
           else
-            cat > /tmp/release_notes.txt << 'NOTESEOF'
-          ## Release v${{ steps.version.outputs.version }}
-
-          This release includes bug fixes and improvements.
-
-          ### Changes
-          - See commit history for details
-          NOTESEOF
+            printf "## Release v%s\n\nThis release includes bug fixes and improvements.\n\n### Changes\n- See commit history for details\n" "${VERSION}" > /tmp/release_notes.txt
           fi
           {
             echo "notes<<EOF"
