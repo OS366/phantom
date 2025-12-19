@@ -26,6 +26,63 @@
  * Drag and drop is not possible for variables saved using phantom.maps.*
  */
 
+/**
+ * @typedef {Object} Phantom
+ * @property {Object} maps - Map operations
+ * @property {Object} strings - String operations
+ * @property {Object} numbers - Number operations
+ * @property {Object} json - JSON operations
+ * @property {Object} base64 - Base64 operations
+ * @property {Object} xml - XML operations
+ * @property {Object} dates - Date operations
+ * @property {string} version - Current version
+ * @property {Function} help - Show help documentation
+ * @property {Function} autocomplete - Get autocomplete suggestions
+ * @property {Function} _ - Quick reference guide
+ * @property {Object} _autocomplete - Autocomplete metadata for OIE editor
+ * @property {Function} _getSuggestions - Get suggestions for a given path
+ */
+
+/**
+ * OIE Editor Autocomplete Support
+ * 
+ * When typing "phantom." in OIE transformer editor, the following properties are available:
+ * 
+ * phantom.maps - Map operations (channel, global, connector, response, configuration)
+ *   phantom.maps.channel.save(key, value)
+ *   phantom.maps.channel.get(key)
+ *   phantom.maps.channel.exists(key)
+ *   phantom.maps.channel.delete(key)
+ * 
+ * phantom.strings - String operations
+ *   phantom.strings.operation.trim(str)
+ *   phantom.strings.operation.replace(str, search, replace)
+ *   phantom.strings.chain(str) - Chaining API
+ * 
+ * phantom.numbers - Number operations
+ *   phantom.numbers.operation.add(a, b)
+ *   phantom.numbers.operation.round(num, decimals)
+ *   phantom.numbers.chain(num) - Chaining API
+ * 
+ * phantom.json - JSON operations
+ *   phantom.json.operation.parse(str)
+ *   phantom.json.operation.stringify(obj)
+ *   phantom.json.operation.get(obj, path)
+ * 
+ * phantom.base64 - Base64 operations
+ *   phantom.base64.operation.encode(str)
+ *   phantom.base64.operation.decode(str)
+ * 
+ * phantom.xml - XML operations
+ *   phantom.xml.operation.parse(str)
+ *   phantom.xml.operation.get(xml, xpath)
+ * 
+ * phantom.dates - Date operations
+ *   phantom.dates.operation.now()
+ *   phantom.dates.operation.parse(str)
+ *   phantom.dates.format.detect(str)
+ */
+
 (function (global) {
     "use strict";
   
@@ -2478,6 +2535,107 @@
   
     // default init
     phantom.init({ silent: true });
+  
+    /* --------------------------------------------------
+     * AUTOCOMPLETE SUPPORT FOR OIE EDITOR
+     * Explicitly define all properties to ensure OIE editor can detect them
+     * -------------------------------------------------- */
+    
+    // OIE Editor Autocomplete Support
+    // Explicitly expose all properties to ensure OIE editor can detect them
+    // This pattern helps OIE's static analysis detect available properties
+    (function() {
+      // Force property access to ensure they're discoverable
+      var _props = ['maps', 'strings', 'numbers', 'json', 'base64', 'xml', 'dates', 'version', 'help', 'autocomplete', '_'];
+      for (var p = 0; p < _props.length; p++) {
+        var propName = _props[p];
+        if (phantom[propName] !== undefined) {
+          // Access property to ensure it's in the object's property list
+          void phantom[propName];
+        }
+      }
+    })();
+    
+    // Create autocomplete metadata object for OIE editor introspection
+    phantom._autocomplete = {
+      categories: ['maps', 'strings', 'numbers', 'json', 'base64', 'xml', 'dates'],
+      maps: {
+        operations: ['channel', 'global', 'connector', 'response', 'configuration'],
+        methods: ['save', 'get', 'exists', 'delete']
+      },
+      strings: {
+        operations: ['operation', 'chain'],
+        methods: ['trim', 'replace', 'split', 'substring', 'toUpperCase', 'toLowerCase', 'padLeft', 'padRight', 'leftPad', 'rightPad', 'find', 'findAll', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'length', 'reverse', 'repeat', 'remove', 'removeAll', 'toNumberChain']
+      },
+      numbers: {
+        operations: ['operation', 'chain'],
+        methods: ['parse', 'add', 'subtract', 'multiply', 'divide', 'mod', 'pow', 'round', 'ceil', 'floor', 'truncate', 'abs', 'sqrt', 'min', 'max', 'clamp', 'random', 'randomInt', 'isEven', 'isOdd', 'isPositive', 'isNegative', 'isZero', 'isNumber', 'between', 'sign', 'toFixed', 'toStringChain']
+      },
+      json: {
+        operations: ['operation'],
+        methods: ['parse', 'stringify', 'get', 'set', 'has', 'remove', 'keys', 'values', 'size', 'isEmpty', 'isNotEmpty', 'merge', 'prettyPrint', 'validate']
+      },
+      base64: {
+        operations: ['operation'],
+        methods: ['encode', 'decode']
+      },
+      xml: {
+        operations: ['operation'],
+        methods: ['parse', 'stringify', 'get', 'has', 'toString']
+      },
+      dates: {
+        operations: ['operation', 'format'],
+        methods: ['now', 'parse', 'format', 'addDays', 'addHours', 'addMinutes', 'addSeconds', 'addMonths', 'addYears', 'diffDays', 'diffHours', 'diffMinutes', 'diffSeconds', 'isBefore', 'isAfter', 'isBetween', 'detect']
+      }
+    };
+    
+    // Helper to get autocomplete suggestions (for OIE editor integration)
+    phantom._getSuggestions = function(path) {
+      if (!path || path === 'phantom' || path === '') {
+        return phantom._autocomplete.categories;
+      }
+      
+      var parts = path.split('.').slice(1); // Remove 'phantom' from path
+      if (parts.length === 0) return phantom._autocomplete.categories;
+      
+      var category = parts[0];
+      if (!phantom._autocomplete[category]) return [];
+      
+      if (parts.length === 1) {
+        // Return operations for this category
+        return phantom._autocomplete[category].operations || [];
+      }
+      
+      if (parts.length === 2) {
+        var operation = parts[1];
+        if (operation === 'operation' || operation === 'format' || operation === 'chain') {
+          return phantom._autocomplete[category].methods || [];
+        }
+        // For maps, operations are direct (channel, global, etc.)
+        if (category === 'maps') {
+          return phantom._autocomplete.maps.methods || [];
+        }
+      }
+      
+      return [];
+    };
+    
+    // OIE Editor Autocomplete: Final property assignment
+    // Ensure all properties are explicitly assigned to global.phantom for editor detection
+    global.phantom = phantom;
+    global.phantom.maps = phantom.maps;
+    global.phantom.strings = phantom.strings;
+    global.phantom.numbers = phantom.numbers;
+    global.phantom.json = phantom.json;
+    global.phantom.base64 = phantom.base64;
+    global.phantom.xml = phantom.xml;
+    global.phantom.dates = phantom.dates;
+    global.phantom.version = phantom.version;
+    global.phantom.help = phantom.help;
+    global.phantom.autocomplete = phantom.autocomplete;
+    global.phantom._ = phantom._;
+    global.phantom._autocomplete = phantom._autocomplete;
+    global.phantom._getSuggestions = phantom._getSuggestions;
   
   })(this);
   
