@@ -1,0 +1,140 @@
+name: Main CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'phantom.js'
+      - 'phantom.test.js'
+      - 'scripts/package.json'
+
+jobs:
+  ci-cd:
+    name: CI/CD Pipeline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./scripts
+        run: npm ci
+      
+      # Step 1: Run tests
+      - name: Run Tests
+        working-directory: ./scripts
+        run: npm test
+      
+      # Step 2: Check test coverage for new functions
+      - name: Check Test Coverage
+        working-directory: ./scripts
+        run: |
+          echo "🔍 Checking if new functions have test coverage..."
+          git fetch origin main:main || true
+          BASE_SHA=$(git merge-base HEAD~1 HEAD 2>/dev/null || echo "HEAD~1")
+          echo "Comparing against: $BASE_SHA"
+          npm run test:check-diff || npm run test:check
+      
+      # Step 3: Get version from package.json
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./scripts/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Detected version: $VERSION"
+      
+      # Step 4: Check if tag already exists
+      - name: Check if Tag Exists
+        id: check_tag
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tag $TAG already exists, skipping tag creation"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag $TAG does not exist, will create it"
+          fi
+      
+      # Step 5: Generate minified file
+      - name: Generate Minified File
+        if: steps.check_tag.outputs.exists == 'false'
+        working-directory: ./scripts
+        run: npm run minify
+      
+      # Step 6: Create release package
+      - name: Create Release Package
+        if: steps.check_tag.outputs.exists == 'false'
+        working-directory: ./scripts
+        run: npm run release
+      
+      # Step 7: Create Git tag
+      - name: Create Git Tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG: Auto-generated from main branch merge"
+          git push origin "$TAG"
+          echo "✅ Created and pushed tag: $TAG"
+      
+      # Step 8: Get release notes
+      - name: Get Release Notes
+        if: steps.check_tag.outputs.exists == 'false'
+        id: release_notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ -f "docs/RELEASE_NOTES_v${VERSION}.md" ]; then
+            cat "docs/RELEASE_NOTES_v${VERSION}.md" > /tmp/release_notes.txt
+          else
+            printf "## Release v%s\n\nThis release includes bug fixes and improvements.\n\n### Changes\n- See commit history for details\n" "${VERSION}" > /tmp/release_notes.txt
+          fi
+          {
+            echo "notes<<EOF"
+            cat /tmp/release_notes.txt
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+      
+      # Step 9: Create GitHub Release
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/phantom-${{ steps.version.outputs.version }}.zip
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, 'BETA') || contains(steps.version.outputs.version, 'ALPHA') || contains(steps.version.outputs.version, 'RC') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Step 10: Summary
+      - name: Pipeline Summary
+        run: |
+          if [ "${{ steps.check_tag.outputs.exists }}" == "true" ]; then
+            echo "ℹ️  Tag v${{ steps.version.outputs.version }} already exists"
+            echo "   Skipping release creation"
+          else
+            echo "✅ Release created successfully!"
+            echo "📦 Version: v${{ steps.version.outputs.version }}"
+            echo "📁 Package: release/phantom-${{ steps.version.outputs.version }}.zip"
+            echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+          fi
+
