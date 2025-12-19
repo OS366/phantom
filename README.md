@@ -192,4 +192,10 @@ See [Troubleshooting Wiki](https://github.com/OS366/phantom/wiki/Troubleshooting
 
 ## License
 
-See LICENSE file for details.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+
+**Important:** This is a copyleft license. If you use Phantom.js in your project, your project must also be licensed under GPL v3 and be open source.
+
+See [LICENSE](LICENSE) file for full license text.
+
+For more information about GPL v3, visit: https://www.gnu.org/licenses/gpl-3.0.html

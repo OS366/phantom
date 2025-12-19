@@ -19,7 +19,7 @@
     "integration"
   ],
   "author": "",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "GPL-3.0",
   "devDependencies": {
     "jest": "^29.7.0",
     "terser": "^5.44.1",
