@@ -377,6 +377,36 @@
       }
     };
   
+    // Quick reference - shows what's available after typing "phantom."
+    phantom._ = function() {
+      var output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      output += "🔍 Quick Reference: phantom.*\n";
+      output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+      output += "Available categories:\n\n";
+      
+      var categories = Object.keys(helpDocs);
+      for (var i = 0; i < categories.length; i++) {
+        var cat = categories[i];
+        output += "  phantom." + cat + "\n";
+        output += "    → " + helpDocs[cat].description + "\n";
+        output += "    → Try: phantom.help('" + cat + "')\n\n";
+      }
+      
+      output += "Helper functions:\n\n";
+      output += "  phantom.help()           - Show all categories\n";
+      output += "  phantom.help('maps')     - Show map operations\n";
+      output += "  phantom.autocomplete()  - Get available options\n";
+      output += "  phantom.version         - Get version\n";
+      output += "  phantom._               - Show this quick reference\n\n";
+      output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      return output;
+    };
+  
+    // Make it easy to see what's available - add a toString for phantom object
+    phantom.toString = function() {
+      return "Phantom.js v" + phantom.version + " - Use phantom._() or phantom.help() for help";
+    };
+  
     // Only log on error (as requested)
     function logError(msg) {
       if (typeof logger !== "undefined") {
