@@ -429,11 +429,500 @@ phantom.maps.channel.save("processedData",
     phantom.json.operation.stringify(processed));
 ```
 
+## Example 26: Patient Data Processing Pipeline (NEW in v0.1.6-BETA)
+
+Process patient medical records, calculate insurance coverage, and determine patient responsibility using chaining API.
+
+```javascript
+// Get raw patient data
+var rawPatientData = phantom.maps.channel.get("rawPatientData");
+
+// Process patient name
+var patientName = phantom.strings.chain(rawPatientData.patientName)
+    .trim()
+    .toLowerCase()
+    .capitalize()
+    .replaceAll("  ", " ")
+    .value();
+
+// Process email
+var email = phantom.strings.chain(rawPatientData.email)
+    .trim()
+    .toLowerCase()
+    .value();
+
+// Process medical records
+var medicalRecords = rawPatientData.records || [];
+var totalCharges = 0;
+var processedRecords = [];
+
+for (var i = 0; i < medicalRecords.length; i++) {
+    var record = medicalRecords[i];
+    
+    // Process procedure name
+    var procedureName = phantom.strings.chain(record.procedureName)
+        .trim()
+        .capitalize()
+        .value();
+    
+    // Process charge amount
+    var charge = phantom.strings.chain(record.charge)
+        .trim()
+        .remove("$")
+        .remove(",")
+        .toNumberChain()
+        .round(2)
+        .clamp(0, 999999.99)
+        .value();
+    
+    // Process quantity
+    var quantity = phantom.strings.chain(record.quantity)
+        .trim()
+        .toNumberChain()
+        .round(0)
+        .clamp(1, 100)
+        .value();
+    
+    // Calculate line total
+    var lineTotal = phantom.numbers.chain(charge)
+        .multiply(quantity)
+        .round(2)
+        .value();
+    
+    // Add to total charges
+    totalCharges = phantom.numbers.chain(totalCharges)
+        .add(lineTotal)
+        .round(2)
+        .value();
+    
+    processedRecords.push({
+        procedure: procedureName,
+        charge: charge,
+        quantity: quantity,
+        total: lineTotal
+    });
+}
+
+// Calculate insurance coverage (80% coverage rate)
+var coverageRate = 0.80;
+var coveredAmount = phantom.numbers.chain(totalCharges)
+    .multiply(coverageRate)
+    .round(2)
+    .value();
+
+// Calculate patient responsibility
+var patientResponsibility = phantom.numbers.chain(totalCharges)
+    .subtract(coveredAmount)
+    .round(2)
+    .value();
+
+// Format patient ID
+var patientId = phantom.strings.chain(rawPatientData.patientId)
+    .trim()
+    .toUpperCase()
+    .leftPad("0", 10)
+    .value();
+
+// Save processed data
+phantom.maps.channel.save("patientId", patientId);
+phantom.maps.channel.save("patientName", patientName);
+phantom.maps.channel.save("totalCharges", totalCharges);
+phantom.maps.channel.save("coveredAmount", coveredAmount);
+phantom.maps.channel.save("patientResponsibility", patientResponsibility);
+```
+
+## Example 27: Patient Demographics Normalization (NEW in v0.1.6-BETA)
+
+Normalize and validate patient demographics including MRN, insurance ID, and date of birth.
+
+```javascript
+// Get raw patient demographics
+var rawPatientData = phantom.maps.channel.get("rawPatientData");
+
+// Normalize first name
+var firstName = phantom.strings.chain(rawPatientData.firstName)
+    .trim()
+    .toLowerCase()
+    .capitalize()
+    .remove("'")
+    .replaceAll("  ", " ")
+    .value();
+
+// Normalize last name
+var lastName = phantom.strings.chain(rawPatientData.lastName)
+    .trim()
+    .toLowerCase()
+    .capitalize()
+    .remove("'")
+    .replaceAll("  ", " ")
+    .value();
+
+// Normalize phone number
+var phoneRaw = phantom.strings.chain(rawPatientData.phone)
+    .remove(" ")
+    .remove("-")
+    .remove("(")
+    .remove(")")
+    .remove(".")
+    .value();
+
+// Format phone: (123) 456-7890
+var phoneFormatted = "(" + phoneRaw.substring(0, 3) + ") " + 
+    phoneRaw.substring(3, 6) + "-" + phoneRaw.substring(6);
+
+// Normalize and validate age
+var age = phantom.strings.chain(rawPatientData.age)
+    .trim()
+    .toNumberChain()
+    .clamp(0, 150)
+    .round(0)
+    .value();
+
+// Normalize date of birth
+var dateOfBirth = phantom.strings.chain(rawPatientData.dateOfBirth)
+    .trim()
+    .substring(0, 10)
+    .value();
+
+// Normalize MRN (Medical Record Number)
+var mrn = phantom.strings.chain(rawPatientData.mrn)
+    .trim()
+    .toUpperCase()
+    .remove("-")
+    .remove(" ")
+    .leftPad("0", 10)
+    .value();
+
+// Normalize insurance ID
+var insuranceId = phantom.strings.chain(rawPatientData.insuranceId)
+    .trim()
+    .toUpperCase()
+    .remove("-")
+    .remove(" ")
+    .value();
+
+// Save normalized data
+phantom.maps.channel.save("firstName", firstName);
+phantom.maps.channel.save("lastName", lastName);
+phantom.maps.channel.save("phone", phoneFormatted);
+phantom.maps.channel.save("age", age);
+phantom.maps.channel.save("dateOfBirth", dateOfBirth);
+phantom.maps.channel.save("mrn", mrn);
+phantom.maps.channel.save("insuranceId", insuranceId);
+```
+
+## Example 28: Lab Results Processing Pipeline (NEW in v0.1.6-BETA)
+
+Process laboratory test results, validate against reference ranges, and detect abnormal values.
+
+```javascript
+// Get raw lab data
+var rawLabData = phantom.maps.channel.get("rawLabData");
+
+var labTests = rawLabData.tests || [];
+var processedTests = [];
+var abnormalResults = [];
+
+for (var i = 0; i < labTests.length; i++) {
+    var test = labTests[i];
+    
+    // Normalize test name
+    var testName = phantom.strings.chain(test.testName)
+        .trim()
+        .capitalize()
+        .replaceAll("  ", " ")
+        .value();
+    
+    // Process test value
+    var testValue = phantom.strings.chain(test.value)
+        .trim()
+        .remove(",")
+        .toNumberChain()
+        .round(2)
+        .value();
+    
+    // Process reference range
+    var refMin = phantom.strings.chain(test.referenceMin)
+        .trim()
+        .toNumberChain()
+        .round(2)
+        .value();
+    
+    var refMax = phantom.strings.chain(test.referenceMax)
+        .trim()
+        .toNumberChain()
+        .round(2)
+        .value();
+    
+    // Check if value is within normal range
+    var isNormal = phantom.numbers.chain(testValue)
+        .between(refMin, refMax);
+    
+    // Calculate deviation if abnormal
+    var deviation = null;
+    if (!isNormal) {
+        if (testValue < refMin) {
+            deviation = phantom.numbers.chain(refMin)
+                .subtract(testValue)
+                .round(2)
+                .value();
+        } else {
+            deviation = phantom.numbers.chain(testValue)
+                .subtract(refMax)
+                .round(2)
+                .value();
+        }
+    }
+    
+    // Format test code
+    var testCode = phantom.strings.chain(test.testCode)
+        .trim()
+        .toUpperCase()
+        .remove("-")
+        .remove(" ")
+        .leftPad("0", 6)
+        .value();
+    
+    var processedTest = {
+        testCode: testCode,
+        testName: testName,
+        value: testValue,
+        referenceMin: refMin,
+        referenceMax: refMax,
+        isNormal: isNormal,
+        deviation: deviation,
+        status: isNormal ? "Normal" : (testValue < refMin ? "Low" : "High")
+    };
+    
+    processedTests.push(processedTest);
+    
+    if (!isNormal) {
+        abnormalResults.push(processedTest);
+    }
+}
+
+// Save processed results
+phantom.maps.channel.save("processedTests", processedTests);
+phantom.maps.channel.save("abnormalResults", abnormalResults);
+```
+
+## Example 29: Medication/Prescription Processing Pipeline (NEW in v0.1.6-BETA)
+
+Process medication data with NDC codes, calculate dosages, and determine days supply.
+
+```javascript
+// Get raw medication data
+var rawMedicationData = phantom.maps.channel.get("rawMedicationData");
+
+var medications = rawMedicationData.medications || [];
+var processedMedications = [];
+var totalDailyDosage = 0;
+
+for (var i = 0; i < medications.length; i++) {
+    var medication = medications[i];
+    
+    // Normalize medication name
+    var medicationName = phantom.strings.chain(medication.name)
+        .trim()
+        .capitalize()
+        .replaceAll("  ", " ")
+        .value();
+    
+    // Normalize NDC code (National Drug Code)
+    var ndcCode = phantom.strings.chain(medication.ndcCode)
+        .trim()
+        .remove("-")
+        .remove(" ")
+        .leftPad("0", 11)
+        .value();
+    
+    // Process dosage per unit
+    var dosagePerUnit = phantom.strings.chain(medication.dosagePerUnit)
+        .trim()
+        .toNumberChain()
+        .round(2)
+        .clamp(0, 10000)
+        .value();
+    
+    // Process units per dose
+    var unitsPerDose = phantom.strings.chain(medication.unitsPerDose)
+        .trim()
+        .toNumberChain()
+        .round(0)
+        .clamp(1, 10)
+        .value();
+    
+    // Process frequency per day
+    var frequencyPerDay = phantom.strings.chain(medication.frequencyPerDay)
+        .trim()
+        .toNumberChain()
+        .round(0)
+        .clamp(1, 6)
+        .value();
+    
+    // Calculate total daily dosage
+    var dailyDosage = phantom.numbers.chain(dosagePerUnit)
+        .multiply(unitsPerDose)
+        .multiply(frequencyPerDay)
+        .round(2)
+        .value();
+    
+    // Add to total
+    totalDailyDosage = phantom.numbers.chain(totalDailyDosage)
+        .add(dailyDosage)
+        .round(2)
+        .value();
+    
+    // Process quantity
+    var quantity = phantom.strings.chain(medication.quantity)
+        .trim()
+        .toNumberChain()
+        .round(0)
+        .clamp(1, 1000)
+        .value();
+    
+    // Calculate days supply
+    var dailyUnits = phantom.numbers.chain(unitsPerDose)
+        .multiply(frequencyPerDay)
+        .round(0)
+        .value();
+    
+    var daysSupply = phantom.numbers.chain(quantity)
+        .divide(dailyUnits)
+        .round(0)
+        .value();
+    
+    // Process cost
+    var costPerUnit = phantom.strings.chain(medication.costPerUnit)
+        .trim()
+        .remove("$")
+        .remove(",")
+        .toNumberChain()
+        .round(2)
+        .clamp(0, 9999.99)
+        .value();
+    
+    // Calculate total cost
+    var totalCost = phantom.numbers.chain(costPerUnit)
+        .multiply(quantity)
+        .round(2)
+        .value();
+    
+    // Format prescription number
+    var prescriptionNumber = phantom.strings.chain(medication.prescriptionNumber)
+        .trim()
+        .toUpperCase()
+        .remove("-")
+        .leftPad("0", 10)
+        .value();
+    
+    processedMedications.push({
+        prescriptionNumber: prescriptionNumber,
+        ndcCode: ndcCode,
+        name: medicationName,
+        dailyDosage: dailyDosage,
+        quantity: quantity,
+        daysSupply: daysSupply,
+        totalCost: totalCost
+    });
+}
+
+// Save processed medications
+phantom.maps.channel.save("processedMedications", processedMedications);
+phantom.maps.channel.save("totalDailyDosage", totalDailyDosage);
+```
+
+## Example 30: Complete Healthcare Data Transformation (NEW in v0.1.6-BETA)
+
+Complete end-to-end healthcare data transformation combining all pipelines.
+
+```javascript
+// Get raw healthcare data from channel map
+var rawHealthcareData = phantom.maps.channel.get("rawHealthcareData");
+
+// Step 1: Normalize patient demographics
+var demographics = {
+    firstName: phantom.strings.chain(rawHealthcareData.firstName)
+        .trim().toLowerCase().capitalize().value(),
+    lastName: phantom.strings.chain(rawHealthcareData.lastName)
+        .trim().toLowerCase().capitalize().value(),
+    mrn: phantom.strings.chain(rawHealthcareData.mrn)
+        .trim().toUpperCase().remove("-").leftPad("0", 10).value(),
+    dateOfBirth: phantom.strings.chain(rawHealthcareData.dateOfBirth)
+        .trim().substring(0, 10).value()
+};
+
+// Step 2: Process lab results
+var labResults = rawHealthcareData.labResults || [];
+var processedLabResults = [];
+for (var i = 0; i < labResults.length; i++) {
+    var test = labResults[i];
+    var testValue = phantom.strings.chain(test.value)
+        .trim().toNumberChain().round(2).value();
+    var isNormal = phantom.numbers.chain(testValue)
+        .between(test.referenceMin, test.referenceMax);
+    
+    processedLabResults.push({
+        testName: phantom.strings.chain(test.testName).trim().capitalize().value(),
+        value: testValue,
+        isNormal: isNormal
+    });
+}
+
+// Step 3: Process medications
+var medications = rawHealthcareData.medications || [];
+var totalDailyDosage = 0;
+for (var j = 0; j < medications.length; j++) {
+    var med = medications[j];
+    var dailyDosage = phantom.strings.chain(med.dosagePerUnit)
+        .trim().toNumberChain()
+        .multiply(med.unitsPerDose)
+        .multiply(med.frequencyPerDay)
+        .round(2).value();
+    
+    totalDailyDosage = phantom.numbers.chain(totalDailyDosage)
+        .add(dailyDosage)
+        .round(2).value();
+}
+
+// Step 4: Calculate billing totals
+var totalCharges = phantom.strings.chain(rawHealthcareData.totalCharges)
+    .trim().remove("$").remove(",")
+    .toNumberChain().round(2).value();
+
+var coveredAmount = phantom.numbers.chain(totalCharges)
+    .multiply(0.80)  // 80% insurance coverage
+    .round(2).value();
+
+var patientResponsibility = phantom.numbers.chain(totalCharges)
+    .subtract(coveredAmount)
+    .round(2).value();
+
+// Step 5: Format summary
+var summary = phantom.strings.chain("")
+    .replace("", "Patient: " + demographics.firstName + " " + demographics.lastName + "\n")
+    .replace("", "MRN: " + demographics.mrn + "\n")
+    .replace("", "Lab Tests: " + processedLabResults.length + "\n")
+    .replace("", "Medications: " + medications.length + "\n")
+    .replace("", "Total Daily Dosage: " + totalDailyDosage.toFixed(2) + "mg/day\n")
+    .replace("", "Total Charges: $" + totalCharges.toFixed(2) + "\n")
+    .replace("", "Patient Responsibility: $" + patientResponsibility.toFixed(2))
+    .value();
+
+// Save all processed data
+phantom.maps.channel.save("demographics", demographics);
+phantom.maps.channel.save("labResults", processedLabResults);
+phantom.maps.channel.save("totalDailyDosage", totalDailyDosage);
+phantom.maps.channel.save("totalCharges", totalCharges);
+phantom.maps.channel.save("patientResponsibility", patientResponsibility);
+phantom.maps.channel.save("summary", summary);
+```
+
 ## Related Topics
 
 - [Getting Started](Getting-Started) - Learn the basics
-- [String Operations](String-Operations) - All string utilities
-- [Number Operations](Number-Operations) - All number utilities
+- [String Operations](String-Operations) - All string utilities including chaining API
+- [Number Operations](Number-Operations) - All number utilities including chaining API
 - [JSON Operations](JSON-Operations) - All JSON utilities
 - [Map Operations](Map-Operations) - Working with maps
 - [Best Practices](Best-Practices) - Tips and patterns
