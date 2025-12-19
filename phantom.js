@@ -1344,7 +1344,7 @@
      * (no logging on success; throw only on error)
      * -------------------------------------------------- */
   
-    phantom.dates = { operation: {} };
+    phantom.dates = { operation: {}, format: {} };
   
     // Date format constants (enum-like)
     phantom.dates.FORMAT = {
@@ -1607,6 +1607,111 @@
       }
     };
   
+    // Format detection intelligence engine
+    phantom.dates.format.detect = function (dateString) {
+      try {
+        if (dateString == null) return fail("Date string is null or undefined");
+        var s = toStr(dateString);
+        if (s.length === 0) return fail("Date string is empty");
+        
+        if (typeof java !== "undefined" && java.time) {
+          // Comprehensive list of common date/datetime formats to try
+          // Ordered by most common first
+          var formats = [
+            // ISO formats (most common)
+            { pattern: "yyyy-MM-dd'T'HH:mm:ss.SSS", name: "ISO_DATETIME_MS" },
+            { pattern: "yyyy-MM-dd'T'HH:mm:ss", name: "ISO_DATETIME" },
+            { pattern: "yyyy-MM-dd HH:mm:ss.SSS", name: "ISO_DATETIME_MS_SPACE" },
+            { pattern: "yyyy-MM-dd HH:mm:ss", name: "ISO_DATETIME_SPACE" },
+            { pattern: "yyyy-MM-dd", name: "ISO_DATE" },
+            
+            // US formats
+            { pattern: "MM/dd/yyyy HH:mm:ss", name: "US_DATETIME" },
+            { pattern: "MM/dd/yyyy", name: "US_DATE" },
+            { pattern: "M/d/yyyy HH:mm:ss", name: "US_DATETIME_SHORT" },
+            { pattern: "M/d/yyyy", name: "US_DATE_SHORT" },
+            { pattern: "MM-dd-yyyy HH:mm:ss", name: "US_DATETIME_DASH" },
+            { pattern: "MM-dd-yyyy", name: "US_DATE_DASH" },
+            
+            // EU formats
+            { pattern: "dd/MM/yyyy HH:mm:ss", name: "EU_DATETIME" },
+            { pattern: "dd/MM/yyyy", name: "EU_DATE" },
+            { pattern: "d/M/yyyy HH:mm:ss", name: "EU_DATETIME_SHORT" },
+            { pattern: "d/M/yyyy", name: "EU_DATE_SHORT" },
+            { pattern: "dd-MM-yyyy HH:mm:ss", name: "EU_DATETIME_DASH" },
+            { pattern: "dd-MM-yyyy", name: "EU_DATE_DASH" },
+            
+            // Other common formats
+            { pattern: "yyyy/MM/dd HH:mm:ss", name: "ISO_DATE_SLASH_DATETIME" },
+            { pattern: "yyyy/MM/dd", name: "ISO_DATE_SLASH" },
+            { pattern: "dd.MM.yyyy HH:mm:ss", name: "EU_DATETIME_DOT" },
+            { pattern: "dd.MM.yyyy", name: "EU_DATE_DOT" },
+            { pattern: "MM.dd.yyyy HH:mm:ss", name: "US_DATETIME_DOT" },
+            { pattern: "MM.dd.yyyy", name: "US_DATE_DOT" },
+            
+            // Time-only formats (for datetime detection)
+            { pattern: "HH:mm:ss.SSS", name: "TIME_MS" },
+            { pattern: "HH:mm:ss", name: "TIME" },
+            { pattern: "HH:mm", name: "TIME_SHORT" },
+            
+            // Year formats
+            { pattern: "yyyy", name: "YEAR" },
+            { pattern: "MM/yyyy", name: "MONTH_YEAR" },
+            { pattern: "yyyy-MM", name: "YEAR_MONTH" }
+          ];
+          
+          // Try each format
+          for (var i = 0; i < formats.length; i++) {
+            try {
+              var formatter = java.time.format.DateTimeFormatter.ofPattern(formats[i].pattern);
+              
+              // Check if it's a datetime format (contains time components)
+              var isDateTime = formats[i].pattern.indexOf("HH") >= 0 || 
+                              formats[i].pattern.indexOf("mm") >= 0 || 
+                              formats[i].pattern.indexOf("ss") >= 0;
+              
+              if (isDateTime) {
+                // Try parsing as LocalDateTime
+                try {
+                  java.time.LocalDateTime.parse(s, formatter);
+                  return {
+                    format: formats[i].pattern,
+                    name: formats[i].name,
+                    type: "datetime",
+                    valid: true
+                  };
+                } catch (e) {}
+              } else {
+                // Try parsing as LocalDate
+                try {
+                  java.time.LocalDate.parse(s, formatter);
+                  return {
+                    format: formats[i].pattern,
+                    name: formats[i].name,
+                    type: "date",
+                    valid: true
+                  };
+                } catch (e) {}
+              }
+            } catch (e) {
+              // Continue to next format
+            }
+          }
+          
+          // If no format matched, return null
+          return {
+            format: null,
+            name: null,
+            type: null,
+            valid: false
+          };
+        }
+        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
+      } catch (e) {
+        return fail("Failed to detect date format: " + (e.message || String(e)));
+      }
+    };
+
     phantom.dates.operation.format = function (date, format) {
       try {
         if (date == null) return fail("Date is null or undefined");

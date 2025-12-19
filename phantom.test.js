@@ -1933,6 +1933,230 @@ describe('phantom.dates', () => {
     });
   });
 
+  describe('format.detect', () => {
+    var originalOfPattern;
+    var originalLocalDateParse;
+    var originalLocalDateTimeParse;
+    
+    beforeEach(() => {
+      // Store originals
+      originalOfPattern = mockJavaTime.format.DateTimeFormatter.ofPattern;
+      originalLocalDateParse = mockJavaTime.LocalDate.parse;
+      originalLocalDateTimeParse = mockJavaTime.LocalDateTime.parse;
+      
+      // Create a smart mock that simulates format matching
+      mockJavaTime.format.DateTimeFormatter.ofPattern = jest.fn((pattern) => {
+        var formatter = {
+          parse: jest.fn((str) => {
+            // Simulate format matching based on pattern and string
+            var s = String(str);
+            
+            // Check if pattern matches the string structure
+            if (pattern === 'yyyy-MM-dd' && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
+              return mockLocalDate;
+            }
+            if (pattern === "yyyy-MM-dd'T'HH:mm:ss" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(s)) {
+              return mockLocalDateTime;
+            }
+            if (pattern === "yyyy-MM-dd'T'HH:mm:ss.SSS" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/.test(s)) {
+              return mockLocalDateTime;
+            }
+            if (pattern === 'yyyy-MM-dd HH:mm:ss' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s)) {
+              return mockLocalDateTime;
+            }
+            // US format: MM/dd/yyyy - month must be 01-12
+            if (pattern === 'MM/dd/yyyy' && /^(\d{2})\/(\d{2})\/(\d{4})$/.test(s)) {
+              var parts = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+              var month = parseInt(parts[1], 10);
+              if (month >= 1 && month <= 12) {
+                return mockLocalDate;
+              }
+            }
+            if (pattern === 'MM/dd/yyyy HH:mm:ss' && /^(\d{2})\/(\d{2})\/(\d{4}) \d{2}:\d{2}:\d{2}$/.test(s)) {
+              var parts = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+              var month = parseInt(parts[1], 10);
+              if (month >= 1 && month <= 12) {
+                return mockLocalDateTime;
+              }
+            }
+            // EU format: dd/MM/yyyy - day must be 01-31, month 01-12
+            if (pattern === 'dd/MM/yyyy' && /^(\d{2})\/(\d{2})\/(\d{4})$/.test(s)) {
+              var parts = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+              var day = parseInt(parts[1], 10);
+              var month = parseInt(parts[2], 10);
+              // If day > 12, it's likely EU format (day first)
+              // If month > 12, it's definitely EU format
+              if (day > 12 || month > 12) {
+                return mockLocalDate;
+              }
+              // Ambiguous case - try both, but prefer EU if day > 12
+              if (day > 12) {
+                return mockLocalDate;
+              }
+            }
+            if (pattern === 'dd/MM/yyyy HH:mm:ss' && /^(\d{2})\/(\d{2})\/(\d{4}) \d{2}:\d{2}:\d{2}$/.test(s)) {
+              var parts = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+              var day = parseInt(parts[1], 10);
+              var month = parseInt(parts[2], 10);
+              // If day > 12, it's likely EU format (day first)
+              if (day > 12 || month > 12) {
+                return mockLocalDateTime;
+              }
+            }
+            if (pattern === 'MM-dd-yyyy' && /^\d{2}-\d{2}-\d{4}$/.test(s)) {
+              return mockLocalDate;
+            }
+            if (pattern === 'dd.MM.yyyy' && /^\d{2}\.\d{2}\.\d{4}$/.test(s)) {
+              return mockLocalDate;
+            }
+            
+            // If no match, throw error
+            throw new Error('Parse failed');
+          })
+        };
+        return formatter;
+      });
+      
+      // Mock LocalDate.parse to work with formatter
+      mockJavaTime.LocalDate.parse = jest.fn((str, formatter) => {
+        if (formatter) {
+          return formatter.parse(str);
+        }
+        // Default ISO format
+        if (/^\d{4}-\d{2}-\d{2}$/.test(String(str))) {
+          return mockLocalDate;
+        }
+        throw new Error('Parse failed');
+      });
+      
+      // Mock LocalDateTime.parse to work with formatter
+      mockJavaTime.LocalDateTime.parse = jest.fn((str, formatter) => {
+        if (formatter) {
+          return formatter.parse(str);
+        }
+        // Default ISO format
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(String(str))) {
+          return mockLocalDateTime;
+        }
+        throw new Error('Parse failed');
+      });
+    });
+
+    test('should detect ISO date format', () => {
+      var result = phantom.dates.format.detect('2024-12-16');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('date');
+      expect(result.format).toBe('yyyy-MM-dd');
+      expect(result.name).toBe('ISO_DATE');
+    });
+
+    test('should detect ISO datetime format', () => {
+      var result = phantom.dates.format.detect("2024-12-16T14:30:00");
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('datetime');
+      expect(result.format).toBe("yyyy-MM-dd'T'HH:mm:ss");
+      expect(result.name).toBe('ISO_DATETIME');
+    });
+
+    test('should detect ISO datetime with milliseconds', () => {
+      var result = phantom.dates.format.detect("2024-12-16T14:30:00.123");
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('datetime');
+      expect(result.format).toBe("yyyy-MM-dd'T'HH:mm:ss.SSS");
+      expect(result.name).toBe('ISO_DATETIME_MS');
+    });
+
+    test('should detect US date format', () => {
+      var result = phantom.dates.format.detect('12/16/2024');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('date');
+      expect(result.format).toBe('MM/dd/yyyy');
+      expect(result.name).toBe('US_DATE');
+    });
+
+    test('should detect US datetime format', () => {
+      var result = phantom.dates.format.detect('12/16/2024 14:30:00');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('datetime');
+      expect(result.format).toBe('MM/dd/yyyy HH:mm:ss');
+      expect(result.name).toBe('US_DATETIME');
+    });
+
+    test('should detect EU date format', () => {
+      var result = phantom.dates.format.detect('16/12/2024');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('date');
+      expect(result.format).toBe('dd/MM/yyyy');
+      expect(result.name).toBe('EU_DATE');
+    });
+
+    test('should detect EU datetime format', () => {
+      var result = phantom.dates.format.detect('16/12/2024 14:30:00');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('datetime');
+      expect(result.format).toBe('dd/MM/yyyy HH:mm:ss');
+      expect(result.name).toBe('EU_DATETIME');
+    });
+
+    test('should return invalid for unrecognized format', () => {
+      var result = phantom.dates.format.detect('invalid-date-format');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(false);
+      expect(result.format).toBeNull();
+      expect(result.name).toBeNull();
+      expect(result.type).toBeNull();
+    });
+
+    test('should fail on null/undefined input', () => {
+      expect(() => phantom.dates.format.detect(null)).toThrow();
+      expect(() => phantom.dates.format.detect(undefined)).toThrow();
+    });
+
+    test('should fail on empty string', () => {
+      expect(() => phantom.dates.format.detect('')).toThrow();
+    });
+
+    test('should fail without Java.time', () => {
+      delete global.java.time;
+      expect(() => phantom.dates.format.detect('2024-12-16')).toThrow();
+      global.java.time = mockJavaTime;
+    });
+
+    test('should detect ISO datetime with space separator', () => {
+      var result = phantom.dates.format.detect('2024-12-16 14:30:00');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('datetime');
+      expect(result.format).toBe('yyyy-MM-dd HH:mm:ss');
+      expect(result.name).toBe('ISO_DATETIME_SPACE');
+    });
+
+    test('should detect date with dash separators (US)', () => {
+      var result = phantom.dates.format.detect('12-16-2024');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('date');
+      expect(result.format).toBe('MM-dd-yyyy');
+      expect(result.name).toBe('US_DATE_DASH');
+    });
+
+    test('should detect date with dot separators (EU)', () => {
+      var result = phantom.dates.format.detect('16.12.2024');
+      expect(result).toBeDefined();
+      expect(result.valid).toBe(true);
+      expect(result.type).toBe('date');
+      expect(result.format).toBe('dd.MM.yyyy');
+      expect(result.name).toBe('EU_DATE_DOT');
+    });
+  });
+
   describe('UNIT constants', () => {
     test('should have unit constants', () => {
       expect(phantom.dates.UNIT.DAYS).toBe('DAYS');
