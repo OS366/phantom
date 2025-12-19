@@ -39,7 +39,7 @@ function exec(command, options = {}) {
 }
 
 // Get version from package.json
-const packageJsonPath = path.join(__dirname, '..', 'package.json');
+const packageJsonPath = path.join(__dirname, 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const version = packageJson.version;
 const tagName = `v${version}`;

@@ -28,10 +28,12 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
+        working-directory: ./scripts
         run: npm ci
       
       - name: Check test coverage for new functions
         if: github.event_name == 'pull_request'
+        working-directory: ./scripts
         run: |
           echo "🔍 Checking if new functions have test coverage..."
           git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} || true
@@ -40,6 +42,7 @@ jobs:
           npm run test:check-diff || npm run test:check
       
       - name: Run tests
+        working-directory: ./scripts
         run: npm test
       
       - name: Test Results Summary

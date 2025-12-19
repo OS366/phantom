@@ -26,9 +26,11 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
+        working-directory: ./scripts
         run: npm ci
       
       - name: Check test coverage for new functions
+        working-directory: ./scripts
         run: |
           echo "🔍 Checking for new functions and their test coverage..."
           # Fetch the base branch
@@ -45,5 +47,6 @@ jobs:
           }
       
       - name: Run existing tests
+        working-directory: ./scripts
         run: npm test
 

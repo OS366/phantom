@@ -7,11 +7,11 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:check": "node scripts/check-test-coverage.js --strict",
-    "test:check-diff": "node scripts/check-test-coverage.js --strict --diff",
+    "test:check": "node check-test-coverage.js --strict",
+    "test:check-diff": "node check-test-coverage.js --strict --diff",
     "minify": "node minify.js",
-    "release": "node scripts/create-release.js",
-    "release:prepare": "node scripts/prepare-release.js"
+    "release": "node create-release.js",
+    "release:prepare": "node prepare-release.js"
   },
   "keywords": [
     "oie",
@@ -31,14 +31,14 @@
       "**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "phantom.js"
+      "../phantom.js"
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
     "reporters": [
       "default",
-      "<rootDir>/test-summary-reporter.js"
+      "<rootDir>/../test-summary-reporter.js"
     ]
   }
 }

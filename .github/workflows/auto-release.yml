@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'package.json'
+      - 'scripts/package.json'
       - 'phantom.js'
 
 jobs:
@@ -30,12 +30,13 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
+        working-directory: ./scripts
         run: npm ci
       
       - name: Get version from package.json
         id: version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(node -p "require('./scripts/package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Detected version: $VERSION"
       

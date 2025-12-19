@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
+const path = require('path');
 const UglifyJS = require('uglify-js');
 
-const sourceCode = fs.readFileSync('phantom.js', 'utf8');
+const sourceCode = fs.readFileSync(path.join(__dirname, '..', 'phantom.js'), 'utf8');
 
 // Remove the header comment and extract just the code
 const codeStart = sourceCode.indexOf('(function (global)');
@@ -29,7 +30,8 @@ if (result.error) {
 }
 
 // Read version from package.json
-const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const packageJsonPath = path.join(__dirname, 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const version = packageJson.version;
 
 // Add banner with version (uppercase BETA for consistency)
@@ -37,7 +39,7 @@ const versionBanner = version.replace(/-beta$/i, '-BETA');
 const banner = `/*! Phantom.js v${versionBanner} - a product by David Labs */\n`;
 const minified = banner + result.code;
 
-fs.writeFileSync('phantom.min.js', minified, 'utf8');
+fs.writeFileSync(path.join(__dirname, '..', 'phantom.min.js'), minified, 'utf8');
 console.log('Minified file created: phantom.min.js');
 console.log('Original size:', sourceCode.length, 'bytes');
 console.log('Minified size:', minified.length, 'bytes');

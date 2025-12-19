@@ -67,7 +67,7 @@ packageJson.version = newVersion;
 fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
 
 // Update phantom.js
-const phantomJsPath = path.join(__dirname, 'phantom.js');
+const phantomJsPath = path.join(__dirname, '..', 'phantom.js');
 updateVersionInFile(phantomJsPath, currentVersion, newVersion);
 
 console.log(`Version updated to ${newVersion} in package.json and phantom.js`);

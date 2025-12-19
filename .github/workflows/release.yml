@@ -26,6 +26,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
+        working-directory: ./scripts
         run: npm ci
       
       - name: Extract version from tag
@@ -38,9 +39,11 @@ jobs:
           echo "🏷️  Tag: v$VERSION"
       
       - name: Generate minified file
+        working-directory: ./scripts
         run: npm run minify
       
       - name: Create release package
+        working-directory: ./scripts
         run: npm run release
       
       - name: Get release notes
