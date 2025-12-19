@@ -33,66 +33,107 @@ jobs:
       
       - name: Install dependencies
         working-directory: ./scripts
-        run: npm ci
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📦 Installing Dependencies"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📥 Running npm ci..."
+          npm ci
+          echo "✅ Dependencies installed successfully"
       
       # Step 1: Run tests
       - name: Run Tests
         working-directory: ./scripts
-        run: npm test
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🧪 Step 1/10: Running Test Suite"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📋 Executing all test cases..."
+          npm test
+          echo "✅ Tests completed successfully"
       
       # Step 2: Check test coverage for new functions
       - name: Check Test Coverage
         working-directory: ./scripts
         run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Step 2/10: Checking Test Coverage"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🔍 Checking if new functions have test coverage..."
           git fetch origin main:main || true
           BASE_SHA=$(git merge-base HEAD~1 HEAD 2>/dev/null || echo "HEAD~1")
-          echo "Comparing against: $BASE_SHA"
+          echo "📌 Comparing against commit: $BASE_SHA"
           npm run test:check-diff || npm run test:check
+          echo "✅ Coverage check completed"
       
       # Step 3: Get version from package.json
       - name: Get Version
         id: version
         run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📦 Step 3/10: Detecting Version"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 Reading version from package.json..."
           VERSION=$(node -p "require('./scripts/package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Detected version: $VERSION"
+          echo "✅ Detected version: $VERSION"
       
       # Step 4: Check if tag already exists
       - name: Check if Tag Exists
         id: check_tag
         run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🏷️  Step 4/10: Checking Git Tag"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           TAG="v${{ steps.version.outputs.version }}"
+          echo "🔍 Checking if tag $TAG already exists..."
           if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  Tag $TAG already exists, skipping tag creation"
+            echo "⚠️  Tag $TAG already exists, skipping release creation"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "✅ Tag $TAG does not exist, will create it"
+            echo "✅ Tag $TAG does not exist, proceeding with release"
           fi
       
       # Step 5: Generate minified file
       - name: Generate Minified File
         if: steps.check_tag.outputs.exists == 'false'
         working-directory: ./scripts
-        run: npm run minify
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🗜️  Step 5/10: Generating Minified File"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📝 Minifying phantom.js..."
+          npm run minify
+          echo "✅ Minified file created: phantom.min.js"
       
       # Step 6: Create release package
       - name: Create Release Package
         if: steps.check_tag.outputs.exists == 'false'
         working-directory: ./scripts
-        run: npm run release
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📦 Step 6/10: Creating Release Package"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📋 Packaging files into zip archive..."
+          npm run release
+          echo "✅ Release package created successfully"
       
       # Step 7: Create Git tag
       - name: Create Git Tag
         if: steps.check_tag.outputs.exists == 'false'
         run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🏷️  Step 7/10: Creating Git Tag"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           TAG="v${{ steps.version.outputs.version }}"
+          echo "📝 Creating annotated tag: $TAG"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release $TAG: Auto-generated from main branch merge"
+          echo "📤 Pushing tag to remote..."
           git push origin "$TAG"
-          echo "✅ Created and pushed tag: $TAG"
+          echo "✅ Tag $TAG created and pushed successfully"
       
       # Step 8: Generate release notes automatically
       - name: Generate Release Notes
@@ -100,10 +141,14 @@ jobs:
         id: release_notes
         working-directory: ./scripts
         run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📝 Step 8/10: Generating Release Notes"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           VERSION="${{ steps.version.outputs.version }}"
-          echo "📝 Generating release notes for v${VERSION}..."
+          echo "📋 Analyzing commits since last release..."
+          echo "🔍 Extracting features, fixes, and changes..."
           node generate-release-notes.js "${VERSION}" > /tmp/release_notes.txt || {
-            echo "⚠️  Failed to generate release notes, using default"
+            echo "⚠️  Failed to generate release notes, using default template"
             printf "## Release v%s\n\nThis release includes bug fixes and improvements.\n\n### Changes\n- See commit history for details\n" "${VERSION}" > /tmp/release_notes.txt
           }
           {
@@ -111,6 +156,7 @@ jobs:
             cat /tmp/release_notes.txt
             echo "EOF"
           } >> $GITHUB_OUTPUT
+          echo "✅ Release notes generated successfully"
       
       # Step 9: Create GitHub Release
       - name: Create GitHub Release
@@ -129,6 +175,28 @@ jobs:
       # Step 10: Summary
       - name: Pipeline Summary
         run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Step 10/10: Pipeline Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          if [ "${{ steps.check_tag.outputs.exists }}" == "false" ]; then
+            echo "🎉 Release v${{ steps.version.outputs.version }} created successfully!"
+            echo ""
+            echo "📦 Release Package:"
+            echo "   release/phantom-${{ steps.version.outputs.version }}.zip"
+            echo ""
+            echo "🏷️  Git Tag:"
+            echo "   v${{ steps.version.outputs.version }}"
+            echo ""
+            echo "🌐 GitHub Release:"
+            echo "   https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+          else
+            echo "ℹ️  Tag v${{ steps.version.outputs.version }} already exists"
+            echo "   Skipping release creation"
+          fi
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           if [ "${{ steps.check_tag.outputs.exists }}" == "true" ]; then
             echo "ℹ️  Tag v${{ steps.version.outputs.version }} already exists"
             echo "   Skipping release creation"
