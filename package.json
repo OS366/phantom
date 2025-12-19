@@ -1,0 +1,24 @@
+{
+  "name": "phantom",
+  "version": "0.1.6-beta",
+  "description": "Lightweight helper library for OIE scripting",
+  "private": true,
+  "scripts": {
+    "test": "cd scripts && npm test",
+    "test:watch": "cd scripts && npm run test:watch",
+    "test:coverage": "cd scripts && npm run test:coverage",
+    "test:check": "cd scripts && npm run test:check",
+    "test:check-diff": "cd scripts && npm run test:check-diff",
+    "minify": "cd scripts && npm run minify",
+    "release": "cd scripts && npm run release",
+    "release:prepare": "cd scripts && npm run release:prepare"
+  },
+  "keywords": [
+    "oie",
+    "oracle",
+    "integration"
+  ],
+  "author": "",
+  "license": "GPL-3.0"
+}
+
