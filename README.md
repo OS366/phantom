@@ -206,6 +206,15 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 
 **Important:** This is a copyleft license. If you use Phantom.js in your project, your project must also be licensed under GPL v3 and be open source.
 
+### Attribution Requirement
+
+**"Product of David Labs"** - When you fork, modify, or distribute this software, you MUST maintain the original attribution notice "Product of David Labs" in all copies and modified versions. This includes:
+- Keeping the copyright notice in the source code header
+- Preserving the "Product of David Labs" attribution in documentation
+- Including this attribution when distributing modified versions
+
+This requirement ensures that David Labs receives proper credit for the original work, even in derivative versions.
+
 See [LICENSE](LICENSE) file for full license text.
 
 For more information about GPL v3, visit: https://www.gnu.org/licenses/gpl-3.0.html

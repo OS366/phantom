@@ -1,9 +1,17 @@
 /*!
- * Phantom.js v0.1.6-BETA - A product of David Labs
+ * Phantom.js v0.1.6-BETA
  * ============================================
+ * A product of David Labs
+ * Copyright (C) 2025 OS366 / David Labs
+ * 
  * Lightweight helper library for OIE scripting
  *
  * Documentation: https://github.com/OS366/phantom/wiki
+ * 
+ * LICENSE: GNU General Public License v3.0 (GPL-3.0)
+ * This software is open source and free to use, modify, and distribute
+ * under the terms of GPL v3. However, you MUST maintain the attribution
+ * "Product of David Labs" in all copies and modified versions.
  *
  * Available Categories (type "phantom." to see):
  *   - phantom.maps       - Map operations (channel, global, connector, response, configuration)

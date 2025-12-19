@@ -1,20 +1,31 @@
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
- Copyright (C) 2025 OS366
+Copyright (C) 2025 OS366 / David Labs
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+IMPORTANT ATTRIBUTION REQUIREMENT:
+-----------------------------------
+This software is a product of David Labs. When you distribute, modify, or 
+fork this software, you MUST maintain the original attribution notice 
+"Product of David Labs" in all copies and modified versions. This includes:
+- Keeping the copyright notice in the source code header
+- Preserving the "Product of David Labs" attribution in documentation
+- Including this attribution requirement when distributing modified versions
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+This requirement is in addition to the standard GPL v3 terms below.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
 
