@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
       
       - name: Install dependencies
         working-directory: ./scripts
