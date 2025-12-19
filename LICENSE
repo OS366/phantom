@@ -3,16 +3,41 @@
 
 Copyright (C) 2025 OS366 / David Labs
 
-IMPORTANT ATTRIBUTION REQUIREMENT:
------------------------------------
-This software is a product of David Labs. When you distribute, modify, or 
-fork this software, you MUST maintain the original attribution notice 
-"Product of David Labs" in all copies and modified versions. This includes:
-- Keeping the copyright notice in the source code header
-- Preserving the "Product of David Labs" attribution in documentation
-- Including this attribution requirement when distributing modified versions
+============================================================================
+IMPORTANT ATTRIBUTION REQUIREMENT - MUST BE PRESERVED IN ALL VERSIONS
+============================================================================
 
-This requirement is in addition to the standard GPL v3 terms below.
+This software is a product of David Labs. 
+
+When you distribute, modify, fork, or create derivative works of this 
+software, you MUST maintain the original attribution notice "Product of 
+David Labs" in ALL copies and modified versions. This is a legally 
+enforceable requirement under GPL v3 Section 7(b).
+
+REQUIREMENTS:
+------------
+1. Source Code: Keep the copyright notice and "Product of David Labs" 
+   attribution in the source code header of all files derived from this Program.
+
+2. Documentation: Preserve the "Product of David Labs" attribution in any 
+   documentation accompanying the Program or modified versions.
+
+3. Legal Notices: Include this attribution in any Appropriate Legal Notices 
+   displayed by works containing this Program.
+
+4. Modified Versions: When you modify this software, you must:
+   - Keep the original "Product of David Labs" attribution
+   - Add your own copyright notice for your modifications
+   - Clearly indicate what you changed
+   - Maintain this attribution requirement in your license terms
+
+5. Distribution: When distributing copies or modified versions, you must 
+   include this attribution requirement in your license terms.
+
+This requirement is in addition to the standard GPL v3 terms below and 
+cannot be removed or modified. Failure to comply with this attribution 
+requirement constitutes a violation of this License.
+============================================================================
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
