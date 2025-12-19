@@ -1,25 +1,26 @@
 /**
- * Complex Data Transformation Pipeline Example
+ * Complex Healthcare Data Transformation Pipeline Example
  * 
- * This example demonstrates a real-world data transformation pipeline
- * using Phantom.js chaining API for processing order data.
+ * This example demonstrates a real-world healthcare data transformation pipeline
+ * using Phantom.js chaining API for processing patient data, medical records,
+ * lab results, and billing information.
  * 
- * Scenario: Process raw order data from multiple sources, validate,
- * transform, calculate totals, and format for display.
+ * Scenario: Process raw healthcare data from multiple sources, validate,
+ * transform, calculate metrics, and format for display.
  */
 
 // ============================================
-// EXAMPLE 1: Order Processing Pipeline
+// EXAMPLE 1: Patient Data Processing Pipeline
 // ============================================
 
-function processOrderPipeline(rawOrderData) {
+function processPatientDataPipeline(rawPatientData) {
   /**
-   * Input: Raw order data from external system
-   * Output: Cleaned, validated, and formatted order data
+   * Input: Raw patient data from external system
+   * Output: Cleaned, validated, and formatted patient data
    */
   
-  // Step 1: Extract and clean customer name
-  var customerName = phantom.strings.chain(rawOrderData.customerName)
+  // Step 1: Extract and clean patient name
+  var patientName = phantom.strings.chain(rawPatientData.patientName)
     .trim()                    // Remove whitespace
     .toLowerCase()             // Normalize case
     .capitalize()              // Capitalize first letter
@@ -27,34 +28,37 @@ function processOrderPipeline(rawOrderData) {
     .value();
   
   // Step 2: Clean and validate email
-  var email = phantom.strings.chain(rawOrderData.email)
+  var email = phantom.strings.chain(rawPatientData.email)
     .trim()
     .toLowerCase()
     .value();
   
-  // Step 3: Process order items and calculate totals
-  var orderItems = rawOrderData.items || [];
-  var subtotal = 0;
-  var processedItems = [];
+  // Step 3: Process medical records and calculate metrics
+  var medicalRecords = rawPatientData.records || [];
+  var totalCharges = 0;
+  var processedRecords = [];
   
-  for (var i = 0; i < orderItems.length; i++) {
-    var item = orderItems[i];
+  for (var i = 0; i < medicalRecords.length; i++) {
+    var record = medicalRecords[i];
     
-    // Process item name
-    var itemName = phantom.strings.chain(item.name)
+    // Process procedure name
+    var procedureName = phantom.strings.chain(record.procedureName)
       .trim()
       .capitalize()
       .value();
     
-    // Process price (handle string or number)
-    var price = phantom.strings.chain(item.price)
+    // Process charge amount (handle string or number)
+    var charge = phantom.strings.chain(record.charge)
       .trim()
+      .remove("$")
+      .remove(",")
       .toNumberChain()         // Convert to number chain
       .round(2)                // Round to 2 decimals
+      .clamp(0, 999999.99)     // Reasonable charge range
       .value();
     
-    // Process quantity
-    var quantity = phantom.strings.chain(item.quantity)
+    // Process quantity (number of procedures)
+    var quantity = phantom.strings.chain(record.quantity)
       .trim()
       .toNumberChain()
       .round(0)                // Whole numbers only
@@ -62,87 +66,88 @@ function processOrderPipeline(rawOrderData) {
       .value();
     
     // Calculate line total
-    var lineTotal = phantom.numbers.chain(price)
+    var lineTotal = phantom.numbers.chain(charge)
       .multiply(quantity)
       .round(2)
       .value();
     
-    // Add to subtotal
-    subtotal = phantom.numbers.chain(subtotal)
+    // Add to total charges
+    totalCharges = phantom.numbers.chain(totalCharges)
       .add(lineTotal)
       .round(2)
       .value();
     
-    processedItems.push({
-      name: itemName,
-      price: price,
+    processedRecords.push({
+      procedure: procedureName,
+      charge: charge,
       quantity: quantity,
       total: lineTotal
     });
   }
   
-  // Step 4: Calculate tax (8% tax rate)
-  var taxRate = 0.08;
-  var tax = phantom.numbers.chain(subtotal)
-    .multiply(taxRate)
+  // Step 4: Calculate insurance coverage (80% coverage rate)
+  var coverageRate = 0.80;
+  var coveredAmount = phantom.numbers.chain(totalCharges)
+    .multiply(coverageRate)
     .round(2)
     .value();
   
-  // Step 5: Calculate total
-  var total = phantom.numbers.chain(subtotal)
-    .add(tax)
+  // Step 5: Calculate patient responsibility
+  var patientResponsibility = phantom.numbers.chain(totalCharges)
+    .subtract(coveredAmount)
     .round(2)
     .value();
   
-  // Step 6: Format order ID
-  var orderId = phantom.strings.chain(rawOrderData.orderId)
+  // Step 6: Format patient ID
+  var patientId = phantom.strings.chain(rawPatientData.patientId)
     .trim()
     .toUpperCase()
-    .leftPad("0", 8)           // Pad to 8 digits
+    .leftPad("0", 10)          // Pad to 10 digits
     .value();
   
   // Step 7: Format total for display
-  var formattedTotal = phantom.numbers.chain(total)
+  var formattedTotal = phantom.numbers.chain(totalCharges)
     .toFixed(2)               // Returns string chain
     .leftPad("$", 1)          // Add currency symbol
     .value();
   
-  // Step 8: Create formatted order summary
-  var orderSummary = phantom.strings.chain("")
-    .replace("", "Order #" + orderId + "\n")
-    .replace("", "Customer: " + customerName + "\n")
+  // Step 8: Create formatted patient summary
+  var patientSummary = phantom.strings.chain("")
+    .replace("", "Patient ID: " + patientId + "\n")
+    .replace("", "Patient: " + patientName + "\n")
     .replace("", "Email: " + email + "\n")
-    .replace("", "Items: " + processedItems.length + "\n")
-    .replace("", "Subtotal: $" + subtotal.toFixed(2) + "\n")
-    .replace("", "Tax: $" + tax.toFixed(2) + "\n")
+    .replace("", "Records: " + processedRecords.length + "\n")
+    .replace("", "Total Charges: $" + totalCharges.toFixed(2) + "\n")
+    .replace("", "Insurance Coverage: $" + coveredAmount.toFixed(2) + "\n")
+    .replace("", "Patient Responsibility: $" + patientResponsibility.toFixed(2) + "\n")
     .replace("", "Total: " + formattedTotal)
     .value();
   
   return {
-    orderId: orderId,
-    customerName: customerName,
+    patientId: patientId,
+    patientName: patientName,
     email: email,
-    items: processedItems,
-    subtotal: subtotal,
-    tax: tax,
-    total: total,
+    records: processedRecords,
+    totalCharges: totalCharges,
+    coveredAmount: coveredAmount,
+    patientResponsibility: patientResponsibility,
     formattedTotal: formattedTotal,
-    summary: orderSummary
+    summary: patientSummary
   };
 }
 
 // ============================================
-// EXAMPLE 2: User Data Normalization Pipeline
+// EXAMPLE 2: Patient Demographics Normalization Pipeline
 // ============================================
 
-function normalizeUserData(rawUserData) {
+function normalizePatientDemographics(rawPatientData) {
   /**
-   * Input: Raw user data from multiple sources
-   * Output: Normalized and validated user data
+   * Input: Raw patient demographics from multiple sources
+   * Output: Normalized and validated patient demographics
    */
   
   // Normalize first name
-  var firstName = phantom.strings.chain(rawUserData.firstName)
+  var firstName = phantom.strings.chain(rawPatientData.firstName)
     .trim()
     .toLowerCase()
     .capitalize()
@@ -151,7 +156,7 @@ function normalizeUserData(rawUserData) {
     .value();
   
   // Normalize last name
-  var lastName = phantom.strings.chain(rawUserData.lastName)
+  var lastName = phantom.strings.chain(rawPatientData.lastName)
     .trim()
     .toLowerCase()
     .capitalize()
@@ -166,7 +171,7 @@ function normalizeUserData(rawUserData) {
     .value();
   
   // Normalize phone number (remove all non-digits, then format)
-  var phoneRaw = phantom.strings.chain(rawUserData.phone)
+  var phoneRaw = phantom.strings.chain(rawPatientData.phone)
     .remove(" ")
     .remove("-")
     .remove("(")
@@ -182,331 +187,419 @@ function normalizeUserData(rawUserData) {
     .value();
   
   // Normalize and validate age
-  var age = phantom.strings.chain(rawUserData.age)
+  var age = phantom.strings.chain(rawPatientData.age)
     .trim()
     .toNumberChain()
-    .clamp(18, 120)            // Valid age range
+    .clamp(0, 150)             // Valid age range for healthcare
     .round(0)
     .value();
   
+  // Normalize date of birth (format: YYYY-MM-DD)
+  var dateOfBirth = phantom.strings.chain(rawPatientData.dateOfBirth)
+    .trim()
+    .substring(0, 10)          // Ensure YYYY-MM-DD format
+    .value();
+  
   // Normalize address
-  var address = phantom.strings.chain(rawUserData.address)
+  var address = phantom.strings.chain(rawPatientData.address)
     .trim()
     .capitalize()
     .replaceAll("  ", " ")
     .value();
   
   // Normalize city
-  var city = phantom.strings.chain(rawUserData.city)
+  var city = phantom.strings.chain(rawPatientData.city)
     .trim()
     .toLowerCase()
     .capitalize()
     .value();
   
   // Normalize state (uppercase, 2 letters)
-  var state = phantom.strings.chain(rawUserData.state)
+  var state = phantom.strings.chain(rawPatientData.state)
     .trim()
     .toUpperCase()
     .substring(0, 2)
     .value();
   
   // Normalize zip code (5 digits, pad with zeros)
-  var zipCode = phantom.strings.chain(rawUserData.zipCode)
+  var zipCode = phantom.strings.chain(rawPatientData.zipCode)
     .trim()
     .remove("-")
     .substring(0, 5)
     .leftPad("0", 5)
     .value();
   
-  // Format user ID
-  var userId = phantom.strings.chain(firstName)
-    .toLowerCase()
-    .substring(0, 3)
-    .replace("", lastName.toLowerCase().substring(0, 3))
-    .replace("", firstName.substring(0, 3).toLowerCase() + lastName.substring(0, 3).toLowerCase() + age)
-    .leftPad("0", 8)
+  // Normalize medical record number (MRN)
+  var mrn = phantom.strings.chain(rawPatientData.mrn)
+    .trim()
+    .toUpperCase()
+    .remove("-")
+    .remove(" ")
+    .leftPad("0", 10)
+    .value();
+  
+  // Normalize insurance ID
+  var insuranceId = phantom.strings.chain(rawPatientData.insuranceId)
+    .trim()
+    .toUpperCase()
+    .remove("-")
+    .remove(" ")
+    .value();
+  
+  // Format patient identifier
+  var patientIdentifier = phantom.strings.chain(mrn)
+    .substring(0, 6)
+    .replace("", lastName.substring(0, 3).toUpperCase())
+    .replace("", mrn.substring(0, 6) + lastName.substring(0, 3).toUpperCase() + age)
+    .leftPad("0", 12)
     .value();
   
   return {
-    userId: userId,
+    patientIdentifier: patientIdentifier,
+    mrn: mrn,
     firstName: firstName,
     lastName: lastName,
     fullName: fullName,
     phone: phoneFormatted,
     age: age,
+    dateOfBirth: dateOfBirth,
     address: address,
     city: city,
     state: state,
-    zipCode: zipCode
+    zipCode: zipCode,
+    insuranceId: insuranceId
   };
 }
 
 // ============================================
-// EXAMPLE 3: Financial Data Processing Pipeline
+// EXAMPLE 3: Lab Results Processing Pipeline
 // ============================================
 
-function processFinancialData(rawFinancialData) {
+function processLabResults(rawLabData) {
   /**
-   * Input: Raw financial transaction data
-   * Output: Processed and aggregated financial data
+   * Input: Raw laboratory test results
+   * Output: Processed and validated lab results with reference ranges
    */
   
-  var transactions = rawFinancialData.transactions || [];
-  var processedTransactions = [];
-  var totalDebits = 0;
-  var totalCredits = 0;
+  var labTests = rawLabData.tests || [];
+  var processedTests = [];
+  var abnormalResults = [];
+  var totalTests = 0;
   
-  for (var i = 0; i < transactions.length; i++) {
-    var tx = transactions[i];
+  for (var i = 0; i < labTests.length; i++) {
+    var test = labTests[i];
     
-    // Normalize transaction description
-    var description = phantom.strings.chain(tx.description)
+    // Normalize test name
+    var testName = phantom.strings.chain(test.testName)
       .trim()
       .capitalize()
       .replaceAll("  ", " ")
       .value();
     
-    // Process amount
-    var amount = phantom.strings.chain(tx.amount)
+    // Process test value
+    var testValue = phantom.strings.chain(test.value)
       .trim()
-      .remove("$")
       .remove(",")
       .toNumberChain()
-      .abs()                   // Always positive
+      .round(2)                // Round to 2 decimals
+      .value();
+    
+    // Process reference range (min)
+    var refMin = phantom.strings.chain(test.referenceMin)
+      .trim()
+      .toNumberChain()
       .round(2)
       .value();
     
-    // Determine transaction type
-    var isDebit = phantom.strings.chain(tx.type)
-      .toLowerCase()
-      .find("debit");
-    
-    // Format amount with sign
-    var signedAmount = isDebit 
-      ? phantom.numbers.chain(amount).multiply(-1).value()
-      : amount;
-    
-    // Format amount for display
-    var formattedAmount = phantom.numbers.chain(Math.abs(amount))
-      .toFixed(2)
-      .leftPad("$", 1)
+    // Process reference range (max)
+    var refMax = phantom.strings.chain(test.referenceMax)
+      .trim()
+      .toNumberChain()
+      .round(2)
       .value();
     
-    if (isDebit) {
-      formattedAmount = "-" + formattedAmount;
-      totalDebits = phantom.numbers.chain(totalDebits)
-        .add(amount)
-        .round(2)
-        .value();
-    } else {
-      totalCredits = phantom.numbers.chain(totalCredits)
-        .add(amount)
-        .round(2)
-        .value();
+    // Check if value is within normal range
+    var isNormal = phantom.numbers.chain(testValue)
+      .between(refMin, refMax);
+    
+    // Calculate deviation from normal (if abnormal)
+    var deviation = null;
+    var deviationPercent = null;
+    if (!isNormal) {
+      if (testValue < refMin) {
+        deviation = phantom.numbers.chain(refMin)
+          .subtract(testValue)
+          .round(2)
+          .value();
+        deviationPercent = phantom.numbers.chain(deviation)
+          .divide(refMin)
+          .multiply(100)
+          .round(2)
+          .value();
+      } else {
+        deviation = phantom.numbers.chain(testValue)
+          .subtract(refMax)
+          .round(2)
+          .value();
+        deviationPercent = phantom.numbers.chain(deviation)
+          .divide(refMax)
+          .multiply(100)
+          .round(2)
+          .value();
+      }
     }
     
-    // Format transaction date
-    var date = phantom.strings.chain(tx.date)
-      .trim()
-      .substring(0, 10)        // YYYY-MM-DD format
+    // Format test value for display
+    var formattedValue = phantom.numbers.chain(testValue)
+      .toFixed(2)
       .value();
     
-    // Format transaction ID
-    var txId = phantom.strings.chain(tx.id)
+    // Format reference range
+    var formattedRange = phantom.strings.chain("")
+      .replace("", refMin.toFixed(2) + " - " + refMax.toFixed(2))
+      .value();
+    
+    // Format test code
+    var testCode = phantom.strings.chain(test.testCode)
       .trim()
       .toUpperCase()
-      .leftPad("0", 10)
+      .remove("-")
+      .remove(" ")
+      .leftPad("0", 6)
       .value();
     
-    processedTransactions.push({
-      id: txId,
-      date: date,
-      description: description,
-      amount: signedAmount,
-      formattedAmount: formattedAmount,
-      type: isDebit ? "debit" : "credit"
-    });
+    var processedTest = {
+      testCode: testCode,
+      testName: testName,
+      value: testValue,
+      formattedValue: formattedValue,
+      referenceMin: refMin,
+      referenceMax: refMax,
+      formattedRange: formattedRange,
+      isNormal: isNormal,
+      deviation: deviation,
+      deviationPercent: deviationPercent,
+      status: isNormal ? "Normal" : (testValue < refMin ? "Low" : "High")
+    };
+    
+    processedTests.push(processedTest);
+    
+    if (!isNormal) {
+      abnormalResults.push(processedTest);
+    }
+    
+    totalTests = phantom.numbers.chain(totalTests)
+      .add(1)
+      .value();
   }
   
-  // Calculate net balance
-  var netBalance = phantom.numbers.chain(totalCredits)
-    .subtract(totalDebits)
+  // Calculate statistics
+  var normalCount = phantom.numbers.chain(totalTests)
+    .subtract(abnormalResults.length)
+    .value();
+  
+  var abnormalCount = abnormalResults.length;
+  
+  var normalPercentage = phantom.numbers.chain(normalCount)
+    .divide(totalTests)
+    .multiply(100)
     .round(2)
     .value();
   
-  // Format totals
-  var formattedDebits = phantom.numbers.chain(totalDebits)
-    .toFixed(2)
-    .leftPad("$", 1)
+  var abnormalPercentage = phantom.numbers.chain(abnormalCount)
+    .divide(totalTests)
+    .multiply(100)
+    .round(2)
     .value();
-  
-  var formattedCredits = phantom.numbers.chain(totalCredits)
-    .toFixed(2)
-    .leftPad("$", 1)
-    .value();
-  
-  var formattedBalance = phantom.numbers.chain(Math.abs(netBalance))
-    .toFixed(2)
-    .leftPad("$", 1)
-    .value();
-  
-  if (netBalance < 0) {
-    formattedBalance = "-" + formattedBalance;
-  }
   
   return {
-    transactions: processedTransactions,
+    tests: processedTests,
     summary: {
-      totalDebits: totalDebits,
-      totalCredits: totalCredits,
-      netBalance: netBalance,
-      formattedDebits: formattedDebits,
-      formattedCredits: formattedCredits,
-      formattedBalance: formattedBalance,
-      transactionCount: processedTransactions.length
-    }
+      totalTests: totalTests,
+      normalCount: normalCount,
+      abnormalCount: abnormalCount,
+      normalPercentage: normalPercentage,
+      abnormalPercentage: abnormalPercentage
+    },
+    abnormalResults: abnormalResults
   };
 }
 
 // ============================================
-// EXAMPLE 4: Product Catalog Processing Pipeline
+// EXAMPLE 4: Medication/Prescription Processing Pipeline
 // ============================================
 
-function processProductCatalog(rawCatalogData) {
+function processMedicationData(rawMedicationData) {
   /**
-   * Input: Raw product catalog data
-   * Output: Processed and enriched product catalog
+   * Input: Raw medication/prescription data
+   * Output: Processed and validated medication data with dosage calculations
    */
   
-  var products = rawCatalogData.products || [];
-  var processedProducts = [];
-  var totalValue = 0;
+  var medications = rawMedicationData.medications || [];
+  var processedMedications = [];
+  var totalDailyDosage = 0;
   
-  for (var i = 0; i < products.length; i++) {
-    var product = products[i];
+  for (var i = 0; i < medications.length; i++) {
+    var medication = medications[i];
     
-    // Normalize product name
-    var productName = phantom.strings.chain(product.name)
+    // Normalize medication name
+    var medicationName = phantom.strings.chain(medication.name)
       .trim()
       .capitalize()
       .replaceAll("  ", " ")
       .value();
     
-    // Normalize SKU (Stock Keeping Unit)
-    var sku = phantom.strings.chain(product.sku)
+    // Normalize medication code (NDC - National Drug Code)
+    var ndcCode = phantom.strings.chain(medication.ndcCode)
       .trim()
-      .toUpperCase()
-      .remove(" ")
       .remove("-")
-      .leftPad("0", 8)
+      .remove(" ")
+      .leftPad("0", 11)        // NDC is 11 digits
       .value();
     
-    // Process price
-    var price = phantom.strings.chain(product.price)
+    // Process dosage per unit (mg, ml, etc.)
+    var dosagePerUnit = phantom.strings.chain(medication.dosagePerUnit)
       .trim()
-      .remove("$")
-      .remove(",")
       .toNumberChain()
       .round(2)
-      .clamp(0, 999999.99)      // Reasonable price range
+      .clamp(0, 10000)         // Reasonable dosage range
       .value();
     
-    // Process cost
-    var cost = phantom.strings.chain(product.cost)
+    // Process units per dose
+    var unitsPerDose = phantom.strings.chain(medication.unitsPerDose)
       .trim()
-      .remove("$")
-      .remove(",")
       .toNumberChain()
-      .round(2)
-      .clamp(0, 999999.99)
+      .round(0)                // Whole units
+      .clamp(1, 10)            // Reasonable range
       .value();
     
-    // Calculate margin
-    var margin = phantom.numbers.chain(price)
-      .subtract(cost)
-      .round(2)
-      .value();
-    
-    // Calculate margin percentage
-    var marginPercent = phantom.numbers.chain(margin)
-      .divide(price)
-      .multiply(100)
-      .round(2)
-      .value();
-    
-    // Process quantity
-    var quantity = phantom.strings.chain(product.quantity)
+    // Process frequency (times per day)
+    var frequencyPerDay = phantom.strings.chain(medication.frequencyPerDay)
       .trim()
       .toNumberChain()
       .round(0)
-      .clamp(0, 99999)          // Reasonable quantity
+      .clamp(1, 6)             // Reasonable frequency
       .value();
     
-    // Calculate inventory value
-    var inventoryValue = phantom.numbers.chain(cost)
-      .multiply(quantity)
+    // Calculate total daily dosage
+    var dailyDosage = phantom.numbers.chain(dosagePerUnit)
+      .multiply(unitsPerDose)
+      .multiply(frequencyPerDay)
       .round(2)
       .value();
     
     // Add to total
-    totalValue = phantom.numbers.chain(totalValue)
-      .add(inventoryValue)
+    totalDailyDosage = phantom.numbers.chain(totalDailyDosage)
+      .add(dailyDosage)
       .round(2)
       .value();
     
-    // Normalize category
-    var category = phantom.strings.chain(product.category)
+    // Process quantity (number of pills/units)
+    var quantity = phantom.strings.chain(medication.quantity)
+      .trim()
+      .toNumberChain()
+      .round(0)
+      .clamp(1, 1000)          // Reasonable quantity
+      .value();
+    
+    // Calculate days supply
+    var dailyUnits = phantom.numbers.chain(unitsPerDose)
+      .multiply(frequencyPerDay)
+      .round(0)
+      .value();
+    
+    var daysSupply = phantom.numbers.chain(quantity)
+      .divide(dailyUnits)
+      .round(0)
+      .value();
+    
+    // Process cost per unit
+    var costPerUnit = phantom.strings.chain(medication.costPerUnit)
+      .trim()
+      .remove("$")
+      .remove(",")
+      .toNumberChain()
+      .round(2)
+      .clamp(0, 9999.99)
+      .value();
+    
+    // Calculate total cost
+    var totalCost = phantom.numbers.chain(costPerUnit)
+      .multiply(quantity)
+      .round(2)
+      .value();
+    
+    // Normalize route of administration
+    var route = phantom.strings.chain(medication.route)
       .trim()
       .toLowerCase()
       .capitalize()
       .value();
     
-    // Normalize description
-    var description = phantom.strings.chain(product.description)
+    // Normalize instructions
+    var instructions = phantom.strings.chain(medication.instructions)
       .trim()
       .capitalize()
       .replaceAll("  ", " ")
-      .wordwrap(80)             // Wrap long descriptions
+      .wordwrap(80)            // Wrap long instructions
       .value();
     
-    // Format product code
-    var productCode = phantom.strings.chain(category)
+    // Format prescription number
+    var prescriptionNumber = phantom.strings.chain(medication.prescriptionNumber)
+      .trim()
       .toUpperCase()
-      .substring(0, 3)
-      .replace("", sku)
+      .remove("-")
+      .leftPad("0", 10)
       .value();
     
-    processedProducts.push({
-      sku: sku,
-      productCode: productCode,
-      name: productName,
-      category: category,
-      description: description,
-      price: price,
-      cost: cost,
-      margin: margin,
-      marginPercent: marginPercent,
+    processedMedications.push({
+      prescriptionNumber: prescriptionNumber,
+      ndcCode: ndcCode,
+      name: medicationName,
+      dosagePerUnit: dosagePerUnit,
+      unitsPerDose: unitsPerDose,
+      frequencyPerDay: frequencyPerDay,
+      dailyDosage: dailyDosage,
       quantity: quantity,
-      inventoryValue: inventoryValue,
-      formattedPrice: phantom.numbers.chain(price).toFixed(2).leftPad("$", 1).value(),
-      formattedCost: phantom.numbers.chain(cost).toFixed(2).leftPad("$", 1).value(),
-      formattedMargin: phantom.numbers.chain(margin).toFixed(2).leftPad("$", 1).value(),
-      formattedInventoryValue: phantom.numbers.chain(inventoryValue).toFixed(2).leftPad("$", 1).value()
+      daysSupply: daysSupply,
+      costPerUnit: costPerUnit,
+      totalCost: totalCost,
+      route: route,
+      instructions: instructions,
+      formattedDosage: dosagePerUnit + "mg x " + unitsPerDose + " units",
+      formattedFrequency: frequencyPerDay + " times per day",
+      formattedDailyDosage: dailyDosage.toFixed(2) + "mg/day",
+      formattedCost: phantom.numbers.chain(totalCost).toFixed(2).leftPad("$", 1).value()
     });
   }
   
-  // Format total inventory value
-  var formattedTotalValue = phantom.numbers.chain(totalValue)
+  // Format total daily dosage
+  var formattedTotalDailyDosage = phantom.numbers.chain(totalDailyDosage)
+    .toFixed(2)
+    .value() + "mg/day";
+  
+  // Calculate total medication cost
+  var totalMedicationCost = 0;
+  for (var j = 0; j < processedMedications.length; j++) {
+    totalMedicationCost = phantom.numbers.chain(totalMedicationCost)
+      .add(processedMedications[j].totalCost)
+      .round(2)
+      .value();
+  }
+  
+  var formattedTotalCost = phantom.numbers.chain(totalMedicationCost)
     .toFixed(2)
     .leftPad("$", 1)
     .value();
   
   return {
-    products: processedProducts,
+    medications: processedMedications,
     summary: {
-      totalProducts: processedProducts.length,
-      totalInventoryValue: totalValue,
-      formattedTotalValue: formattedTotalValue
+      totalMedications: processedMedications.length,
+      totalDailyDosage: totalDailyDosage,
+      formattedTotalDailyDosage: formattedTotalDailyDosage,
+      totalCost: totalMedicationCost,
+      formattedTotalCost: formattedTotalCost
     }
   };
 }
@@ -515,54 +608,81 @@ function processProductCatalog(rawCatalogData) {
 // USAGE EXAMPLES
 // ============================================
 
-// Example usage for Order Processing
-var rawOrder = {
-  orderId: "12345",
-  customerName: "  john   doe  ",
+// Example usage for Patient Data Processing
+var rawPatient = {
+  patientId: "12345",
+  patientName: "  john   doe  ",
   email: "  JOHN.DOE@EXAMPLE.COM  ",
-  items: [
-    { name: "  widget a  ", price: "10.99", quantity: "2" },
-    { name: "  widget b  ", price: "5.50", quantity: "3" }
+  records: [
+    { procedureName: "  blood test  ", charge: "50.99", quantity: "1" },
+    { procedureName: "  x-ray  ", charge: "150.50", quantity: "2" },
+    { procedureName: "  consultation  ", charge: "200.00", quantity: "1" }
   ]
 };
 
-var processedOrder = processOrderPipeline(rawOrder);
-console.log("Processed Order:", processedOrder);
+var processedPatient = processPatientDataPipeline(rawPatient);
+console.log("Processed Patient:", processedPatient);
 
-// Example usage for User Data Normalization
-var rawUser = {
-  firstName: "  john  ",
+// Example usage for Patient Demographics Normalization
+var rawDemographics = {
+  firstName: "  mary  ",
   lastName: "  o'brien  ",
   phone: "(123) 456-7890",
-  age: "25",
-  address: "  123 main street  ",
-  city: "  new york  ",
-  state: "ny",
-  zipCode: "10001"
+  age: "45",
+  dateOfBirth: "1979-01-15",
+  address: "  456 health street  ",
+  city: "  boston  ",
+  state: "ma",
+  zipCode: "02101",
+  mrn: "MRN-12345",
+  insuranceId: "INS-ABC-123"
 };
 
-var normalizedUser = normalizeUserData(rawUser);
-console.log("Normalized User:", normalizedUser);
+var normalizedDemographics = normalizePatientDemographics(rawDemographics);
+console.log("Normalized Demographics:", normalizedDemographics);
 
-// Example usage for Financial Data
-var rawFinancial = {
-  transactions: [
-    { id: "1", date: "2024-12-18", description: "  purchase  ", amount: "$100.50", type: "debit" },
-    { id: "2", date: "2024-12-18", description: "  payment  ", amount: "$250.00", type: "credit" }
+// Example usage for Lab Results
+var rawLabData = {
+  tests: [
+    { testCode: "GLU-001", testName: "  glucose  ", value: "95.5", referenceMin: "70", referenceMax: "100" },
+    { testCode: "CHOL-002", testName: "  cholesterol  ", value: "220.0", referenceMin: "0", referenceMax: "200" },
+    { testCode: "HB-003", testName: "  hemoglobin  ", value: "14.2", referenceMin: "12", referenceMax: "16" }
   ]
 };
 
-var processedFinancial = processFinancialData(rawFinancial);
-console.log("Processed Financial:", processedFinancial);
+var processedLabResults = processLabResults(rawLabData);
+console.log("Processed Lab Results:", processedLabResults);
+console.log("Abnormal Results:", processedLabResults.abnormalResults);
 
-// Example usage for Product Catalog
-var rawCatalog = {
-  products: [
-    { name: "  product a  ", sku: "ABC-123", price: "$19.99", cost: "$10.00", quantity: "50", category: "electronics", description: "A great product" },
-    { name: "  product b  ", sku: "DEF-456", price: "$29.99", cost: "$15.00", quantity: "30", category: "electronics", description: "Another great product" }
+// Example usage for Medication Data
+var rawMedication = {
+  medications: [
+    { 
+      prescriptionNumber: "RX-123",
+      ndcCode: "12345-678-90",
+      name: "  metformin  ",
+      dosagePerUnit: "500",
+      unitsPerDose: "1",
+      frequencyPerDay: "2",
+      quantity: "60",
+      costPerUnit: "$0.50",
+      route: "oral",
+      instructions: "Take with food twice daily"
+    },
+    {
+      prescriptionNumber: "RX-456",
+      ndcCode: "98765-432-10",
+      name: "  lisinopril  ",
+      dosagePerUnit: "10",
+      unitsPerDose: "1",
+      frequencyPerDay: "1",
+      quantity: "30",
+      costPerUnit: "$1.25",
+      route: "oral",
+      instructions: "Take once daily in the morning"
+    }
   ]
 };
 
-var processedCatalog = processProductCatalog(rawCatalog);
-console.log("Processed Catalog:", processedCatalog);
-
+var processedMedications = processMedicationData(rawMedication);
+console.log("Processed Medications:", processedMedications);
