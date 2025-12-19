@@ -416,6 +416,24 @@ that material) supplement the terms of this License with terms:
     any liability that these contractual assumptions directly impose on
     those licensors and authors.
 
+  ADDITIONAL TERM FOR THIS PROGRAM (Phantom.js):
+  ----------------------------------------------
+  As an additional term under Section 7(b) of this License, you are
+  required to preserve the following attribution notice in all copies
+  and modified versions of this Program:
+  
+  "Product of David Labs" or "A product of David Labs"
+  
+  This attribution must appear:
+  - In the source code header of all files derived from this Program
+  - In any documentation accompanying the Program or modified versions
+  - In any Appropriate Legal Notices displayed by works containing this Program
+  
+  This requirement applies to the entire Program and all works based on it.
+  You may not remove or modify this attribution requirement when conveying
+  copies or modified versions of this Program. This is a reasonable
+  attribution requirement under Section 7(b) and cannot be removed.
+
   All other non-permissive additional terms are considered "further
 restrictions" within the meaning of section 10.  If the Program as you
 received it, or any part of it, contains a notice stating that it is
