@@ -94,17 +94,18 @@ jobs:
           git push origin "$TAG"
           echo "✅ Created and pushed tag: $TAG"
       
-      # Step 8: Get release notes
-      - name: Get Release Notes
+      # Step 8: Generate release notes automatically
+      - name: Generate Release Notes
         if: steps.check_tag.outputs.exists == 'false'
         id: release_notes
+        working-directory: ./scripts
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if [ -f "docs/RELEASE_NOTES_v${VERSION}.md" ]; then
-            cat "docs/RELEASE_NOTES_v${VERSION}.md" > /tmp/release_notes.txt
-          else
+          echo "📝 Generating release notes for v${VERSION}..."
+          node generate-release-notes.js "${VERSION}" > /tmp/release_notes.txt || {
+            echo "⚠️  Failed to generate release notes, using default"
             printf "## Release v%s\n\nThis release includes bug fixes and improvements.\n\n### Changes\n- See commit history for details\n" "${VERSION}" > /tmp/release_notes.txt
-          fi
+          }
           {
             echo "notes<<EOF"
             cat /tmp/release_notes.txt
