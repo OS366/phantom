@@ -38,9 +38,10 @@ const RELEASE_FILES = [
 console.log('📦 Creating release package...\n');
 
 // Ensure minified file exists
-if (!fs.existsSync('phantom.min.js')) {
+const minifiedPath = path.join(__dirname, '..', 'phantom.min.js');
+if (!fs.existsSync(minifiedPath)) {
   console.log('⚠️  phantom.min.js not found. Generating...');
-  execSync('npm run minify', { stdio: 'inherit' });
+  execSync('npm run minify', { stdio: 'inherit', cwd: __dirname });
 }
 
 // Create release directory
