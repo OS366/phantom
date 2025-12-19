@@ -1,12 +1,17 @@
 /**
  * Complex Healthcare Data Transformation Pipeline Example
  * 
- * This example demonstrates a real-world healthcare data transformation pipeline
- * using Phantom.js chaining API for processing patient data, medical records,
- * lab results, and billing information.
+ * NOTE: Full examples with detailed explanations are available in the wiki:
+ * https://github.com/OS366/phantom.wiki/blob/master/Examples.md
  * 
- * Scenario: Process raw healthcare data from multiple sources, validate,
- * transform, calculate metrics, and format for display.
+ * See Examples 26-30 for complete healthcare data transformation pipelines:
+ * - Example 26: Patient Data Processing Pipeline
+ * - Example 27: Patient Demographics Normalization
+ * - Example 28: Lab Results Processing Pipeline
+ * - Example 29: Medication/Prescription Processing Pipeline
+ * - Example 30: Complete Healthcare Data Transformation
+ * 
+ * This file contains simplified reference implementations.
  */
 
 // ============================================
