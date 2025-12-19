@@ -117,6 +117,101 @@ describe('Initialization', () => {
   });
 });
 
+describe('Help & Autocomplete', () => {
+  setupPhantomTests();
+
+  describe('help', () => {
+    test('should show all categories when called without arguments', () => {
+      var result = phantom.help();
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('maps');
+      expect(result).toContain('strings');
+      expect(result).toContain('numbers');
+      expect(result).toContain('json');
+    });
+
+    test('should show help for specific category', () => {
+      var result = phantom.help('maps');
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('phantom.maps');
+      expect(result).toContain('channel');
+      expect(result).toContain('global');
+    });
+
+    test('should show help for specific operation', () => {
+      var result = phantom.help('maps.channel');
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('save');
+      expect(result).toContain('get');
+      expect(result).toContain('exists');
+      expect(result).toContain('delete');
+    });
+
+    test('should show help for string operations', () => {
+      var result = phantom.help('strings.operation');
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('trim');
+      expect(result).toContain('replace');
+    });
+
+    test('should return error message for invalid path', () => {
+      var result = phantom.help('invalid.path');
+      expect(result).toBeDefined();
+      expect(result).toContain('not found');
+    });
+  });
+
+  describe('autocomplete', () => {
+    test('should return all categories when called without arguments', () => {
+      var result = phantom.autocomplete();
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result).toContain('maps');
+      expect(result).toContain('strings');
+      expect(result).toContain('numbers');
+    });
+
+    test('should return operations for category', () => {
+      var result = phantom.autocomplete('maps');
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toContain('channel');
+      expect(result).toContain('global');
+    });
+
+    test('should return methods for operation', () => {
+      var result = phantom.autocomplete('maps.channel');
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toContain('save');
+      expect(result).toContain('get');
+      expect(result).toContain('exists');
+      expect(result).toContain('delete');
+    });
+
+    test('should return empty array for invalid path', () => {
+      var result = phantom.autocomplete('invalid.path');
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(0);
+    });
+
+    test('should return string operations', () => {
+      var result = phantom.autocomplete('strings.operation');
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result).toContain('trim');
+      expect(result).toContain('replace');
+    });
+  });
+});
+
 describe('phantom.maps', () => {
   setupPhantomTests();
 

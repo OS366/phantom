@@ -26,6 +26,357 @@
       return phantom;
     };
   
+    /* --------------------------------------------------
+     * HELP & AUTOCOMPLETE SYSTEM
+     * For OIE scripting environments without native autocomplete
+     * -------------------------------------------------- */
+  
+    // Help documentation for all operations
+    var helpDocs = {
+      maps: {
+        description: "Map operations for storing and retrieving data",
+        operations: {
+          channel: {
+            description: "Channel map operations (save, get, exists, delete)",
+            methods: {
+              save: "Save a value to channel map: phantom.maps.channel.save(key, value)",
+              get: "Get a value from channel map: phantom.maps.channel.get(key)",
+              exists: "Check if key exists: phantom.maps.channel.exists(key)",
+              delete: "Delete a key: phantom.maps.channel.delete(key)"
+            }
+          },
+          global: {
+            description: "Global map operations (save, get, exists, delete)",
+            methods: {
+              save: "Save a value to global map: phantom.maps.global.save(key, value)",
+              get: "Get a value from global map: phantom.maps.global.get(key)",
+              exists: "Check if key exists: phantom.maps.global.exists(key)",
+              delete: "Delete a key: phantom.maps.global.delete(key)"
+            }
+          },
+          connector: {
+            description: "Connector map operations (save, get, exists, delete)",
+            methods: {
+              save: "Save a value to connector map: phantom.maps.connector.save(key, value)",
+              get: "Get a value from connector map: phantom.maps.connector.get(key)",
+              exists: "Check if key exists: phantom.maps.connector.exists(key)",
+              delete: "Delete a key: phantom.maps.connector.delete(key)"
+            }
+          },
+          response: {
+            description: "Response map operations (save, get, exists, delete) - Available only in response context",
+            methods: {
+              save: "Save a value to response map: phantom.maps.response.save(key, value)",
+              get: "Get a value from response map: phantom.maps.response.get(key)",
+              exists: "Check if key exists: phantom.maps.response.exists(key)",
+              delete: "Delete a key: phantom.maps.response.delete(key)"
+            }
+          },
+          configuration: {
+            description: "Configuration map operations (read-only: get, exists)",
+            methods: {
+              get: "Get a value from configuration map: phantom.maps.configuration.get(key)",
+              exists: "Check if key exists: phantom.maps.configuration.exists(key)"
+            }
+          }
+        }
+      },
+      strings: {
+        description: "String operations for text manipulation",
+        operations: {
+          operation: {
+            description: "String utility functions",
+            methods: {
+              trim: "Remove whitespace from both ends: phantom.strings.operation.trim(str)",
+              leftPad: "Pad string on the left: phantom.strings.operation.leftPad(str, count, padChar)",
+              rightPad: "Pad string on the right: phantom.strings.operation.rightPad(str, count, padChar)",
+              find: "Find substring position: phantom.strings.operation.find(str, search)",
+              replace: "Replace substring: phantom.strings.operation.replace(str, search, replace)",
+              split: "Split string into array: phantom.strings.operation.split(str, delimiter)",
+              substring: "Extract substring: phantom.strings.operation.substring(str, start, end)",
+              toUpperCase: "Convert to uppercase: phantom.strings.operation.toUpperCase(str)",
+              toLowerCase: "Convert to lowercase: phantom.strings.operation.toLowerCase(str)",
+              capitalize: "Capitalize first letter: phantom.strings.operation.capitalize(str)",
+              reverse: "Reverse string: phantom.strings.operation.reverse(str)",
+              length: "Get string length: phantom.strings.operation.length(str)",
+              startsWith: "Check if starts with: phantom.strings.operation.startsWith(str, prefix)",
+              endsWith: "Check if ends with: phantom.strings.operation.endsWith(str, suffix)",
+              contains: "Check if contains: phantom.strings.operation.contains(str, search)",
+              repeat: "Repeat string: phantom.strings.operation.repeat(str, count)",
+              remove: "Remove substring: phantom.strings.operation.remove(str, search)",
+              isEmpty: "Check if empty: phantom.strings.operation.isEmpty(str)",
+              isBlank: "Check if blank: phantom.strings.operation.isBlank(str)",
+              wordwrap: "Wrap text to lines: phantom.strings.operation.wordwrap(str, width)"
+            }
+          },
+          chain: {
+            description: "String chaining API for fluent operations",
+            methods: {
+              value: "Get final value: phantom.strings.chain(str).value()",
+              toNumberChain: "Convert to number chain: phantom.strings.chain(str).toNumberChain()"
+            }
+          }
+        }
+      },
+      numbers: {
+        description: "Number operations for mathematical calculations",
+        operations: {
+          operation: {
+            description: "Number utility functions",
+            methods: {
+              parse: "Parse string to number: phantom.numbers.operation.parse(str)",
+              isNumber: "Check if number: phantom.numbers.operation.isNumber(value)",
+              add: "Add two numbers: phantom.numbers.operation.add(a, b)",
+              subtract: "Subtract: phantom.numbers.operation.subtract(a, b)",
+              multiply: "Multiply: phantom.numbers.operation.multiply(a, b)",
+              divide: "Divide: phantom.numbers.operation.divide(a, b)",
+              round: "Round number: phantom.numbers.operation.round(num, decimals)",
+              min: "Get minimum: phantom.numbers.operation.min(a, b)",
+              max: "Get maximum: phantom.numbers.operation.max(a, b)",
+              abs: "Absolute value: phantom.numbers.operation.abs(num)",
+              ceil: "Round up: phantom.numbers.operation.ceil(num)",
+              floor: "Round down: phantom.numbers.operation.floor(num)",
+              sqrt: "Square root: phantom.numbers.operation.sqrt(num)",
+              pow: "Power: phantom.numbers.operation.pow(base, exponent)",
+              mod: "Modulo: phantom.numbers.operation.mod(a, b)",
+              random: "Random number: phantom.numbers.operation.random()",
+              randomInt: "Random integer: phantom.numbers.operation.randomInt(min, max)",
+              between: "Check if between: phantom.numbers.operation.between(num, min, max)",
+              clamp: "Clamp value: phantom.numbers.operation.clamp(num, min, max)",
+              sign: "Get sign: phantom.numbers.operation.sign(num)",
+              isEven: "Check if even: phantom.numbers.operation.isEven(num)",
+              isOdd: "Check if odd: phantom.numbers.operation.isOdd(num)",
+              isPositive: "Check if positive: phantom.numbers.operation.isPositive(num)",
+              isNegative: "Check if negative: phantom.numbers.operation.isNegative(num)",
+              isZero: "Check if zero: phantom.numbers.operation.isZero(num)",
+              toFixed: "Format number: phantom.numbers.operation.toFixed(num, decimals)",
+              truncate: "Truncate number: phantom.numbers.operation.truncate(num)"
+            }
+          },
+          chain: {
+            description: "Number chaining API for fluent operations",
+            methods: {
+              value: "Get final value: phantom.numbers.chain(num).value()",
+              toStringChain: "Convert to string chain: phantom.numbers.chain(num).toStringChain()"
+            }
+          }
+        }
+      },
+      json: {
+        description: "JSON operations for parsing and manipulating JSON data",
+        operations: {
+          operation: {
+            description: "JSON utility functions",
+            methods: {
+              parse: "Parse JSON string: phantom.json.operation.parse(str)",
+              stringify: "Stringify object: phantom.json.operation.stringify(obj)",
+              get: "Get value by path: phantom.json.operation.get(obj, path)",
+              set: "Set value by path: phantom.json.operation.set(obj, path, value)",
+              has: "Check if path exists: phantom.json.operation.has(obj, path)",
+              remove: "Remove path: phantom.json.operation.remove(obj, path)",
+              keys: "Get all keys: phantom.json.operation.keys(obj)",
+              values: "Get all values: phantom.json.operation.values(obj)",
+              size: "Get object size: phantom.json.operation.size(obj)",
+              merge: "Merge objects: phantom.json.operation.merge(obj1, obj2)",
+              isEmpty: "Check if empty: phantom.json.operation.isEmpty(obj)",
+              isArray: "Check if array: phantom.json.operation.isArray(value)",
+              isObject: "Check if object: phantom.json.operation.isObject(value)",
+              toString: "Convert to string: phantom.json.operation.toString(obj)",
+              prettyPrint: "Pretty print: phantom.json.operation.prettyPrint(obj)"
+            }
+          }
+        }
+      },
+      base64: {
+        description: "Base64 encoding and decoding operations",
+        operations: {
+          operation: {
+            description: "Base64 utility functions",
+            methods: {
+              encode: "Encode to base64: phantom.base64.operation.encode(str)",
+              decode: "Decode from base64: phantom.base64.operation.decode(str)"
+            }
+          }
+        }
+      },
+      xml: {
+        description: "XML operations for parsing and querying XML data",
+        operations: {
+          operation: {
+            description: "XML utility functions",
+            methods: {
+              parse: "Parse XML string: phantom.xml.operation.parse(str)",
+              stringify: "Stringify XML object: phantom.xml.operation.stringify(obj)",
+              get: "Get value by XPath: phantom.xml.operation.get(xml, xpath)",
+              has: "Check if XPath exists: phantom.xml.operation.has(xml, xpath)",
+              toString: "Convert to string: phantom.xml.operation.toString(xml)"
+            }
+          }
+        }
+      },
+      dates: {
+        description: "Date and time operations using Java.time APIs",
+        operations: {
+          operation: {
+            description: "Date utility functions",
+            methods: {
+              now: "Get current datetime: phantom.dates.operation.now()",
+              today: "Get current date: phantom.dates.operation.today()",
+              parse: "Parse date string: phantom.dates.operation.parse(str, format)",
+              parseDateTime: "Parse datetime string: phantom.dates.operation.parseDateTime(str, format)",
+              format: "Format date: phantom.dates.operation.format(date, format)",
+              formatDateTime: "Format datetime: phantom.dates.operation.formatDateTime(dt, format)",
+              getYear: "Get year: phantom.dates.operation.getYear(date)",
+              getMonth: "Get month: phantom.dates.operation.getMonth(date)",
+              getDay: "Get day: phantom.dates.operation.getDay(date)",
+              getDayOfWeek: "Get day of week: phantom.dates.operation.getDayOfWeek(date)",
+              add: "Add time: phantom.dates.operation.add(date, amount, unit)",
+              subtract: "Subtract time: phantom.dates.operation.subtract(date, amount, unit)",
+              between: "Calculate difference: phantom.dates.operation.between(date1, date2, unit)",
+              isBefore: "Check if before: phantom.dates.operation.isBefore(date1, date2)",
+              isAfter: "Check if after: phantom.dates.operation.isAfter(date1, date2)",
+              isEqual: "Check if equal: phantom.dates.operation.isEqual(date1, date2)",
+              startOfDay: "Get start of day: phantom.dates.operation.startOfDay(date)",
+              endOfDay: "Get end of day: phantom.dates.operation.endOfDay(date)"
+            }
+          },
+          format: {
+            description: "Date format detection and utilities",
+            methods: {
+              detect: "Detect date format: phantom.dates.format.detect(dateString)"
+            }
+          },
+          duration: {
+            description: "Duration operations",
+            methods: {
+              between: "Calculate duration: phantom.dates.duration.between(dt1, dt2)",
+              of: "Create duration: phantom.dates.duration.of(amount, unit)",
+              add: "Add duration: phantom.dates.duration.add(dt, duration)",
+              subtract: "Subtract duration: phantom.dates.duration.subtract(dt, duration)",
+              toDays: "Convert to days: phantom.dates.duration.toDays(duration)",
+              toHours: "Convert to hours: phantom.dates.duration.toHours(duration)",
+              toMinutes: "Convert to minutes: phantom.dates.duration.toMinutes(duration)",
+              toSeconds: "Convert to seconds: phantom.dates.duration.toSeconds(duration)",
+              toMillis: "Convert to milliseconds: phantom.dates.duration.toMillis(duration)"
+            }
+          }
+        }
+      }
+    };
+  
+    // Help function - shows available operations
+    phantom.help = function (path) {
+      try {
+        if (!path) {
+          // Show all categories
+          var output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+          output += "📚 Phantom.js Help - Available Categories\n";
+          output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+          output += "Usage: phantom.help('category') or phantom.help('category.operation')\n\n";
+          
+          for (var category in helpDocs) {
+            output += "📦 phantom." + category + "\n";
+            output += "   " + helpDocs[category].description + "\n";
+            output += "   Example: phantom.help('" + category + "')\n\n";
+          }
+          
+          output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+          return output;
+        }
+        
+        var parts = path.split('.');
+        var current = helpDocs;
+        
+        // Navigate through the path
+        for (var i = 0; i < parts.length; i++) {
+          if (current && current[parts[i]]) {
+            current = current[parts[i]];
+          } else if (current && current.operations && current.operations[parts[i]]) {
+            current = current.operations[parts[i]];
+          } else {
+            return "❌ Path not found: phantom." + path + "\n\nUse phantom.help() to see all available categories.";
+          }
+        }
+        
+        // Display the help
+        var output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        output += "📚 phantom." + path + "\n";
+        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+        
+        if (current.description) {
+          output += "Description: " + current.description + "\n\n";
+        }
+        
+        if (current.methods) {
+          output += "Available Methods:\n";
+          output += "────────────────────────────────────────────────────\n";
+          for (var method in current.methods) {
+            output += "• " + method + "\n";
+            output += "  " + current.methods[method] + "\n\n";
+          }
+        } else if (current.operations) {
+          output += "Available Operations:\n";
+          output += "────────────────────────────────────────────────────\n";
+          for (var op in current.operations) {
+            output += "• " + op + "\n";
+            if (current.operations[op].description) {
+              output += "  " + current.operations[op].description + "\n";
+            }
+            output += "  Example: phantom.help('" + path + "." + op + "')\n\n";
+          }
+        }
+        
+        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        return output;
+      } catch (e) {
+        return "Error: " + (e.message || String(e));
+      }
+    };
+  
+    // Autocomplete function - returns available options
+    phantom.autocomplete = function (path) {
+      try {
+        if (!path) {
+          // Return all top-level categories
+          return Object.keys(helpDocs);
+        }
+        
+        var parts = path.split('.');
+        var current = helpDocs;
+        
+        // Navigate through the path
+        for (var i = 0; i < parts.length; i++) {
+          if (current && current[parts[i]]) {
+            current = current[parts[i]];
+          } else if (current && current.operations && current.operations[parts[i]]) {
+            current = current.operations[parts[i]];
+          } else {
+            return [];
+          }
+        }
+        
+        var options = [];
+        
+        // If we have operations, return them
+        if (current.operations) {
+          options = Object.keys(current.operations);
+        } else if (current.methods) {
+          options = Object.keys(current.methods);
+        } else if (typeof current === 'object') {
+          // Return direct properties
+          for (var key in current) {
+            if (key !== 'description' && key !== 'operations' && key !== 'methods') {
+              options.push(key);
+            }
+          }
+        }
+        
+        return options;
+      } catch (e) {
+        return [];
+      }
+    };
+  
     // Only log on error (as requested)
     function logError(msg) {
       if (typeof logger !== "undefined") {
