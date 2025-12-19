@@ -423,48 +423,6 @@
       return "Phantom.js v" + phantom.version + " - Use phantom._() or phantom.help() for help";
     };
   
-    // Add enumerable properties for better autocomplete discovery in OIE
-    // This helps editors show available options when typing "phantom."
-    try {
-      Object.defineProperty(phantom, 'maps', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.maps; }
-      });
-      Object.defineProperty(phantom, 'strings', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.strings; }
-      });
-      Object.defineProperty(phantom, 'numbers', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.numbers; }
-      });
-      Object.defineProperty(phantom, 'json', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.json; }
-      });
-      Object.defineProperty(phantom, 'base64', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.base64; }
-      });
-      Object.defineProperty(phantom, 'xml', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.xml; }
-      });
-      Object.defineProperty(phantom, 'dates', {
-        enumerable: true,
-        configurable: true,
-        get: function() { return phantom.dates; }
-      });
-    } catch (e) {
-      // If defineProperty fails, properties are already set normally
-    }
-  
     // Only log on error (as requested)
     function logError(msg) {
       if (typeof logger !== "undefined") {
