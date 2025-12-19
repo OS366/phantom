@@ -190,6 +190,16 @@ See [Troubleshooting Wiki](https://github.com/OS366/phantom/wiki/Troubleshooting
 
 ---
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- How to use Phantom.js in your projects
+- Development setup and testing
+- Code style guidelines
+- How to submit pull requests
+
+---
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
