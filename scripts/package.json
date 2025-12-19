@@ -27,18 +27,20 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "rootDir": "..",
     "testMatch": [
       "**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "../phantom.js"
+      "phantom.js"
     ],
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/scripts/"
     ],
     "reporters": [
       "default",
-      "<rootDir>/../test-summary-reporter.js"
+      "<rootDir>/test-summary-reporter.js"
     ]
   }
 }
