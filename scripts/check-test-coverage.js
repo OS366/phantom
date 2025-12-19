@@ -195,8 +195,8 @@ function main() {
   log('\n🔍 Checking Test Coverage...\n', 'cyan');
   
   // Read files
-  const phantomCode = fs.readFileSync('phantom.js', 'utf8');
-  const testCode = fs.readFileSync('phantom.test.js', 'utf8');
+  const phantomCode = fs.readFileSync(path.join(__dirname, '..', 'phantom.js'), 'utf8');
+  const testCode = fs.readFileSync(path.join(__dirname, '..', 'phantom.test.js'), 'utf8');
   
   // Extract functions and tests
   const allFunctions = extractFunctions(phantomCode);
