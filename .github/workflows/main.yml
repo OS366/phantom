@@ -8,6 +8,8 @@ on:
       - 'phantom.js'
       - 'phantom.test.js'
       - 'scripts/package.json'
+      - '.github/workflows/main.yml'
+  workflow_dispatch:
 
 jobs:
   ci-cd:
