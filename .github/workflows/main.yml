@@ -7,28 +7,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci-cd:
-    name: CI/CD Pipeline
+  setup:
+    name: "Step 0: Setup"
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    
     steps:
-      - name: "Step 0: Checkout code"
+      - name: "Checkout code"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: "Step 0: Setup Node.js"
+      - name: "Setup Node.js"
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
           cache-dependency-path: 'scripts/package-lock.json'
       
-      - name: "Step 0: Install dependencies"
+      - name: "Install dependencies"
         working-directory: ./scripts
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -37,9 +33,29 @@ jobs:
           echo "📥 Running npm ci..."
           npm ci
           echo "✅ Dependencies installed successfully"
+
+  test:
+    name: "Step 1: Run Tests"
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-      # Step 1: Run tests
-      - name: "Step 1: Run Tests"
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: "Install dependencies"
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: "Run Tests"
         working-directory: ./scripts
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -48,9 +64,29 @@ jobs:
           echo "📋 Executing all test cases..."
           npm test
           echo "✅ Tests completed successfully"
+
+  coverage:
+    name: "Step 2: Check Coverage"
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-      # Step 2: Check test coverage for new functions
-      - name: "Step 2: Check Test Coverage"
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: "Install dependencies"
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: "Check Test Coverage"
         working-directory: ./scripts
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -62,9 +98,23 @@ jobs:
           echo "📌 Comparing against commit: $BASE_SHA"
           npm run test:check-diff || npm run test:check
           echo "✅ Coverage check completed"
+
+  version-check:
+    name: "Step 3-4: Version & Tag Check"
+    runs-on: ubuntu-latest
+    needs: coverage
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag_exists: ${{ steps.check_tag.outputs.exists }}
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-      # Step 3: Get version from package.json
-      - name: "Step 3: Get Version"
+      - name: "Get Version"
         id: version
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -75,8 +125,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "✅ Detected version: $VERSION"
       
-      # Step 4: Check if tag already exists
-      - name: "Step 4: Check if Tag Exists"
+      - name: "Check if Tag Exists"
         id: check_tag
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -91,10 +140,28 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "✅ Tag $TAG does not exist, proceeding with release"
           fi
+
+  minify:
+    name: "Step 5: Generate Minified"
+    runs-on: ubuntu-latest
+    needs: version-check
+    if: needs.version-check.outputs.tag_exists == 'false'
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
       
-      # Step 5: Generate minified file
-      - name: "Step 5: Generate Minified File"
-        if: steps.check_tag.outputs.exists == 'false'
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: "Install dependencies"
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: "Generate Minified File"
         working-directory: ./scripts
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -103,10 +170,28 @@ jobs:
           echo "📝 Minifying phantom.js..."
           npm run minify
           echo "✅ Minified file created: phantom.min.js"
+
+  package:
+    name: "Step 6: Create Package"
+    runs-on: ubuntu-latest
+    needs: [version-check, minify]
+    if: needs.version-check.outputs.tag_exists == 'false'
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
       
-      # Step 6: Create release package
-      - name: "Step 6: Create Release Package"
-        if: steps.check_tag.outputs.exists == 'false'
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: "Install dependencies"
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: "Create Release Package"
         working-directory: ./scripts
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -115,15 +200,26 @@ jobs:
           echo "📋 Packaging files into zip archive..."
           npm run release
           echo "✅ Release package created successfully"
+
+  tag:
+    name: "Step 7: Create Git Tag"
+    runs-on: ubuntu-latest
+    needs: [version-check, package]
+    if: needs.version-check.outputs.tag_exists == 'false'
+    permissions:
+      contents: write
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       
-      # Step 7: Create Git tag
-      - name: "Step 7: Create Git Tag"
-        if: steps.check_tag.outputs.exists == 'false'
+      - name: "Create Git Tag"
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🏷️  Step 7/10: Creating Git Tag"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          TAG="v${{ steps.version.outputs.version }}"
+          TAG="v${{ needs.version-check.outputs.version }}"
           echo "📝 Creating annotated tag: $TAG"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -131,17 +227,37 @@ jobs:
           echo "📤 Pushing tag to remote..."
           git push origin "$TAG"
           echo "✅ Tag $TAG created and pushed successfully"
+
+  release-notes:
+    name: "Step 8: Generate Release Notes"
+    runs-on: ubuntu-latest
+    needs: [version-check, tag]
+    if: needs.version-check.outputs.tag_exists == 'false'
+    outputs:
+      notes: ${{ steps.release_notes.outputs.notes }}
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
       
-      # Step 8: Generate release notes automatically
-      - name: "Step 8: Generate Release Notes"
-        if: steps.check_tag.outputs.exists == 'false'
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: "Install dependencies"
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: "Generate Release Notes"
         id: release_notes
         working-directory: ./scripts
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "📝 Step 8/10: Generating Release Notes"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.version-check.outputs.version }}"
           echo "📋 Analyzing commits since last release..."
           echo "🔍 Extracting features, fixes, and changes..."
           node generate-release-notes.js "${VERSION}" > /tmp/release_notes.txt || {
@@ -154,53 +270,57 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
           echo "✅ Release notes generated successfully"
+
+  release:
+    name: "Step 9: Create GitHub Release"
+    runs-on: ubuntu-latest
+    needs: [version-check, package, release-notes]
+    if: needs.version-check.outputs.tag_exists == 'false'
+    permissions:
+      contents: write
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
       
-      # Step 9: Create GitHub Release
-      - name: "Step 9: Create GitHub Release"
-        if: steps.check_tag.outputs.exists == 'false'
+      - name: "Create GitHub Release"
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            release/phantom-${{ steps.version.outputs.version }}.zip
-          body: ${{ steps.release_notes.outputs.notes }}
+            release/phantom-${{ needs.version-check.outputs.version }}.zip
+          body: ${{ needs.release-notes.outputs.notes }}
           draft: false
-          prerelease: ${{ contains(steps.version.outputs.version, 'BETA') || contains(steps.version.outputs.version, 'ALPHA') || contains(steps.version.outputs.version, 'RC') }}
+          prerelease: ${{ contains(needs.version-check.outputs.version, 'BETA') || contains(needs.version-check.outputs.version, 'ALPHA') || contains(needs.version-check.outputs.version, 'RC') }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      # Step 10: Summary
-      - name: "Step 10: Pipeline Summary"
+
+  summary:
+    name: "Step 10: Pipeline Summary"
+    runs-on: ubuntu-latest
+    needs: [version-check, release]
+    if: always()
+    steps:
+      - name: "Pipeline Summary"
         run: |
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "✅ Step 10/10: Pipeline Complete"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          if [ "${{ steps.check_tag.outputs.exists }}" == "false" ]; then
-            echo "🎉 Release v${{ steps.version.outputs.version }} created successfully!"
+          if [ "${{ needs.version-check.outputs.tag_exists }}" == "false" ]; then
+            echo "🎉 Release v${{ needs.version-check.outputs.version }} created successfully!"
             echo ""
             echo "📦 Release Package:"
-            echo "   release/phantom-${{ steps.version.outputs.version }}.zip"
+            echo "   release/phantom-${{ needs.version-check.outputs.version }}.zip"
             echo ""
             echo "🏷️  Git Tag:"
-            echo "   v${{ steps.version.outputs.version }}"
+            echo "   v${{ needs.version-check.outputs.version }}"
             echo ""
             echo "🌐 GitHub Release:"
-            echo "   https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+            echo "   https://github.com/${{ github.repository }}/releases/tag/v${{ needs.version-check.outputs.version }}"
           else
-            echo "ℹ️  Tag v${{ steps.version.outputs.version }} already exists"
+            echo "ℹ️  Tag v${{ needs.version-check.outputs.version }} already exists"
             echo "   Skipping release creation"
           fi
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          if [ "${{ steps.check_tag.outputs.exists }}" == "true" ]; then
-            echo "ℹ️  Tag v${{ steps.version.outputs.version }} already exists"
-            echo "   Skipping release creation"
-          else
-            echo "✅ Release created successfully!"
-            echo "📦 Version: v${{ steps.version.outputs.version }}"
-            echo "📁 Package: release/phantom-${{ steps.version.outputs.version }}.zip"
-            echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
-          fi
-
