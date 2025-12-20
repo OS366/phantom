@@ -302,6 +302,23 @@ jobs:
           echo "🏷️  Step 7/10: Creating Git Tag"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           TAG="v${{ needs.version-check.outputs.version }}"
+          echo "🔍 Checking if tag $TAG already exists..."
+          
+          # Fetch all tags first
+          git fetch --tags
+          
+          # Check if tag exists locally or remotely
+          if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null 2>&1; then
+            echo "⚠️  Tag $TAG already exists locally, deleting it..."
+            git tag -d "$TAG" || true
+          fi
+          
+          # Check remote
+          if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
+            echo "⚠️  Tag $TAG already exists on remote, deleting it..."
+            git push origin ":refs/tags/$TAG" || true
+          fi
+          
           echo "📝 Creating annotated tag: $TAG"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
