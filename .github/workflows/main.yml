@@ -104,18 +104,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: coverage
     permissions:
-      contents: read
+      contents: write
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag_exists: ${{ steps.check_tag.outputs.exists }}
+      version: ${{ steps.final_version.outputs.version }}
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: "Get Version"
-        id: version
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: "Install dependencies"
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: "Get Current Version"
+        id: current_version
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "📦 Step 3/10: Detecting Version"
@@ -123,29 +134,102 @@ jobs:
           echo "🔍 Reading version from package.json..."
           VERSION=$(node -p "require('./scripts/package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Detected version: $VERSION"
+          echo "✅ Current version: $VERSION"
       
-      - name: "Check if Tag Exists"
-        id: check_tag
+      - name: "Check if Tag Exists and Increment Version"
+        id: version_increment
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🏷️  Step 4/10: Checking Git Tag"
+          echo "🏷️  Step 4/10: Checking Git Tag & Incrementing Version"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          TAG="v${{ steps.version.outputs.version }}"
+          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+          TAG="v${CURRENT_VERSION}"
+          
           echo "🔍 Checking if tag $TAG already exists..."
           if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  Tag $TAG already exists, skipping release creation"
+            echo "⚠️  Tag $TAG already exists, incrementing version..."
+            
+            # Extract base version (remove -BETA, -ALPHA, etc.)
+            BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-.*//')
+            SUFFIX=$(echo "$CURRENT_VERSION" | sed 's/.*-//' || echo "")
+            
+            # Parse version parts
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+            
+            # Increment patch version
+            PATCH=$((PATCH + 1))
+            
+            # If patch reaches 10, increment minor and reset patch
+            if [ $PATCH -ge 10 ]; then
+              PATCH=0
+              MINOR=$((MINOR + 1))
+            fi
+            
+            # If minor reaches 10, increment major and reset minor
+            if [ $MINOR -ge 10 ]; then
+              MINOR=0
+              MAJOR=$((MAJOR + 1))
+            fi
+            
+            # Reconstruct version with BETA suffix
+            if [ -n "$SUFFIX" ]; then
+              NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}-${SUFFIX}"
+            else
+              NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}-BETA"
+            fi
+            
+            echo "📈 Incrementing version: $CURRENT_VERSION -> $NEW_VERSION"
+            echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "needs_increment=true" >> $GITHUB_OUTPUT
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "✅ Tag $TAG does not exist, proceeding with release"
+            echo "✅ Tag $TAG does not exist, using current version"
+            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "needs_increment=false" >> $GITHUB_OUTPUT
           fi
+      
+      - name: "Update Version in Files"
+        if: steps.version_increment.outputs.needs_increment == 'true'
+        run: |
+          NEW_VERSION="${{ steps.version_increment.outputs.new_version }}"
+          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+          
+          echo "📝 Updating version in package.json..."
+          cd scripts
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          
+          echo "📝 Updating version in phantom.js..."
+          cd ..
+          sed -i.bak "s/$CURRENT_VERSION/$NEW_VERSION/g" phantom.js
+          rm -f phantom.js.bak
+          
+          echo "✅ Version updated to $NEW_VERSION"
+      
+      - name: "Commit Version Update"
+        if: steps.version_increment.outputs.needs_increment == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/package.json phantom.js
+          git commit -m "chore: Auto-increment version to ${{ steps.version_increment.outputs.new_version }} [skip ci]" || exit 0
+          git push origin main || exit 0
+          echo "✅ Version update committed"
+      
+      - name: "Set Final Version"
+        id: final_version
+        run: |
+          FINAL_VERSION="${{ steps.version_increment.outputs.new_version }}"
+          echo "version=$FINAL_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Final version: $FINAL_VERSION"
 
   minify:
     name: "Step 5: Generate Minified"
     runs-on: ubuntu-latest
     needs: version-check
-    if: needs.version-check.outputs.tag_exists == 'false'
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v4
@@ -175,7 +259,6 @@ jobs:
     name: "Step 6: Create Package"
     runs-on: ubuntu-latest
     needs: [version-check, minify]
-    if: needs.version-check.outputs.tag_exists == 'false'
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v4
@@ -205,7 +288,6 @@ jobs:
     name: "Step 7: Create Git Tag"
     runs-on: ubuntu-latest
     needs: [version-check, package]
-    if: needs.version-check.outputs.tag_exists == 'false'
     permissions:
       contents: write
     steps:
@@ -232,7 +314,6 @@ jobs:
     name: "Step 8: Generate Release Notes"
     runs-on: ubuntu-latest
     needs: [version-check, tag]
-    if: needs.version-check.outputs.tag_exists == 'false'
     outputs:
       notes: ${{ steps.release_notes.outputs.notes }}
     steps:
@@ -275,7 +356,6 @@ jobs:
     name: "Step 9: Create GitHub Release"
     runs-on: ubuntu-latest
     needs: [version-check, package, release-notes]
-    if: needs.version-check.outputs.tag_exists == 'false'
     permissions:
       contents: write
     steps:
@@ -289,7 +369,7 @@ jobs:
             release/phantom-${{ needs.version-check.outputs.version }}.zip
           body: ${{ needs.release-notes.outputs.notes }}
           draft: false
-          prerelease: ${{ contains(needs.version-check.outputs.version, 'BETA') || contains(needs.version-check.outputs.version, 'ALPHA') || contains(needs.version-check.outputs.version, 'RC') }}
+          prerelease: true
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -307,21 +387,18 @@ jobs:
           echo "✅ Step 10/10: Pipeline Complete"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          if [ "${{ needs.version-check.outputs.tag_exists }}" == "false" ]; then
-            echo "🎉 Release v${{ needs.version-check.outputs.version }} created successfully!"
-            echo ""
-            echo "📦 Release Package:"
-            echo "   release/phantom-${{ needs.version-check.outputs.version }}.zip"
-            echo ""
-            echo "🏷️  Git Tag:"
-            echo "   v${{ needs.version-check.outputs.version }}"
-            echo ""
-            echo "🌐 GitHub Release:"
-            echo "   https://github.com/${{ github.repository }}/releases/tag/v${{ needs.version-check.outputs.version }}"
-          else
-            echo "ℹ️  Tag v${{ needs.version-check.outputs.version }} already exists"
-            echo "   Skipping release creation"
-          fi
+          echo "🎉 Release v${{ needs.version-check.outputs.version }} created successfully!"
+          echo ""
+          echo "📦 Release Package:"
+          echo "   release/phantom-${{ needs.version-check.outputs.version }}.zip"
+          echo ""
+          echo "🏷️  Git Tag:"
+          echo "   v${{ needs.version-check.outputs.version }}"
+          echo ""
+          echo "🌐 GitHub Release:"
+          echo "   https://github.com/${{ github.repository }}/releases/tag/v${{ needs.version-check.outputs.version }}"
+          echo ""
+          echo "🏷️  Label: BETA (Pre-release)"
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
