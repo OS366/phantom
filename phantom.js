@@ -928,6 +928,12 @@
     phantom.strings.chain = function (input) {
       var value = toStr(input);
       
+      // Create a function that returns the chainable object
+      // This allows automatic conversion in string contexts
+      function ChainableObject() {
+        return value;
+      }
+      
       // Chainable wrapper object
       var chainable = {
         // Get the final value
@@ -937,6 +943,20 @@
         
         // Get the final value (alias for .value())
         toString: function () {
+          return value;
+        },
+        
+        // Return value when used in primitive context
+        valueOf: function () {
+          return value;
+        },
+        
+        // For Java/Rhino compatibility - return value when object is converted
+        // This helps with logger.info() and other Java interop
+        toJavaString: function() {
+          if (typeof java !== "undefined" && java.lang && java.lang.String) {
+            return java.lang.String.valueOf(value);
+          }
           return value;
         },
         
@@ -1205,6 +1225,11 @@
         // Get the final value as string
         toString: function () {
           return String(value);
+        },
+        
+        // Return value when used in primitive context
+        valueOf: function () {
+          return value;
         },
         
         // Convert to string chain
@@ -2544,7 +2569,13 @@
     /* --------------------------------------------------
      * STRING PROTOTYPE EXTENSION
      * Add .phantom property to strings for direct method access
-     * Usage: message.phantom.strings.toUpperCase().trim().split()...
+     * 
+     * Usage:
+     *   message.phantom.strings.toUpperCase().trim().value()
+     *   String(message.phantom.strings.toUpperCase().trim())
+     * 
+     * Note: Always call .value() at the end or wrap in String()
+     *       when passing to logger.info() or other functions
      * -------------------------------------------------- */
     
     // Add phantom property to String prototype
