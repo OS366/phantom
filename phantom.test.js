@@ -958,11 +958,25 @@ describe('phantom.strings', () => {
       expect(result).toBe("HELLO UNIVERSE");
     });
 
-    test('should work with variable alias', () => {
+    test('should work with variable alias - var ps = phantom.strings', () => {
       const message = "test";
-      const ps = phantom.strings;
+      var ps = phantom.strings;
       const result = ps.chain(message).toUpperCase().trim().value();
       expect(result).toBe("TEST");
+    });
+
+    test('should work with variable alias for operations', () => {
+      const message = "hello";
+      var ps = phantom.strings;
+      const result = ps.operation.toUpperCase(message);
+      expect(result).toBe("HELLO");
+    });
+
+    test('should work with variable alias for maps', () => {
+      var pm = phantom.maps;
+      pm.channel.save("test", "value");
+      const result = pm.channel.get("test");
+      expect(result).toBe("value");
     });
 
     test('should work with toLowerCase and capitalize via .ps', () => {
