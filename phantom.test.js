@@ -940,6 +940,50 @@ describe('phantom.strings', () => {
       expect(result).toBe("0005");
     });
   });
+
+  describe('String.prototype.ps - Short alias for .phantom.strings', () => {
+    test('should access methods via .ps alias', () => {
+      const message = "  HELLO WORLD  ";
+      const result = message.ps.toUpperCase().trim().value();
+      expect(result).toBe("HELLO WORLD");
+    });
+
+    test('should chain multiple operations via .ps', () => {
+      const message = "  hello world  ";
+      const result = message.ps
+        .trim()
+        .toUpperCase()
+        .replace("WORLD", "UNIVERSE")
+        .value();
+      expect(result).toBe("HELLO UNIVERSE");
+    });
+
+    test('should work with variable alias', () => {
+      const message = "test";
+      const ps = phantom.strings;
+      const result = ps.chain(message).toUpperCase().trim().value();
+      expect(result).toBe("TEST");
+    });
+
+    test('should work with toLowerCase and capitalize via .ps', () => {
+      const message = "  HELLO WORLD  ";
+      const result = message.ps
+        .trim()
+        .toLowerCase()
+        .capitalize()
+        .value();
+      expect(result).toBe("Hello world");
+    });
+
+    test('should work with replace operations via .ps', () => {
+      const message = "hello hello hello";
+      const result = message.ps
+        .replaceAll("hello", "hi")
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HI HI HI");
+    });
+  });
 });
 
 describe('phantom.numbers', () => {

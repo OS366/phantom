@@ -2568,15 +2568,74 @@
   
     /* --------------------------------------------------
      * STRING PROTOTYPE EXTENSION
-     * Add .phantom property to strings for direct method access
+     * Add .phantom and .ps properties to strings for direct method access
      * 
      * Usage:
      *   message.phantom.strings.toUpperCase().trim().value()
+     *   message.ps.toUpperCase().trim().value()
      *   String(message.phantom.strings.toUpperCase().trim())
      * 
      * Note: Always call .value() at the end or wrap in String()
      *       when passing to logger.info() or other functions
      * -------------------------------------------------- */
+    
+    // Helper function to create chainable string methods object
+    function createStringChainMethods(self) {
+      return {
+        // Direct access to chain API
+        chain: function() {
+          return phantom.strings.chain(self);
+        },
+        // Direct access to operations (returns chainable)
+        toUpperCase: function() {
+          return phantom.strings.chain(self).toUpperCase();
+        },
+        toLowerCase: function() {
+          return phantom.strings.chain(self).toLowerCase();
+        },
+        trim: function() {
+          return phantom.strings.chain(self).trim();
+        },
+        leftTrim: function() {
+          return phantom.strings.chain(self).leftTrim();
+        },
+        rightTrim: function() {
+          return phantom.strings.chain(self).rightTrim();
+        },
+        capitalize: function() {
+          return phantom.strings.chain(self).capitalize();
+        },
+        reverse: function() {
+          return phantom.strings.chain(self).reverse();
+        },
+        reverseWords: function() {
+          return phantom.strings.chain(self).reverseWords();
+        },
+        replace: function(search, replace) {
+          return phantom.strings.chain(self).replace(search, replace);
+        },
+        replaceAll: function(search, replace) {
+          return phantom.strings.chain(self).replaceAll(search, replace);
+        },
+        remove: function(str) {
+          return phantom.strings.chain(self).remove(str);
+        },
+        leftPad: function(padChar, count) {
+          return phantom.strings.chain(self).leftPad(padChar, count);
+        },
+        rightPad: function(padChar, count) {
+          return phantom.strings.chain(self).rightPad(padChar, count);
+        },
+        substring: function(start, end) {
+          return phantom.strings.chain(self).substring(start, end);
+        },
+        wordwrap: function(size, cut, everything) {
+          return phantom.strings.chain(self).wordwrap(size, cut, everything);
+        },
+        // Direct operation access (non-chainable, returns value)
+        operation: phantom.strings.operation
+      };
+    }
     
     // Add phantom property to String prototype
     if (typeof String !== "undefined" && String.prototype) {
@@ -2584,66 +2643,22 @@
         get: function() {
           var self = this;
           return {
-            strings: {
-              // Direct access to chain API
-              chain: function() {
-                return phantom.strings.chain(self);
-              },
-              // Direct access to operations (returns chainable)
-              toUpperCase: function() {
-                return phantom.strings.chain(self).toUpperCase();
-              },
-              toLowerCase: function() {
-                return phantom.strings.chain(self).toLowerCase();
-              },
-              trim: function() {
-                return phantom.strings.chain(self).trim();
-              },
-              leftTrim: function() {
-                return phantom.strings.chain(self).leftTrim();
-              },
-              rightTrim: function() {
-                return phantom.strings.chain(self).rightTrim();
-              },
-              capitalize: function() {
-                return phantom.strings.chain(self).capitalize();
-              },
-              reverse: function() {
-                return phantom.strings.chain(self).reverse();
-              },
-              reverseWords: function() {
-                return phantom.strings.chain(self).reverseWords();
-              },
-              replace: function(search, replace) {
-                return phantom.strings.chain(self).replace(search, replace);
-              },
-              replaceAll: function(search, replace) {
-                return phantom.strings.chain(self).replaceAll(search, replace);
-              },
-              remove: function(str) {
-                return phantom.strings.chain(self).remove(str);
-              },
-              leftPad: function(padChar, count) {
-                return phantom.strings.chain(self).leftPad(padChar, count);
-              },
-              rightPad: function(padChar, count) {
-                return phantom.strings.chain(self).rightPad(padChar, count);
-              },
-              substring: function(start, end) {
-                return phantom.strings.chain(self).substring(start, end);
-              },
-              wordwrap: function(size, cut, everything) {
-                return phantom.strings.chain(self).wordwrap(size, cut, everything);
-              },
-              // Direct operation access (non-chainable, returns value)
-              operation: phantom.strings.operation
-            },
+            strings: createStringChainMethods(self),
             numbers: {
               chain: function() {
                 return phantom.numbers.chain(self);
               }
             }
           };
+        },
+        enumerable: false,
+        configurable: true
+      });
+      
+      // Add .ps as alias for .phantom.strings (shorter syntax)
+      Object.defineProperty(String.prototype, 'ps', {
+        get: function() {
+          return createStringChainMethods(this);
         },
         enumerable: false,
         configurable: true
