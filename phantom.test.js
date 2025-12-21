@@ -870,6 +870,76 @@ describe('phantom.strings', () => {
       expect(chain.value()).toBe("test");
     });
   });
+
+  describe('String.prototype.phantom - Direct method access', () => {
+    test('should access phantom methods directly on string', () => {
+      const message = "  HELLO WORLD  ";
+      const result = message.phantom.strings.toUpperCase().trim().value();
+      expect(result).toBe("HELLO WORLD");
+    });
+
+    test('should chain multiple operations directly on string', () => {
+      const message = "  hello world  ";
+      const result = message.phantom.strings
+        .trim()
+        .toUpperCase()
+        .replace("WORLD", "UNIVERSE")
+        .value();
+      expect(result).toBe("HELLO UNIVERSE");
+    });
+
+    test('should work with toLowerCase and capitalize', () => {
+      const message = "  HELLO WORLD  ";
+      const result = message.phantom.strings
+        .trim()
+        .toLowerCase()
+        .capitalize()
+        .value();
+      expect(result).toBe("Hello world");
+    });
+
+    test('should work with substring operation', () => {
+      const message = "hello world";
+      const result = message.phantom.strings
+        .substring(0, 5)
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HELLO");
+    });
+
+    test('should access operation methods directly', () => {
+      const message = "hello";
+      const upper = message.phantom.strings.operation.toUpperCase(message);
+      expect(upper).toBe("HELLO");
+    });
+
+    test('should convert to number chain from string', () => {
+      const message = "123.45";
+      const result = message.phantom.strings
+        .trim()
+        .toNumberChain()
+        .round(1)
+        .value();
+      expect(result).toBe(123.5);
+    });
+
+    test('should work with replace operations', () => {
+      const message = "hello hello hello";
+      const result = message.phantom.strings
+        .replaceAll("hello", "hi")
+        .toUpperCase()
+        .value();
+      expect(result).toBe("HI HI HI");
+    });
+
+    test('should work with padding operations', () => {
+      const message = "5";
+      const result = message.phantom.strings
+        .leftPad("0", 3)
+        .value();
+      expect(result).toBe("0005");
+    });
+  });
 });
 
 describe('phantom.numbers', () => {
