@@ -2152,3 +2152,63 @@ describe('phantom.dates', () => {
     });
   });
 });
+
+describe('phantom.intelligence.dates.detect', () => {
+  setupPhantomTests();
+
+  test('should detect ISO date format', () => {
+    expect(phantom.intelligence.dates.detect('2024-12-16')).toBe('yyyy-MM-dd');
+  });
+
+  test('should detect ISO datetime format', () => {
+    expect(phantom.intelligence.dates.detect('2024-12-16T10:30:00')).toBe("yyyy-MM-dd'T'HH:mm:ss");
+  });
+
+  test('should detect ISO datetime with milliseconds', () => {
+    expect(phantom.intelligence.dates.detect('2024-12-16T10:30:00.123')).toBe("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  });
+
+  test('should detect ISO datetime with timezone Z', () => {
+    expect(phantom.intelligence.dates.detect('2024-12-16T10:30:00Z')).toBe("yyyy-MM-dd'T'HH:mm:ss'Z'");
+  });
+
+  test('should detect US date format with slash', () => {
+    expect(phantom.intelligence.dates.detect('12/16/2024')).toBe('MM/dd/yyyy');
+  });
+
+  test('should detect US date format with dash', () => {
+    expect(phantom.intelligence.dates.detect('12-16-2024')).toBe('MM-dd-yyyy');
+  });
+
+  test('should detect EU date format with locale hint', () => {
+    expect(phantom.intelligence.dates.detect('16/12/2024', { locale: 'EU' })).toBe('dd/MM/yyyy');
+  });
+
+  test('should detect compact date format yyyyMMdd', () => {
+    expect(phantom.intelligence.dates.detect('20241216')).toBe('yyyyMMdd');
+  });
+
+  test('should detect compact datetime format yyyyMMddHHmmss', () => {
+    expect(phantom.intelligence.dates.detect('20241216103000')).toBe('yyyyMMddHHmmss');
+  });
+
+  test('should detect compact datetime with millis yyyyMMddHHmmssSSS', () => {
+    expect(phantom.intelligence.dates.detect('20241216103000123')).toBe('yyyyMMddHHmmssSSS');
+  });
+
+  test('should throw error for invalid date string', () => {
+    expect(() => phantom.intelligence.dates.detect('not-a-date')).toThrow('Invalid date');
+  });
+
+  test('should throw error for invalid compact date', () => {
+    expect(() => phantom.intelligence.dates.detect('20241316')).toThrow('Invalid date');
+  });
+
+  test('should throw error for null input', () => {
+    expect(() => phantom.intelligence.dates.detect(null)).toThrow();
+  });
+
+  test('should throw error for empty string', () => {
+    expect(() => phantom.intelligence.dates.detect('')).toThrow();
+  });
+});
