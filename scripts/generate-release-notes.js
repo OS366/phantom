@@ -27,10 +27,11 @@ function getLastTag() {
 
 function getCommitsSinceTag(tag) {
   if (!tag) {
-    // If no tag, get all commits
-    return exec('git log --pretty=format:"%h|%s|%b" --no-merges');
+    // If no tag, get last 20 commits
+    return exec('git log -20 --pretty=format:"%h|%s|%b"');
   }
-  return exec(`git log ${tag}..HEAD --pretty=format:"%h|%s|%b" --no-merges`);
+  // Include merge commits to capture PR merges
+  return exec(`git log ${tag}..HEAD --pretty=format:"%h|%s|%b"`);
 }
 
 function categorizeCommit(message) {
@@ -213,7 +214,11 @@ function generateReleaseNotes(version) {
   // Full Changelog
   notes += `---\n\n`;
   notes += `## Full Changelog\n\n`;
-  notes += `For the complete list of changes, see the [commit history](https://github.com/OS366/phantom/compare/${lastTag || 'HEAD~' + stats.total}...HEAD).\n\n`;
+  if (lastTag) {
+    notes += `**[${lastTag}...v${version}](https://github.com/OS366/phantom/compare/${lastTag}...v${version})**\n\n`;
+  } else {
+    notes += `**[View all commits](https://github.com/OS366/phantom/commits/main)**\n\n`;
+  }
   
   return notes;
 }
@@ -232,9 +237,9 @@ const releaseNotes = generateReleaseNotes(version);
 const outputPath = path.join(__dirname, '..', 'docs', `RELEASE_NOTES_v${version}.md`);
 fs.writeFileSync(outputPath, releaseNotes, 'utf8');
 
-console.log(`✅ Release notes generated: ${outputPath}`);
-console.log(`\n${releaseNotes.substring(0, 500)}...\n`);
+// Log to stderr so it doesn't pollute stdout (which is captured by workflow)
+console.error(`✅ Release notes generated: ${outputPath}`);
 
-// Also output to stdout for GitHub Actions
-console.log('::set-output name=notes::' + releaseNotes.replace(/\n/g, '%0A'));
+// Output release notes to stdout for GitHub Actions workflow to capture
+console.log(releaseNotes);
 

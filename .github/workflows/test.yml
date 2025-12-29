@@ -1,0 +1,40 @@
+name: Run Tests
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Tests (${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['18.x', '20.x']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'scripts/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./scripts
+        run: npm ci
+      
+      - name: Run Tests
+        working-directory: ./scripts
+        run: npm test
+      
+      - name: Check Test Coverage
+        working-directory: ./scripts
+        run: npm run test:check
+
