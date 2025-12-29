@@ -370,3 +370,4 @@ var lastName = phantom.strings.operation.trim(parts[1]);
 - [Map Operations](Map-Operations) - Store and retrieve string data
 - [Examples](Examples) - Real-world string processing examples
 
+

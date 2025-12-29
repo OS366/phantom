@@ -20,32 +20,75 @@ Date operations in Phantom.js allow you to:
 
 ---
 
-## Constants
+## Intelligent Format Detection
 
-### Date Format Constants
+### phantom.intelligence.dates.detect(dateString, options?)
 
-```javascript
-phantom.dates.FORMAT.ISO_DATE          // "yyyy-MM-dd"
-phantom.dates.FORMAT.ISO_DATETIME      // "yyyy-MM-dd'T'HH:mm:ss"
-phantom.dates.FORMAT.ISO_DATETIME_MS   // "yyyy-MM-dd'T'HH:mm:ss.SSS"
-phantom.dates.FORMAT.US_DATE           // "MM/dd/yyyy"
-phantom.dates.FORMAT.US_DATETIME       // "MM/dd/yyyy HH:mm:ss"
-phantom.dates.FORMAT.EU_DATE           // "dd/MM/yyyy"
-phantom.dates.FORMAT.EU_DATETIME       // "dd/MM/yyyy HH:mm:ss"
-```
-
-### Time Unit Constants
+Dynamically detect the format of a date string. Returns the Java date format pattern.
 
 ```javascript
-phantom.dates.UNIT.DAYS      // "DAYS"
-phantom.dates.UNIT.HOURS     // "HOURS"
-phantom.dates.UNIT.MINUTES   // "MINUTES"
-phantom.dates.UNIT.SECONDS   // "SECONDS"
-phantom.dates.UNIT.MILLIS    // "MILLIS"
-phantom.dates.UNIT.WEEKS    // "WEEKS"
-phantom.dates.UNIT.MONTHS    // "MONTHS"
-phantom.dates.UNIT.YEARS    // "YEARS"
+// Detect ISO date format
+var format = phantom.intelligence.dates.detect("2024-12-16");
+// Output: "yyyy-MM-dd"
+
+// Detect US date format
+var format = phantom.intelligence.dates.detect("12/16/2024");
+// Output: "MM/dd/yyyy"
+
+// Detect EU date format with locale hint
+var format = phantom.intelligence.dates.detect("16/12/2024", { locale: "EU" });
+// Output: "dd/MM/yyyy"
+
+// Detect datetime with timezone
+var format = phantom.intelligence.dates.detect("2024-12-16T10:30:00Z");
+// Output: "yyyy-MM-dd'T'HH:mm:ssX"
+
+// Detect compact ISO format
+var format = phantom.intelligence.dates.detect("20241216");
+// Output: "yyyyMMdd"
 ```
+
+**Parameters:**
+- `dateString` (String): The date string to analyze
+- `options` (Object, optional): Detection options
+  - `locale` (String, optional): Locale hint - `"US"` (MM/dd), `"EU"` (dd/MM), or `"auto"` (default)
+
+**Returns:** Java date format pattern string (e.g., `"yyyy-MM-dd"`, `"yyyyMMdd"`)
+
+**Throws:** `Error("Invalid date")` if the format cannot be detected
+
+**Supported Formats:**
+- ISO: `yyyy-MM-dd`, `yyyy-MM-dd'T'HH:mm:ss`, with optional milliseconds and timezone
+- US: `MM/dd/yyyy`, `MM-dd-yyyy`, with optional time
+- EU: `dd/MM/yyyy`, `dd-MM-yyyy`, with optional time
+- Compact: `yyyyMMdd`, `yyyyMMddHHmmss`, `yyyyMMddHHmmssSSS`
+
+---
+
+## Common Format Patterns
+
+| Pattern | Example | Description |
+|---------|---------|-------------|
+| `yyyy-MM-dd` | 2024-12-16 | ISO date |
+| `yyyy-MM-dd'T'HH:mm:ss` | 2024-12-16T10:30:00 | ISO datetime |
+| `MM/dd/yyyy` | 12/16/2024 | US date |
+| `dd/MM/yyyy` | 16/12/2024 | EU date |
+| `yyyyMMdd` | 20241216 | Compact date |
+
+## Time Units
+
+Use these string values for time unit parameters:
+
+| Unit | Value |
+|------|-------|
+| Days | `"DAYS"` |
+| Hours | `"HOURS"` |
+| Minutes | `"MINUTES"` |
+| Seconds | `"SECONDS"` |
+| Milliseconds | `"MILLIS"` |
+| Weeks | `"WEEKS"` |
+| Months | `"MONTHS"` |
+| Years | `"YEARS"` |
 
 ---
 
@@ -90,8 +133,8 @@ Parse a date string to a LocalDate object.
 var date1 = phantom.dates.operation.parse("2024-12-16");
 
 // Parse with specific format
-var date2 = phantom.dates.operation.parse("12/16/2024", phantom.dates.FORMAT.US_DATE);
-var date3 = phantom.dates.operation.parse("16/12/2024", phantom.dates.FORMAT.EU_DATE);
+var date2 = phantom.dates.operation.parse("12/16/2024", "MM/dd/yyyy");
+var date3 = phantom.dates.operation.parse("16/12/2024", "dd/MM/yyyy");
 
 // Parse with custom format
 var date4 = phantom.dates.operation.parse("2024.12.16", "yyyy.MM.dd");
@@ -116,7 +159,7 @@ Parse a datetime string to a LocalDateTime object.
 var dt1 = phantom.dates.operation.parseDateTime("2024-12-16T10:30:00");
 
 // Parse with specific format
-var dt2 = phantom.dates.operation.parseDateTime("12/16/2024 10:30:00", phantom.dates.FORMAT.US_DATETIME);
+var dt2 = phantom.dates.operation.parseDateTime("12/16/2024 10:30:00", "MM/dd/yyyy HH:mm:ss");
 
 // Parse with custom format
 var dt3 = phantom.dates.operation.parseDateTime("2024-12-16 10:30:00", "yyyy-MM-dd HH:mm:ss");
@@ -139,11 +182,11 @@ Format a date to a string.
 ```javascript
 var date = phantom.dates.operation.parse("2024-12-16");
 
-// Format using constants
-var iso = phantom.dates.operation.format(date, phantom.dates.FORMAT.ISO_DATE);
+// Format to different patterns
+var iso = phantom.dates.operation.format(date, "yyyy-MM-dd");
 // Output: "2024-12-16"
 
-var us = phantom.dates.operation.format(date, phantom.dates.FORMAT.US_DATE);
+var us = phantom.dates.operation.format(date, "MM/dd/yyyy");
 // Output: "12/16/2024"
 
 // Format using custom pattern
@@ -168,7 +211,7 @@ Format a datetime to a string.
 ```javascript
 var dt = phantom.dates.operation.parseDateTime("2024-12-16T10:30:00");
 
-var formatted = phantom.dates.operation.formatDateTime(dt, phantom.dates.FORMAT.ISO_DATETIME);
+var formatted = phantom.dates.operation.formatDateTime(dt, "yyyy-MM-dd'T'HH:mm:ss");
 // Output: "2024-12-16T10:30:00"
 ```
 
@@ -246,19 +289,19 @@ Add time to a date.
 var date = phantom.dates.operation.parse("2024-12-16");
 
 // Add 30 days
-var futureDate = phantom.dates.operation.add(date, 30, phantom.dates.UNIT.DAYS);
+var futureDate = phantom.dates.operation.add(date, 30, "DAYS");
 
 // Add 2 months
-var futureDate2 = phantom.dates.operation.add(date, 2, phantom.dates.UNIT.MONTHS);
+var futureDate2 = phantom.dates.operation.add(date, 2, "MONTHS");
 
 // Add 1 year
-var futureDate3 = phantom.dates.operation.add(date, 1, phantom.dates.UNIT.YEARS);
+var futureDate3 = phantom.dates.operation.add(date, 1, "YEARS");
 ```
 
 **Parameters:**
 - `date` (LocalDate or String): Date to add to
 - `amount` (Number): Amount to add
-- `unit` (String): Unit constant (use `phantom.dates.UNIT.*`)
+- `unit` (String): Time unit (`"DAYS"`, `"HOURS"`, `"MINUTES"`, `"SECONDS"`, `"MILLIS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`)
 
 **Returns:** New LocalDate object (original date is not modified)
 
@@ -274,16 +317,16 @@ Subtract time from a date.
 var date = phantom.dates.operation.parse("2024-12-16");
 
 // Subtract 7 days
-var pastDate = phantom.dates.operation.subtract(date, 7, phantom.dates.UNIT.DAYS);
+var pastDate = phantom.dates.operation.subtract(date, 7, "DAYS");
 
 // Subtract 1 month
-var pastDate2 = phantom.dates.operation.subtract(date, 1, phantom.dates.UNIT.MONTHS);
+var pastDate2 = phantom.dates.operation.subtract(date, 1, "MONTHS");
 ```
 
 **Parameters:**
 - `date` (LocalDate or String): Date to subtract from
 - `amount` (Number): Amount to subtract
-- `unit` (String): Unit constant (use `phantom.dates.UNIT.*`)
+- `unit` (String): Time unit (`"DAYS"`, `"HOURS"`, `"MINUTES"`, `"SECONDS"`, `"MILLIS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`)
 
 **Returns:** New LocalDate object (original date is not modified)
 
@@ -300,18 +343,18 @@ var date1 = phantom.dates.operation.parse("2024-12-16");
 var date2 = phantom.dates.operation.parse("2024-12-26");
 
 // Calculate days between
-var days = phantom.dates.operation.between(date1, date2, phantom.dates.UNIT.DAYS);
+var days = phantom.dates.operation.between(date1, date2, "DAYS");
 // Output: 10
 
 // Calculate months between
-var months = phantom.dates.operation.between(date1, date2, phantom.dates.UNIT.MONTHS);
+var months = phantom.dates.operation.between(date1, date2, "MONTHS");
 // Output: 0
 ```
 
 **Parameters:**
 - `date1` (LocalDate or String): First date
 - `date2` (LocalDate or String): Second date
-- `unit` (String): Unit constant (use `phantom.dates.UNIT.*`)
+- `unit` (String): Time unit (`"DAYS"`, `"HOURS"`, `"MINUTES"`, `"SECONDS"`, `"MILLIS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`)
 
 **Returns:** Difference as number
 
@@ -427,15 +470,15 @@ Create a duration from an amount and unit.
 
 ```javascript
 // Create 5 day duration
-var duration = phantom.dates.duration.of(5, phantom.dates.UNIT.DAYS);
+var duration = phantom.dates.duration.of(5, "DAYS");
 
 // Create 2 hour duration
-var duration2 = phantom.dates.duration.of(2, phantom.dates.UNIT.HOURS);
+var duration2 = phantom.dates.duration.of(2, "HOURS");
 ```
 
 **Parameters:**
 - `amount` (Number): Amount
-- `unit` (String): Unit constant (use `phantom.dates.UNIT.*`)
+- `unit` (String): Time unit (`"DAYS"`, `"HOURS"`, `"MINUTES"`, `"SECONDS"`, `"MILLIS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`)
 
 **Returns:** Java `Duration` object
 
@@ -449,7 +492,7 @@ Add a duration to a datetime.
 
 ```javascript
 var dt = phantom.dates.operation.parseDateTime("2024-12-16T10:00:00");
-var duration = phantom.dates.duration.of(2, phantom.dates.UNIT.HOURS);
+var duration = phantom.dates.duration.of(2, "HOURS");
 
 var newDt = phantom.dates.duration.add(dt, duration);
 // Returns: LocalDateTime at 2024-12-16T12:00:00
@@ -471,7 +514,7 @@ Subtract a duration from a datetime.
 
 ```javascript
 var dt = phantom.dates.operation.parseDateTime("2024-12-16T10:00:00");
-var duration = phantom.dates.duration.of(2, phantom.dates.UNIT.HOURS);
+var duration = phantom.dates.duration.of(2, "HOURS");
 
 var newDt = phantom.dates.duration.subtract(dt, duration);
 // Returns: LocalDateTime at 2024-12-16T08:00:00
@@ -562,11 +605,11 @@ var millis = phantom.dates.duration.toMillis(duration);
 var date = phantom.dates.operation.parse("2024-12-16");
 
 // Format to US format
-var usDate = phantom.dates.operation.format(date, phantom.dates.FORMAT.US_DATE);
+var usDate = phantom.dates.operation.format(date, "MM/dd/yyyy");
 // Output: "12/16/2024"
 
 // Format to EU format
-var euDate = phantom.dates.operation.format(date, phantom.dates.FORMAT.EU_DATE);
+var euDate = phantom.dates.operation.format(date, "dd/MM/yyyy");
 // Output: "16/12/2024"
 ```
 
@@ -576,13 +619,13 @@ var euDate = phantom.dates.operation.format(date, phantom.dates.FORMAT.EU_DATE);
 var today = phantom.dates.operation.today();
 
 // Get date 30 days from now
-var futureDate = phantom.dates.operation.add(today, 30, phantom.dates.UNIT.DAYS);
+var futureDate = phantom.dates.operation.add(today, 30, "DAYS");
 
 // Get date 1 week ago
-var pastDate = phantom.dates.operation.subtract(today, 7, phantom.dates.UNIT.DAYS);
+var pastDate = phantom.dates.operation.subtract(today, 7, "DAYS");
 
 // Calculate days between
-var days = phantom.dates.operation.between(pastDate, futureDate, phantom.dates.UNIT.DAYS);
+var days = phantom.dates.operation.between(pastDate, futureDate, "DAYS");
 // Output: 37
 ```
 
@@ -661,7 +704,7 @@ Errors are logged to the logger (if available) with the prefix `[phantom]`.
    - `mm` - 2-digit minute (00-59)
    - `ss` - 2-digit second (00-59)
 
-4. **Unit Constants:** Always use `phantom.dates.UNIT.*` constants for units to avoid typos and ensure compatibility.
+4. **Unit Strings:** Use uppercase time unit strings like `"DAYS"`, `"HOURS"`, `"MONTHS"`, etc.
 
 ---
 
