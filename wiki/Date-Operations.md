@@ -41,7 +41,7 @@ var format = phantom.intelligence.dates.detect("16/12/2024", { locale: "EU" });
 
 // Detect datetime with timezone
 var format = phantom.intelligence.dates.detect("2024-12-16T10:30:00Z");
-// Output: "yyyy-MM-dd'T'HH:mm:ssX"
+// Output: "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
 // Detect compact ISO format
 var format = phantom.intelligence.dates.detect("20241216");
