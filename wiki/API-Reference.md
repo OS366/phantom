@@ -9,6 +9,7 @@ Complete API reference for all Phantom.js operations.
 - [String Operations](#string-operations)
 - [Number Operations](#number-operations)
 - [JSON Operations](#json-operations)
+- [Intelligence Operations](#intelligence-operations)
 
 ## Initialization
 
@@ -875,6 +876,57 @@ Check if value is an object (not array).
 - `obj` (Any): Value to check
 
 **Returns:** Boolean
+
+---
+
+## Intelligence Operations
+
+Smart detection and analysis utilities under `phantom.intelligence.*`
+
+### `phantom.intelligence.dates.detect(dateString, options?)`
+
+Dynamically detect the format of a date string.
+
+**Parameters:**
+- `dateString` (String): The date string to analyze
+- `options` (Object, optional): Detection options
+  - `locale` (String, optional): Locale hint - `"US"` (MM/dd), `"EU"` (dd/MM), or `"auto"` (default)
+
+**Returns:** Java date format pattern string (e.g., `"yyyy-MM-dd"`, `"yyyyMMdd"`)
+
+**Throws:** `Error("Invalid date")` if the format cannot be detected
+
+**Example:**
+```javascript
+// Detect ISO format
+phantom.intelligence.dates.detect("2024-12-16");
+// Returns: "yyyy-MM-dd"
+
+// Detect US format
+phantom.intelligence.dates.detect("12/16/2024");
+// Returns: "MM/dd/yyyy"
+
+// Detect with locale hint
+phantom.intelligence.dates.detect("16/12/2024", { locale: "EU" });
+// Returns: "dd/MM/yyyy"
+
+// Detect compact format
+phantom.intelligence.dates.detect("20241216");
+// Returns: "yyyyMMdd"
+
+// Auto-detect and use for parsing
+var dateStr = "2024-12-16";
+var format = phantom.intelligence.dates.detect(dateStr);
+var date = phantom.dates.operation.parse(dateStr, format);
+```
+
+**Supported Formats:**
+- ISO: `yyyy-MM-dd`, `yyyy-MM-dd'T'HH:mm:ss`, with optional milliseconds and timezone
+- US: `MM/dd/yyyy`, `MM-dd-yyyy`, with optional time
+- EU: `dd/MM/yyyy`, `dd-MM-yyyy`, with optional time  
+- Compact: `yyyyMMdd`, `yyyyMMddHHmmss`, `yyyyMMddHHmmssSSS`
+
+---
 
 ## Related Topics
 

@@ -1,510 +1,21 @@
-/*!
- * Phantom.js v0.1.6-BETA
- * ============================================
- * A product of David Labs
- * Copyright (C) 2025 OS366 / David Labs
+/*! Phantom.js v0.1.7-BETA | (c) 2025 David Labs | GPL-3.0
+ * Docs: github.com/OS366/phantom/wiki
  * 
- * Lightweight helper library for OIE scripting
- *
- * Documentation: https://github.com/OS366/phantom/wiki
- * 
- * LICENSE: GNU General Public License v3.0 (GPL-3.0)
- * This software is open source and free to use, modify, and distribute
- * under the terms of GPL v3. However, you MUST maintain the attribution
- * "Product of David Labs" in all copies and modified versions.
- *
- * Available Categories (type "phantom." to see):
- *   - phantom.maps       - Map operations (channel, global, connector, response, configuration)
- *   - phantom.strings    - String operations (trim, replace, split, etc.)
- *   - phantom.numbers    - Number operations (add, subtract, round, etc.)
- *   - phantom.json       - JSON operations (parse, stringify, get, set, etc.)
- *   - phantom.base64     - Base64 operations (encode, decode)
- *   - phantom.xml        - XML operations (parse, stringify, get, has)
- *   - phantom.dates      - Date operations (now, parse, format, etc.)
- *
- * Helper Functions:
- *   - phantom.help()           - Show all available operations
- *   - phantom.help('maps')     - Show operations for specific category
- *   - phantom.autocomplete()  - Get array of available options
- *   - phantom._()             - Quick reference guide
- *   - phantom.version         - Get current version
- *
- * WARNING
- * -------
- * Drag and drop is not possible for variables saved using phantom.maps.*
+ * MODULES: maps | strings | numbers | json | base64 | xml | dates | intelligence
  */
-
-/**
- * @typedef {Object} Phantom
- * @property {Object} maps - Map operations
- * @property {Object} strings - String operations
- * @property {Object} numbers - Number operations
- * @property {Object} json - JSON operations
- * @property {Object} base64 - Base64 operations
- * @property {Object} xml - XML operations
- * @property {Object} dates - Date operations
- * @property {string} version - Current version
- * @property {Function} help - Show help documentation
- * @property {Function} autocomplete - Get autocomplete suggestions
- * @property {Function} _ - Quick reference guide
- * @property {Object} _autocomplete - Autocomplete metadata for OIE editor
- * @property {Function} _getSuggestions - Get suggestions for a given path
- */
-
-/**
- * OIE Editor Autocomplete Support
- * 
- * When typing "phantom." in OIE transformer editor, the following properties are available:
- * 
- * phantom.maps - Map operations (channel, global, connector, response, configuration)
- *   phantom.maps.channel.save(key, value)
- *   phantom.maps.channel.get(key)
- *   phantom.maps.channel.exists(key)
- *   phantom.maps.channel.delete(key)
- * 
- * phantom.strings - String operations
- *   phantom.strings.operation.trim(str)
- *   phantom.strings.operation.replace(str, search, replace)
- *   phantom.strings.chain(str) - Chaining API
- * 
- * phantom.numbers - Number operations
- *   phantom.numbers.operation.add(a, b)
- *   phantom.numbers.operation.round(num, decimals)
- *   phantom.numbers.chain(num) - Chaining API
- * 
- * phantom.json - JSON operations
- *   phantom.json.operation.parse(str)
- *   phantom.json.operation.stringify(obj)
- *   phantom.json.operation.get(obj, path)
- * 
- * phantom.base64 - Base64 operations
- *   phantom.base64.operation.encode(str)
- *   phantom.base64.operation.decode(str)
- * 
- * phantom.xml - XML operations
- *   phantom.xml.operation.parse(str)
- *   phantom.xml.operation.get(xml, xpath)
- * 
- * phantom.dates - Date operations
- *   phantom.dates.operation.now()
- *   phantom.dates.operation.parse(str)
- *   phantom.dates.format.detect(str)
- */
-
 (function (global) {
-    "use strict";
-  
-    var phantom = global.phantom || {};
-    global.phantom = phantom;
-  
-    phantom.version = "0.1.6-BETA";
-  
-    phantom.config = { silent: true };
-  
-    phantom.init = function (o) {
-      o = o || {};
-      if (typeof o.silent === "boolean") phantom.config.silent = o.silent;
-      return phantom;
-    };
-  
-    /* --------------------------------------------------
-     * HELP & AUTOCOMPLETE SYSTEM
-     * For OIE scripting environments without native autocomplete
-     * -------------------------------------------------- */
-  
-    // Help documentation for all operations
-    var helpDocs = {
-      maps: {
-        description: "Map operations for storing and retrieving data",
-        operations: {
-          channel: {
-            description: "Channel map operations (save, get, exists, delete)",
-            methods: {
-              save: "Save a value to channel map: phantom.maps.channel.save(key, value)",
-              get: "Get a value from channel map: phantom.maps.channel.get(key)",
-              exists: "Check if key exists: phantom.maps.channel.exists(key)",
-              delete: "Delete a key: phantom.maps.channel.delete(key)"
-            }
-          },
-          global: {
-            description: "Global map operations (save, get, exists, delete)",
-            methods: {
-              save: "Save a value to global map: phantom.maps.global.save(key, value)",
-              get: "Get a value from global map: phantom.maps.global.get(key)",
-              exists: "Check if key exists: phantom.maps.global.exists(key)",
-              delete: "Delete a key: phantom.maps.global.delete(key)"
-            }
-          },
-          connector: {
-            description: "Connector map operations (save, get, exists, delete)",
-            methods: {
-              save: "Save a value to connector map: phantom.maps.connector.save(key, value)",
-              get: "Get a value from connector map: phantom.maps.connector.get(key)",
-              exists: "Check if key exists: phantom.maps.connector.exists(key)",
-              delete: "Delete a key: phantom.maps.connector.delete(key)"
-            }
-          },
-          response: {
-            description: "Response map operations (save, get, exists, delete) - Available only in response context",
-            methods: {
-              save: "Save a value to response map: phantom.maps.response.save(key, value)",
-              get: "Get a value from response map: phantom.maps.response.get(key)",
-              exists: "Check if key exists: phantom.maps.response.exists(key)",
-              delete: "Delete a key: phantom.maps.response.delete(key)"
-            }
-          },
-          configuration: {
-            description: "Configuration map operations (read-only: get, exists)",
-            methods: {
-              get: "Get a value from configuration map: phantom.maps.configuration.get(key)",
-              exists: "Check if key exists: phantom.maps.configuration.exists(key)"
-            }
-          }
-        }
-      },
-      strings: {
-        description: "String operations for text manipulation",
-        operations: {
-          operation: {
-            description: "String utility functions",
-            methods: {
-              trim: "Remove whitespace from both ends: phantom.strings.operation.trim(str)",
-              leftPad: "Pad string on the left: phantom.strings.operation.leftPad(str, count, padChar)",
-              rightPad: "Pad string on the right: phantom.strings.operation.rightPad(str, count, padChar)",
-              find: "Find substring position: phantom.strings.operation.find(str, search)",
-              replace: "Replace substring: phantom.strings.operation.replace(str, search, replace)",
-              split: "Split string into array: phantom.strings.operation.split(str, delimiter)",
-              substring: "Extract substring: phantom.strings.operation.substring(str, start, end)",
-              toUpperCase: "Convert to uppercase: phantom.strings.operation.toUpperCase(str)",
-              toLowerCase: "Convert to lowercase: phantom.strings.operation.toLowerCase(str)",
-              capitalize: "Capitalize first letter: phantom.strings.operation.capitalize(str)",
-              reverse: "Reverse string: phantom.strings.operation.reverse(str)",
-              length: "Get string length: phantom.strings.operation.length(str)",
-              startsWith: "Check if starts with: phantom.strings.operation.startsWith(str, prefix)",
-              endsWith: "Check if ends with: phantom.strings.operation.endsWith(str, suffix)",
-              contains: "Check if contains: phantom.strings.operation.contains(str, search)",
-              repeat: "Repeat string: phantom.strings.operation.repeat(str, count)",
-              remove: "Remove substring: phantom.strings.operation.remove(str, search)",
-              isEmpty: "Check if empty: phantom.strings.operation.isEmpty(str)",
-              isBlank: "Check if blank: phantom.strings.operation.isBlank(str)",
-              wordwrap: "Wrap text to lines: phantom.strings.operation.wordwrap(str, width)"
-            }
-          },
-          chain: {
-            description: "String chaining API for fluent operations",
-            methods: {
-              value: "Get final value: phantom.strings.chain(str).value()",
-              toNumberChain: "Convert to number chain: phantom.strings.chain(str).toNumberChain()"
-            }
-          }
-        }
-      },
-      numbers: {
-        description: "Number operations for mathematical calculations",
-        operations: {
-          operation: {
-            description: "Number utility functions",
-            methods: {
-              parse: "Parse string to number: phantom.numbers.operation.parse(str)",
-              isNumber: "Check if number: phantom.numbers.operation.isNumber(value)",
-              add: "Add two numbers: phantom.numbers.operation.add(a, b)",
-              subtract: "Subtract: phantom.numbers.operation.subtract(a, b)",
-              multiply: "Multiply: phantom.numbers.operation.multiply(a, b)",
-              divide: "Divide: phantom.numbers.operation.divide(a, b)",
-              round: "Round number: phantom.numbers.operation.round(num, decimals)",
-              min: "Get minimum: phantom.numbers.operation.min(a, b)",
-              max: "Get maximum: phantom.numbers.operation.max(a, b)",
-              abs: "Absolute value: phantom.numbers.operation.abs(num)",
-              ceil: "Round up: phantom.numbers.operation.ceil(num)",
-              floor: "Round down: phantom.numbers.operation.floor(num)",
-              sqrt: "Square root: phantom.numbers.operation.sqrt(num)",
-              pow: "Power: phantom.numbers.operation.pow(base, exponent)",
-              mod: "Modulo: phantom.numbers.operation.mod(a, b)",
-              random: "Random number: phantom.numbers.operation.random()",
-              randomInt: "Random integer: phantom.numbers.operation.randomInt(min, max)",
-              between: "Check if between: phantom.numbers.operation.between(num, min, max)",
-              clamp: "Clamp value: phantom.numbers.operation.clamp(num, min, max)",
-              sign: "Get sign: phantom.numbers.operation.sign(num)",
-              isEven: "Check if even: phantom.numbers.operation.isEven(num)",
-              isOdd: "Check if odd: phantom.numbers.operation.isOdd(num)",
-              isPositive: "Check if positive: phantom.numbers.operation.isPositive(num)",
-              isNegative: "Check if negative: phantom.numbers.operation.isNegative(num)",
-              isZero: "Check if zero: phantom.numbers.operation.isZero(num)",
-              toFixed: "Format number: phantom.numbers.operation.toFixed(num, decimals)",
-              truncate: "Truncate number: phantom.numbers.operation.truncate(num)"
-            }
-          },
-          chain: {
-            description: "Number chaining API for fluent operations",
-            methods: {
-              value: "Get final value: phantom.numbers.chain(num).value()",
-              toStringChain: "Convert to string chain: phantom.numbers.chain(num).toStringChain()"
-            }
-          }
-        }
-      },
-      json: {
-        description: "JSON operations for parsing and manipulating JSON data",
-        operations: {
-          operation: {
-            description: "JSON utility functions",
-            methods: {
-              parse: "Parse JSON string: phantom.json.operation.parse(str)",
-              stringify: "Stringify object: phantom.json.operation.stringify(obj)",
-              get: "Get value by path: phantom.json.operation.get(obj, path)",
-              set: "Set value by path: phantom.json.operation.set(obj, path, value)",
-              has: "Check if path exists: phantom.json.operation.has(obj, path)",
-              remove: "Remove path: phantom.json.operation.remove(obj, path)",
-              keys: "Get all keys: phantom.json.operation.keys(obj)",
-              values: "Get all values: phantom.json.operation.values(obj)",
-              size: "Get object size: phantom.json.operation.size(obj)",
-              merge: "Merge objects: phantom.json.operation.merge(obj1, obj2)",
-              isEmpty: "Check if empty: phantom.json.operation.isEmpty(obj)",
-              isArray: "Check if array: phantom.json.operation.isArray(value)",
-              isObject: "Check if object: phantom.json.operation.isObject(value)",
-              toString: "Convert to string: phantom.json.operation.toString(obj)",
-              prettyPrint: "Pretty print: phantom.json.operation.prettyPrint(obj)"
-            }
-          }
-        }
-      },
-      base64: {
-        description: "Base64 encoding and decoding operations",
-        operations: {
-          operation: {
-            description: "Base64 utility functions",
-            methods: {
-              encode: "Encode to base64: phantom.base64.operation.encode(str)",
-              decode: "Decode from base64: phantom.base64.operation.decode(str)"
-            }
-          }
-        }
-      },
-      xml: {
-        description: "XML operations for parsing and querying XML data",
-        operations: {
-          operation: {
-            description: "XML utility functions",
-            methods: {
-              parse: "Parse XML string: phantom.xml.operation.parse(str)",
-              stringify: "Stringify XML object: phantom.xml.operation.stringify(obj)",
-              get: "Get value by XPath: phantom.xml.operation.get(xml, xpath)",
-              has: "Check if XPath exists: phantom.xml.operation.has(xml, xpath)",
-              toString: "Convert to string: phantom.xml.operation.toString(xml)"
-            }
-          }
-        }
-      },
-      dates: {
-        description: "Date and time operations using Java.time APIs",
-        operations: {
-          operation: {
-            description: "Date utility functions",
-            methods: {
-              now: "Get current datetime: phantom.dates.operation.now()",
-              today: "Get current date: phantom.dates.operation.today()",
-              parse: "Parse date string: phantom.dates.operation.parse(str, format)",
-              parseDateTime: "Parse datetime string: phantom.dates.operation.parseDateTime(str, format)",
-              format: "Format date: phantom.dates.operation.format(date, format)",
-              formatDateTime: "Format datetime: phantom.dates.operation.formatDateTime(dt, format)",
-              getYear: "Get year: phantom.dates.operation.getYear(date)",
-              getMonth: "Get month: phantom.dates.operation.getMonth(date)",
-              getDay: "Get day: phantom.dates.operation.getDay(date)",
-              getDayOfWeek: "Get day of week: phantom.dates.operation.getDayOfWeek(date)",
-              add: "Add time: phantom.dates.operation.add(date, amount, unit)",
-              subtract: "Subtract time: phantom.dates.operation.subtract(date, amount, unit)",
-              between: "Calculate difference: phantom.dates.operation.between(date1, date2, unit)",
-              isBefore: "Check if before: phantom.dates.operation.isBefore(date1, date2)",
-              isAfter: "Check if after: phantom.dates.operation.isAfter(date1, date2)",
-              isEqual: "Check if equal: phantom.dates.operation.isEqual(date1, date2)",
-              startOfDay: "Get start of day: phantom.dates.operation.startOfDay(date)",
-              endOfDay: "Get end of day: phantom.dates.operation.endOfDay(date)"
-            }
-          },
-          format: {
-            description: "Date format detection and utilities",
-            methods: {
-              detect: "Detect date format: phantom.dates.format.detect(dateString)"
-            }
-          },
-          duration: {
-            description: "Duration operations",
-            methods: {
-              between: "Calculate duration: phantom.dates.duration.between(dt1, dt2)",
-              of: "Create duration: phantom.dates.duration.of(amount, unit)",
-              add: "Add duration: phantom.dates.duration.add(dt, duration)",
-              subtract: "Subtract duration: phantom.dates.duration.subtract(dt, duration)",
-              toDays: "Convert to days: phantom.dates.duration.toDays(duration)",
-              toHours: "Convert to hours: phantom.dates.duration.toHours(duration)",
-              toMinutes: "Convert to minutes: phantom.dates.duration.toMinutes(duration)",
-              toSeconds: "Convert to seconds: phantom.dates.duration.toSeconds(duration)",
-              toMillis: "Convert to milliseconds: phantom.dates.duration.toMillis(duration)"
-            }
-          }
-        }
-      }
-    };
-  
-    // Help function - shows available operations
-    phantom.help = function (path) {
-      try {
-        if (!path) {
-          // Show all categories
-          var output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-          output += "📚 Phantom.js Help - Available Categories\n";
-          output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-          output += "Usage: phantom.help('category') or phantom.help('category.operation')\n\n";
-          
-          for (var category in helpDocs) {
-            output += "📦 phantom." + category + "\n";
-            output += "   " + helpDocs[category].description + "\n";
-            output += "   Example: phantom.help('" + category + "')\n\n";
-          }
-          
-          output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-          return output;
-        }
-        
-        var parts = path.split('.');
-        var current = helpDocs;
-        
-        // Navigate through the path
-        for (var i = 0; i < parts.length; i++) {
-          if (current && current[parts[i]]) {
-            current = current[parts[i]];
-          } else if (current && current.operations && current.operations[parts[i]]) {
-            current = current.operations[parts[i]];
-          } else {
-            return "❌ Path not found: phantom." + path + "\n\nUse phantom.help() to see all available categories.";
-          }
-        }
-        
-        // Display the help
-        var output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        output += "📚 phantom." + path + "\n";
-        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-        
-        if (current.description) {
-          output += "Description: " + current.description + "\n\n";
-        }
-        
-        if (current.methods) {
-          output += "Available Methods:\n";
-          output += "────────────────────────────────────────────────────\n";
-          for (var method in current.methods) {
-            output += "• " + method + "\n";
-            output += "  " + current.methods[method] + "\n\n";
-          }
-        } else if (current.operations) {
-          output += "Available Operations:\n";
-          output += "────────────────────────────────────────────────────\n";
-          for (var op in current.operations) {
-            output += "• " + op + "\n";
-            if (current.operations[op].description) {
-              output += "  " + current.operations[op].description + "\n";
-            }
-            output += "  Example: phantom.help('" + path + "." + op + "')\n\n";
-          }
-        }
-        
-        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        return output;
-      } catch (e) {
-        return "Error: " + (e.message || String(e));
-      }
-    };
-  
-    // Autocomplete function - returns available options
-    phantom.autocomplete = function (path) {
-      try {
-        if (!path) {
-          // Return all top-level categories
-          return Object.keys(helpDocs);
-        }
-        
-        var parts = path.split('.');
-        var current = helpDocs;
-        
-        // Navigate through the path
-        for (var i = 0; i < parts.length; i++) {
-          if (current && current[parts[i]]) {
-            current = current[parts[i]];
-          } else if (current && current.operations && current.operations[parts[i]]) {
-            current = current.operations[parts[i]];
-          } else {
-            return [];
-          }
-        }
-        
-        var options = [];
-        
-        // If we have operations, return them
-        if (current.operations) {
-          options = Object.keys(current.operations);
-        } else if (current.methods) {
-          options = Object.keys(current.methods);
-        } else if (typeof current === 'object') {
-          // Return direct properties
-          for (var key in current) {
-            if (key !== 'description' && key !== 'operations' && key !== 'methods') {
-              options.push(key);
-            }
-          }
-        }
-        
-        return options;
-      } catch (e) {
-        return [];
-      }
-    };
-  
-    // Quick reference - shows what's available after typing "phantom."
-    phantom._ = function() {
-      var output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-      output += "🔍 Quick Reference: phantom.*\n";
-      output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-      output += "Available categories:\n\n";
-      
-      var categories = Object.keys(helpDocs);
-      for (var i = 0; i < categories.length; i++) {
-        var cat = categories[i];
-        output += "  phantom." + cat + "\n";
-        output += "    → " + helpDocs[cat].description + "\n";
-        output += "    → Try: phantom.help('" + cat + "')\n\n";
-      }
-      
-      output += "Helper functions:\n\n";
-      output += "  phantom.help()           - Show all categories\n";
-      output += "  phantom.help('maps')     - Show map operations\n";
-      output += "  phantom.autocomplete()  - Get available options\n";
-      output += "  phantom.version         - Get version\n";
-      output += "  phantom._               - Show this quick reference\n\n";
-      output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-      return output;
-    };
-  
-    // Make it easy to see what's available - add a toString for phantom object
-    phantom.toString = function() {
-      return "Phantom.js v" + phantom.version + " - Use phantom._() or phantom.help() for help";
-    };
-  
-    // Only log on error (as requested)
-    function logError(msg) {
-      if (typeof logger !== "undefined") {
-        logger.error("[phantom] " + msg);
-      }
-    }
-  
-    function fail(msg) {
-      // Use specific error message if provided, otherwise use generic
-      var errorMsg = msg || "Invalid operation";
-      logError(errorMsg);
-      throw new Error(errorMsg);
-    }
-  
-    /* --------------------------------------------------
-     * MAP RESOLUTION
-     * -------------------------------------------------- */
+  "use strict";
+  var phantom = global.phantom || {};
+  phantom.version = "0.1.7-BETA";
+  phantom.docs = "https://github.com/OS366/phantom/wiki";
+  phantom.config = { silent: true };
+  phantom.init = function(o) { if (o && typeof o.silent === "boolean") phantom.config.silent = o.silent; return phantom; };
+  phantom.toString = function() { return "Phantom.js v" + phantom.version + " - " + phantom.docs; };
+
+  function logError(msg) { if (typeof logger !== "undefined") logger.error("[phantom] " + msg); }
+  function fail(msg) { var m = msg || "Invalid operation"; logError(m); throw new Error(m); }
+
+  /* === MAPS === */
   
     function isResponseContext() {
       try { 
@@ -515,63 +26,13 @@
       catch (e) { return false; }
     }
   
-    function resolveMap(name) {
-      try {
-        // In OIE/Rhino, these are global variables accessible directly
-        // In Node.js test environment (VM context), access via the 'global' parameter passed to IIFE
-        // The 'global' parameter is the context object in VM, so maps are on it
-        
-        // Try global object first (works in both environments)
-        if (global) {
-          if (name === "channelMap" && global.channelMap) { 
-            return global.channelMap; 
-          }
-          if (name === "globalMap" && global.globalMap) { 
-            return global.globalMap; 
-          }
-          if (name === "connectorMap" && global.connectorMap) { 
-            return global.connectorMap; 
-          }
-          if (name === "responseMap" && global.responseMap) { 
-            return global.responseMap; 
-          }
-          if (name === "configurationMap" && global.configurationMap) { 
-            return global.configurationMap; 
-          }
-        }
-        
-        // Fallback: try direct access (OIE/Rhino environment where variables are in global scope)
-        // Use eval to safely check without throwing ReferenceError in strict mode
-        try {
-          if (name === "channelMap") {
-            var result = eval("typeof channelMap !== 'undefined' ? channelMap : null");
-            if (result) return result;
-          }
-          if (name === "globalMap") {
-            var result = eval("typeof globalMap !== 'undefined' ? globalMap : null");
-            if (result) return result;
-          }
-          if (name === "connectorMap") {
-            var result = eval("typeof connectorMap !== 'undefined' ? connectorMap : null");
-            if (result) return result;
-          }
-          if (name === "responseMap") {
-            var result = eval("typeof responseMap !== 'undefined' ? responseMap : null");
-            if (result) return result;
-          }
-          if (name === "configurationMap") {
-            var result = eval("typeof configurationMap !== 'undefined' ? configurationMap : null");
-            if (result) return result;
-          }
-        } catch (e) {
-          // Direct access failed, return null
-        }
-        
-        return null;
-      } catch (e) {
-        return null;
-      }
-    }
+  function resolveMap(name) {
+    // Access maps from global context (works in both OIE/Rhino and Node.js test environment)
+    try {
+      if (global && global[name]) return global[name];
+    } catch (e) { /* ignore */ }
+    return null;
+  }
   
     function toJavaString(x) {
       try {
@@ -627,9 +88,7 @@
       return fail("Map does not support remove, put, or set operations");
     }
   
-    /* --------------------------------------------------
-     * phantom.maps.*
-     * -------------------------------------------------- */
+  /* phantom.maps */
   
     phantom.maps = {};
   
@@ -690,16 +149,48 @@
       delete: function () { return fail("Configuration map is read-only"); }
     };
   
-    /* --------------------------------------------------
-     * phantom.strings.operation.*
-     * (no logging on success)
-     * -------------------------------------------------- */
+  /* === STRINGS === */
   
     phantom.strings = { operation: {} };
   
     function toStr(x) {
       if (x === null || typeof x === "undefined") return "";
       return String(x);
+    }
+
+    // Implicit chaining wrapper - returns a chainable string object
+    function chainable(str) {
+      // Extract value if input is already chainable
+      var value = (str && typeof str.value === 'function') ? str.value() : toStr(str);
+      var obj = {
+        value: function() { return value; },
+        toString: function() { return value; },
+        valueOf: function() { return value; },
+        // Chainable string operations
+        trim: function() { return chainable(value.replace(/^\s+|\s+$/g, '')); },
+        leftTrim: function() { return chainable(value.replace(/^\s+/, '')); },
+        rightTrim: function() { return chainable(value.replace(/\s+$/, '')); },
+        toUpperCase: function() { return chainable(value.toUpperCase()); },
+        toLowerCase: function() { return chainable(value.toLowerCase()); },
+        capitalize: function() { return chainable(value.charAt(0).toUpperCase() + value.slice(1)); },
+        replace: function(s, r) { return chainable(value.replace(s, r || '')); },
+        replaceAll: function(s, r) { return chainable(value.split(s).join(r || '')); },
+        substring: function(s, e) { return chainable(e !== undefined ? value.substring(s, e) : value.substring(s)); },
+        leftPad: function(c, n) { var p = toStr(c || ' '); for(var i=0; i<n; i++) value = p + value; return chainable(value); },
+        rightPad: function(c, n) { var p = toStr(c || ' '); for(var i=0; i<n; i++) value = value + p; return chainable(value); },
+        reverse: function() { return chainable(value.split('').reverse().join('')); },
+        remove: function(s) { return chainable(value.replace(s, '')); },
+        removeAll: function(s) { return chainable(value.split(s).join('')); },
+        // Non-chainable (return primitives)
+        split: function(d) { return value.split(d || ''); },
+        length: function() { return value.length; },
+        contains: function(s) { return value.indexOf(s) >= 0; },
+        startsWith: function(p) { return value.indexOf(p) === 0; },
+        endsWith: function(s) { return value.indexOf(s, value.length - s.length) !== -1; },
+        isEmpty: function() { return value.length === 0; },
+        find: function(s) { return value.indexOf(s); }
+      };
+      return obj;
     }
   
     phantom.strings.operation.find = function (input, stringToFind) {
@@ -920,10 +411,7 @@
       return words.reverse().join(" ");
     };
 
-    /* --------------------------------------------------
-     * phantom.strings.chain() - Chaining API
-     * Allows chaining multiple string operations
-     * -------------------------------------------------- */
+  /* phantom.strings.chain */
     
     phantom.strings.chain = function (input) {
       var value = toStr(input);
@@ -1045,10 +533,7 @@
       return chainable;
     };
   
-    /* --------------------------------------------------
-     * phantom.numbers.operation.*
-     * (no logging on success; throw only on error)
-     * -------------------------------------------------- */
+  /* === NUMBERS === */
   
     phantom.numbers = { operation: {} };
   
@@ -1207,10 +692,7 @@
       return n < 0 ? Math.ceil(n) : Math.floor(n);
     };
 
-    /* --------------------------------------------------
-     * phantom.numbers.chain() - Chaining API
-     * Allows chaining multiple number operations
-     * -------------------------------------------------- */
+  /* phantom.numbers.chain */
     
     phantom.numbers.chain = function (input) {
       var value = toNumStrict(input);
@@ -1357,10 +839,7 @@
       return chainable;
     };
   
-    /* --------------------------------------------------
-     * phantom.json.operation.*
-     * (no logging on success; throw only on error)
-     * -------------------------------------------------- */
+  /* === JSON === */
   
     phantom.json = { operation: {} };
   
@@ -1575,10 +1054,7 @@
       }
     };
   
-    /* --------------------------------------------------
-     * phantom.base64.operation.*
-     * (no logging on success; throw only on error)
-     * -------------------------------------------------- */
+  /* === BASE64 === */
   
     phantom.base64 = { operation: {} };
   
@@ -1692,10 +1168,7 @@
       return decodeBase64Safe(str);
     };
   
-    /* --------------------------------------------------
-     * phantom.xml.operation.*
-     * (no logging on success; throw only on error)
-     * -------------------------------------------------- */
+  /* === XML === */
   
     phantom.xml = { operation: {} };
   
@@ -1826,36 +1299,11 @@
       return stringifyXmlSafe(xmlObj);
     };
   
-    /* --------------------------------------------------
-     * phantom.dates.operation.*
-     * (no logging on success; throw only on error)
-     * -------------------------------------------------- */
+  /* === DATES === */
   
-    phantom.dates = { operation: {}, format: {} };
+    phantom.dates = { operation: {} };
   
     // Date format constants (enum-like)
-    phantom.dates.FORMAT = {
-      ISO_DATE: "yyyy-MM-dd",
-      ISO_DATETIME: "yyyy-MM-dd'T'HH:mm:ss",
-      ISO_DATETIME_MS: "yyyy-MM-dd'T'HH:mm:ss.SSS",
-      US_DATE: "MM/dd/yyyy",
-      US_DATETIME: "MM/dd/yyyy HH:mm:ss",
-      EU_DATE: "dd/MM/yyyy",
-      EU_DATETIME: "dd/MM/yyyy HH:mm:ss"
-    };
-  
-    // ChronoUnit constants (Java.time enum values)
-    phantom.dates.UNIT = {
-      DAYS: "DAYS",
-      HOURS: "HOURS",
-      MINUTES: "MINUTES",
-      SECONDS: "SECONDS",
-      MILLIS: "MILLIS",
-      WEEKS: "WEEKS",
-      MONTHS: "MONTHS",
-      YEARS: "YEARS"
-    };
-  
     function getJavaLocalDate(dateInput) {
       try {
         if (dateInput == null) return fail("Date input is null or undefined");
@@ -2093,111 +1541,6 @@
         return fail("Failed to parse datetime: " + (e.message || String(e)));
       }
     };
-  
-    // Format detection intelligence engine
-    phantom.dates.format.detect = function (dateString) {
-      try {
-        if (dateString == null) return fail("Date string is null or undefined");
-        var s = toStr(dateString);
-        if (s.length === 0) return fail("Date string is empty");
-        
-        if (typeof java !== "undefined" && java.time) {
-          // Comprehensive list of common date/datetime formats to try
-          // Ordered by most common first
-          var formats = [
-            // ISO formats (most common)
-            { pattern: "yyyy-MM-dd'T'HH:mm:ss.SSS", name: "ISO_DATETIME_MS" },
-            { pattern: "yyyy-MM-dd'T'HH:mm:ss", name: "ISO_DATETIME" },
-            { pattern: "yyyy-MM-dd HH:mm:ss.SSS", name: "ISO_DATETIME_MS_SPACE" },
-            { pattern: "yyyy-MM-dd HH:mm:ss", name: "ISO_DATETIME_SPACE" },
-            { pattern: "yyyy-MM-dd", name: "ISO_DATE" },
-            
-            // US formats
-            { pattern: "MM/dd/yyyy HH:mm:ss", name: "US_DATETIME" },
-            { pattern: "MM/dd/yyyy", name: "US_DATE" },
-            { pattern: "M/d/yyyy HH:mm:ss", name: "US_DATETIME_SHORT" },
-            { pattern: "M/d/yyyy", name: "US_DATE_SHORT" },
-            { pattern: "MM-dd-yyyy HH:mm:ss", name: "US_DATETIME_DASH" },
-            { pattern: "MM-dd-yyyy", name: "US_DATE_DASH" },
-            
-            // EU formats
-            { pattern: "dd/MM/yyyy HH:mm:ss", name: "EU_DATETIME" },
-            { pattern: "dd/MM/yyyy", name: "EU_DATE" },
-            { pattern: "d/M/yyyy HH:mm:ss", name: "EU_DATETIME_SHORT" },
-            { pattern: "d/M/yyyy", name: "EU_DATE_SHORT" },
-            { pattern: "dd-MM-yyyy HH:mm:ss", name: "EU_DATETIME_DASH" },
-            { pattern: "dd-MM-yyyy", name: "EU_DATE_DASH" },
-            
-            // Other common formats
-            { pattern: "yyyy/MM/dd HH:mm:ss", name: "ISO_DATE_SLASH_DATETIME" },
-            { pattern: "yyyy/MM/dd", name: "ISO_DATE_SLASH" },
-            { pattern: "dd.MM.yyyy HH:mm:ss", name: "EU_DATETIME_DOT" },
-            { pattern: "dd.MM.yyyy", name: "EU_DATE_DOT" },
-            { pattern: "MM.dd.yyyy HH:mm:ss", name: "US_DATETIME_DOT" },
-            { pattern: "MM.dd.yyyy", name: "US_DATE_DOT" },
-            
-            // Time-only formats (for datetime detection)
-            { pattern: "HH:mm:ss.SSS", name: "TIME_MS" },
-            { pattern: "HH:mm:ss", name: "TIME" },
-            { pattern: "HH:mm", name: "TIME_SHORT" },
-            
-            // Year formats
-            { pattern: "yyyy", name: "YEAR" },
-            { pattern: "MM/yyyy", name: "MONTH_YEAR" },
-            { pattern: "yyyy-MM", name: "YEAR_MONTH" }
-          ];
-          
-          // Try each format
-          for (var i = 0; i < formats.length; i++) {
-            try {
-              var formatter = java.time.format.DateTimeFormatter.ofPattern(formats[i].pattern);
-              
-              // Check if it's a datetime format (contains time components)
-              var isDateTime = formats[i].pattern.indexOf("HH") >= 0 || 
-                              formats[i].pattern.indexOf("mm") >= 0 || 
-                              formats[i].pattern.indexOf("ss") >= 0;
-              
-              if (isDateTime) {
-                // Try parsing as LocalDateTime
-                try {
-                  java.time.LocalDateTime.parse(s, formatter);
-                  return {
-                    format: formats[i].pattern,
-                    name: formats[i].name,
-                    type: "datetime",
-                    valid: true
-                  };
-                } catch (e) {}
-              } else {
-                // Try parsing as LocalDate
-                try {
-                  java.time.LocalDate.parse(s, formatter);
-                  return {
-                    format: formats[i].pattern,
-                    name: formats[i].name,
-                    type: "date",
-                    valid: true
-                  };
-                } catch (e) {}
-              }
-            } catch (e) {
-              // Continue to next format
-            }
-          }
-          
-          // If no format matched, return null
-          return {
-            format: null,
-            name: null,
-            type: null,
-            valid: false
-          };
-        }
-        return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
-      } catch (e) {
-        return fail("Failed to detect date format: " + (e.message || String(e)));
-      }
-    };
 
     phantom.dates.operation.format = function (date, format) {
       try {
@@ -2207,7 +1550,7 @@
         if (typeof java !== "undefined" && java.time) {
           var formatter = java.time.format.DateTimeFormatter.ofPattern(toStr(format));
           var localDate = getJavaLocalDate(date);
-          return localDate.format(formatter);
+          return chainable(localDate.format(formatter));
         }
         return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
       } catch (e) {
@@ -2223,7 +1566,7 @@
         if (typeof java !== "undefined" && java.time) {
           var formatter = java.time.format.DateTimeFormatter.ofPattern(toStr(format));
           var localDateTime = getJavaLocalDateTime(dateTime);
-          return localDateTime.format(formatter);
+          return chainable(localDateTime.format(formatter));
         }
         return fail("Date operations require Java.time APIs (OIE/Rhino environment)");
       } catch (e) {
@@ -2411,10 +1754,7 @@
       }
     };
   
-    /* --------------------------------------------------
-     * phantom.dates.duration.*
-     * (no logging on success; throw only on error)
-     * -------------------------------------------------- */
+  /* phantom.dates.duration */
   
     phantom.dates.duration = {};
   
@@ -2565,209 +1905,169 @@
         return fail("Failed to convert duration to milliseconds: " + (e.message || String(e)));
       }
     };
-  
-    /* --------------------------------------------------
-     * STRING PROTOTYPE EXTENSION
-     * Add .phantom and .ps properties to strings for direct method access
+
+  /* === INTELLIGENCE === */
+
+    phantom.intelligence = { dates: {} };
+
+    /**
+     * Dynamically detect the format of a date string using pattern analysis.
+     * Returns the Java date format pattern string.
      * 
-     * Usage:
-     *   message.phantom.strings.toUpperCase().trim().value()
-     *   message.ps.toUpperCase().trim().value()
-     *   String(message.phantom.strings.toUpperCase().trim())
-     * 
-     * Note: Always call .value() at the end or wrap in String()
-     *       when passing to logger.info() or other functions
-     * -------------------------------------------------- */
-    
-    // Helper function to create chainable string methods object
-    function createStringChainMethods(self) {
-      return {
-        // Direct access to chain API
-        chain: function() {
-          return phantom.strings.chain(self);
-        },
-        // Direct access to operations (returns chainable)
-        toUpperCase: function() {
-          return phantom.strings.chain(self).toUpperCase();
-        },
-        toLowerCase: function() {
-          return phantom.strings.chain(self).toLowerCase();
-        },
-        trim: function() {
-          return phantom.strings.chain(self).trim();
-        },
-        leftTrim: function() {
-          return phantom.strings.chain(self).leftTrim();
-        },
-        rightTrim: function() {
-          return phantom.strings.chain(self).rightTrim();
-        },
-        capitalize: function() {
-          return phantom.strings.chain(self).capitalize();
-        },
-        reverse: function() {
-          return phantom.strings.chain(self).reverse();
-        },
-        reverseWords: function() {
-          return phantom.strings.chain(self).reverseWords();
-        },
-        replace: function(search, replace) {
-          return phantom.strings.chain(self).replace(search, replace);
-        },
-        replaceAll: function(search, replace) {
-          return phantom.strings.chain(self).replaceAll(search, replace);
-        },
-        remove: function(str) {
-          return phantom.strings.chain(self).remove(str);
-        },
-        leftPad: function(padChar, count) {
-          return phantom.strings.chain(self).leftPad(padChar, count);
-        },
-        rightPad: function(padChar, count) {
-          return phantom.strings.chain(self).rightPad(padChar, count);
-        },
-        substring: function(start, end) {
-          return phantom.strings.chain(self).substring(start, end);
-        },
-        wordwrap: function(size, cut, everything) {
-          return phantom.strings.chain(self).wordwrap(size, cut, everything);
-        },
-        // Direct operation access (non-chainable, returns value)
-        operation: phantom.strings.operation
-      };
-    }
-    
-    // Add phantom property to String prototype
-    if (typeof String !== "undefined" && String.prototype) {
-      Object.defineProperty(String.prototype, 'phantom', {
-        get: function() {
-          var self = this;
-          return {
-            strings: createStringChainMethods(self),
-            numbers: {
-              chain: function() {
-                return phantom.numbers.chain(self);
-              }
-            }
-          };
-        },
-        enumerable: false,
-        configurable: true
-      });
-      
-      // Add .ps as alias for .phantom.strings (shorter syntax)
-      Object.defineProperty(String.prototype, 'ps', {
-        get: function() {
-          return createStringChainMethods(this);
-        },
-        enumerable: false,
-        configurable: true
-      });
-    }
-    
-    // default init
+     * @param {string} dateString - The date string to analyze
+     * @param {Object} [options] - Detection options
+     * @param {string} [options.locale] - Locale hint: 'US' (MM/dd), 'EU' (dd/MM), or 'auto' (default)
+     * @returns {string} The detected Java date format pattern (e.g., "yyyy-MM-dd", "yyyyMMdd")
+     */
+    phantom.intelligence.dates.detect = function (dateString, options) {
+      try {
+        if (dateString == null) return fail("Invalid date");
+        var s = toStr(dateString).trim();
+        if (s.length === 0) return fail("Invalid date");
+
+        options = options || {};
+        var localeHint = (options.locale || "auto").toUpperCase();
+
+        var match;
+
+        // ISO 8601 with timezone: 2024-12-26T10:30:45.123Z or 2024-12-26T10:30:45+05:30
+        if ((match = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-]\d{2}:\d{2})?$/))) {
+          var fmt = "yyyy-MM-dd'T'HH:mm:ss";
+          if (match[7]) fmt += "." + "S".repeat(match[7].length);
+          if (match[8]) fmt += match[8] === "Z" ? "'Z'" : "XXX";
+          return fmt;
+        }
+
+        // ISO date with optional space-separated time
+        if ((match = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?)?$/))) {
+          if (match[4]) {
+            var fmt = "yyyy-MM-dd HH:mm";
+            if (match[6]) fmt += ":ss";
+            if (match[7]) fmt += "." + "S".repeat(match[7].length);
+            return fmt;
+          }
+          return "yyyy-MM-dd";
+        }
+
+        // Year-first slash format (2024/12/26)
+        if ((match = s.match(/^(\d{4})\/(\d{2})\/(\d{2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?)?$/))) {
+          if (match[4]) {
+            var fmt = "yyyy/MM/dd HH:mm";
+            if (match[6]) fmt += ":ss";
+            if (match[7]) fmt += "." + "S".repeat(match[7].length);
+            return fmt;
+          }
+          return "yyyy/MM/dd";
+        }
+
+        // Helper to determine US vs EU format
+        function detectLocale(part1, part2) {
+          var p1 = parseInt(part1, 10);
+          var p2 = parseInt(part2, 10);
+          if (localeHint === "US") return "US";
+          if (localeHint === "EU") return "EU";
+          if (p1 > 12 && p2 <= 12) return "EU";
+          if (p2 > 12 && p1 <= 12) return "US";
+          return null;
+        }
+
+        // Helper to build format string
+        function buildFormat(day, month, year, locale, delimiter, timeMatch) {
+          var dayFmt = day.length === 1 ? "d" : "dd";
+          var monthFmt = month.length === 1 ? "M" : "MM";
+          var yearFmt = year.length === 2 ? "yy" : "yyyy";
+          var fmt = locale === "US" 
+            ? monthFmt + delimiter + dayFmt + delimiter + yearFmt
+            : dayFmt + delimiter + monthFmt + delimiter + yearFmt;
+          if (timeMatch && timeMatch.hour) {
+            var hourFmt = timeMatch.hour.length === 1 ? "H" : "HH";
+            fmt += " " + hourFmt + ":mm";
+            if (timeMatch.second) fmt += ":ss";
+            if (timeMatch.ms) fmt += "." + "S".repeat(timeMatch.ms.length);
+          }
+          return fmt;
+        }
+
+        // Slash-separated dates (US/EU): 12/26/2024 or 26/12/2024
+        if ((match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?)?$/))) {
+          var locale = detectLocale(match[1], match[2]);
+          var isUS = locale !== "EU";
+          var day = isUS ? match[2] : match[1];
+          var month = isUS ? match[1] : match[2];
+          var timeInfo = match[4] ? { hour: match[4], second: match[6], ms: match[7] } : null;
+          return buildFormat(day, month, match[3], isUS ? "US" : "EU", "/", timeInfo);
+        }
+
+        // Dash-separated non-ISO: 12-26-2024 or 26-12-2024
+        if ((match = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4}|\d{2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?)?$/))) {
+          var locale = detectLocale(match[1], match[2]);
+          var isUS = locale !== "EU";
+          var day = isUS ? match[2] : match[1];
+          var month = isUS ? match[1] : match[2];
+          var timeInfo = match[4] ? { hour: match[4], second: match[6], ms: match[7] } : null;
+          return buildFormat(day, month, match[3], isUS ? "US" : "EU", "-", timeInfo);
+        }
+
+        // Dot-separated (common in EU): 26.12.2024
+        if ((match = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4}|\d{2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?)?$/))) {
+          var locale = detectLocale(match[1], match[2]);
+          var isEU = locale !== "US";
+          var day = isEU ? match[1] : match[2];
+          var month = isEU ? match[2] : match[1];
+          var timeInfo = match[4] ? { hour: match[4], second: match[6], ms: match[7] } : null;
+          return buildFormat(day, month, match[3], isEU ? "EU" : "US", ".", timeInfo);
+        }
+
+        // Time only
+        if ((match = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?$/))) {
+          var fmt = (match[1].length === 1 ? "H" : "HH") + ":mm";
+          if (match[3]) fmt += ":ss";
+          if (match[4]) fmt += "." + "S".repeat(match[4].length);
+          return fmt;
+        }
+
+        // Year-month only
+        if ((match = s.match(/^(\d{4})-(\d{2})$/))) {
+          return "yyyy-MM";
+        }
+
+        // Month/Year
+        if ((match = s.match(/^(\d{1,2})\/(\d{4})$/))) {
+          return (match[1].length === 1 ? "M" : "MM") + "/yyyy";
+        }
+
+        // Compact date (YYYYMMDD)
+        if ((match = s.match(/^(\d{4})(\d{2})(\d{2})$/))) {
+          var month = parseInt(match[2], 10);
+          var day = parseInt(match[3], 10);
+          if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            return "yyyyMMdd";
+          }
+        }
+
+        // Compact datetime (YYYYMMDDHHmmss or YYYYMMDDHHmmssSSS)
+        if ((match = s.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})?$/))) {
+          var month = parseInt(match[2], 10);
+          var day = parseInt(match[3], 10);
+          var hour = parseInt(match[4], 10);
+          var minute = parseInt(match[5], 10);
+          var second = parseInt(match[6], 10);
+          if (month >= 1 && month <= 12 && day >= 1 && day <= 31 &&
+              hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59) {
+            return match[7] ? "yyyyMMddHHmmssSSS" : "yyyyMMddHHmmss";
+          }
+        }
+
+        // No pattern matched
+        return fail("Invalid date");
+
+      } catch (e) {
+        if (e.message === "Invalid date") throw e;
+        return fail("Invalid date");
+      }
+    };
+
     phantom.init({ silent: true });
-  
-    /* --------------------------------------------------
-     * AUTOCOMPLETE SUPPORT FOR OIE EDITOR
-     * Explicitly define all properties to ensure OIE editor can detect them
-     * -------------------------------------------------- */
-    
-    // OIE Editor Autocomplete Support
-    // Explicitly expose all properties to ensure OIE editor can detect them
-    // This pattern helps OIE's static analysis detect available properties
-    (function() {
-      // Force property access to ensure they're discoverable
-      var _props = ['maps', 'strings', 'numbers', 'json', 'base64', 'xml', 'dates', 'version', 'help', 'autocomplete', '_'];
-      for (var p = 0; p < _props.length; p++) {
-        var propName = _props[p];
-        if (phantom[propName] !== undefined) {
-          // Access property to ensure it's in the object's property list
-          void phantom[propName];
-        }
-      }
-    })();
-    
-    // Create autocomplete metadata object for OIE editor introspection
-    phantom._autocomplete = {
-      categories: ['maps', 'strings', 'numbers', 'json', 'base64', 'xml', 'dates'],
-      maps: {
-        operations: ['channel', 'global', 'connector', 'response', 'configuration'],
-        methods: ['save', 'get', 'exists', 'delete']
-      },
-      strings: {
-        operations: ['operation', 'chain'],
-        methods: ['trim', 'replace', 'split', 'substring', 'toUpperCase', 'toLowerCase', 'padLeft', 'padRight', 'leftPad', 'rightPad', 'find', 'findAll', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'length', 'reverse', 'repeat', 'remove', 'removeAll', 'toNumberChain']
-      },
-      numbers: {
-        operations: ['operation', 'chain'],
-        methods: ['parse', 'add', 'subtract', 'multiply', 'divide', 'mod', 'pow', 'round', 'ceil', 'floor', 'truncate', 'abs', 'sqrt', 'min', 'max', 'clamp', 'random', 'randomInt', 'isEven', 'isOdd', 'isPositive', 'isNegative', 'isZero', 'isNumber', 'between', 'sign', 'toFixed', 'toStringChain']
-      },
-      json: {
-        operations: ['operation'],
-        methods: ['parse', 'stringify', 'get', 'set', 'has', 'remove', 'keys', 'values', 'size', 'isEmpty', 'isNotEmpty', 'merge', 'prettyPrint', 'validate']
-      },
-      base64: {
-        operations: ['operation'],
-        methods: ['encode', 'decode']
-      },
-      xml: {
-        operations: ['operation'],
-        methods: ['parse', 'stringify', 'get', 'has', 'toString']
-      },
-      dates: {
-        operations: ['operation', 'format'],
-        methods: ['now', 'parse', 'format', 'addDays', 'addHours', 'addMinutes', 'addSeconds', 'addMonths', 'addYears', 'diffDays', 'diffHours', 'diffMinutes', 'diffSeconds', 'isBefore', 'isAfter', 'isBetween', 'detect']
-      }
-    };
-    
-    // Helper to get autocomplete suggestions (for OIE editor integration)
-    phantom._getSuggestions = function(path) {
-      if (!path || path === 'phantom' || path === '') {
-        return phantom._autocomplete.categories;
-      }
-      
-      var parts = path.split('.').slice(1); // Remove 'phantom' from path
-      if (parts.length === 0) return phantom._autocomplete.categories;
-      
-      var category = parts[0];
-      if (!phantom._autocomplete[category]) return [];
-      
-      if (parts.length === 1) {
-        // Return operations for this category
-        return phantom._autocomplete[category].operations || [];
-      }
-      
-      if (parts.length === 2) {
-        var operation = parts[1];
-        if (operation === 'operation' || operation === 'format' || operation === 'chain') {
-          return phantom._autocomplete[category].methods || [];
-        }
-        // For maps, operations are direct (channel, global, etc.)
-        if (category === 'maps') {
-          return phantom._autocomplete.maps.methods || [];
-        }
-      }
-      
-      return [];
-    };
-    
-    // OIE Editor Autocomplete: Final property assignment
-    // Ensure all properties are explicitly assigned to global.phantom for editor detection
     global.phantom = phantom;
-    global.phantom.maps = phantom.maps;
-    global.phantom.strings = phantom.strings;
-    global.phantom.numbers = phantom.numbers;
-    global.phantom.json = phantom.json;
-    global.phantom.base64 = phantom.base64;
-    global.phantom.xml = phantom.xml;
-    global.phantom.dates = phantom.dates;
-    global.phantom.version = phantom.version;
-    global.phantom.help = phantom.help;
-    global.phantom.autocomplete = phantom.autocomplete;
-    global.phantom._ = phantom._;
-    global.phantom._autocomplete = phantom._autocomplete;
-    global.phantom._getSuggestions = phantom._getSuggestions;
-  
   })(this);
   

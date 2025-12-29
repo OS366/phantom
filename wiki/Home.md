@@ -14,7 +14,7 @@ Welcome to the Phantom.js wiki! This wiki contains comprehensive documentation, 
 - **[JSON Operations](JSON-Operations)** - All JSON utilities and examples
 - **[Base64 Operations](Base64-Operations)** - Base64 encode/decode operations
 - **[XML Operations](XML-Operations)** - XML parse, stringify, query operations
-- **[Date Operations](Date-Operations)** - Date and duration operations using Java.time
+- **[Date Operations](Date-Operations)** - Date, duration, and intelligent format detection
 
 ### Resources
 - **[Examples](Examples)** - Real-world usage examples
@@ -40,14 +40,14 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 
 ✅ **Zero Dependencies** - Pure JavaScript, no external libraries  
 ✅ **OIE Optimized** - Designed specifically for Oracle Integration Enterprise  
-✅ **Comprehensive Testing** - 284 tests covering all operations  
+✅ **Comprehensive Testing** - 282 tests covering all operations  
 ✅ **Well Documented** - Complete documentation with examples  
 ✅ **Error Safe** - Consistent error handling throughout  
-✅ **104+ Total Functions** - Comprehensive utility library with chaining APIs
+✅ **Intelligent Detection** - Auto-detect date formats with `phantom.intelligence.dates.detect`
 
 ## Version
 
-**Current Version:** 0.1.6-BETA
+**Current Version:** 0.1.7-BETA
 
 ## Quick Start
 
