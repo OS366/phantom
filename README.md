@@ -2,7 +2,7 @@
 
 A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
-**Version:** 0.1.6-BETA
+**Version:** 0.1.8-BETA
 
 ## Overview
 
