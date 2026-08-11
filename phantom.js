@@ -16,7 +16,12 @@
   function fail(msg) { var m = msg || "Invalid operation"; logError(m); throw new Error(m); }
 
   /* === MAPS === */
-  
+
+  /**
+   * @namespace phantom.maps
+   * @description Map operations for reading and writing OIE message maps (channel, global, connector, response, configuration).
+   */
+
     function isResponseContext() {
       try { 
         if (typeof responseMap !== "undefined") return true;
@@ -124,11 +129,24 @@
       };
     }
   
+    /** @namespace phantom.maps.channel
+     * @description Read/write access to the OIE channel map. Scoped to the current integration channel. */
     phantom.maps.channel = mapFacade("channelMap", false, false);
+
+    /** @namespace phantom.maps.global
+     * @description Read/write access to the OIE global map. Shared across all channels. */
     phantom.maps.global = mapFacade("globalMap", false, false);
+
+    /** @namespace phantom.maps.connector
+     * @description Read/write access to the OIE connector map. Scoped to the current connector. */
     phantom.maps.connector = mapFacade("connectorMap", false, false);
+
+    /** @namespace phantom.maps.response
+     * @description Read/write access to the OIE response map. Only available in a response context. */
     phantom.maps.response = mapFacade("responseMap", true, false);
-  
+
+    /** @namespace phantom.maps.configuration
+     * @description Read-only access to the OIE configuration map. */
     phantom.maps.configuration = {
       get: function (k) {
         var map = resolveMap("configurationMap");
@@ -150,7 +168,16 @@
     };
   
   /* === STRINGS === */
-  
+
+  /**
+   * @namespace phantom.strings
+   * @description String manipulation utilities. Use `phantom.strings.operation` for standalone functions or `phantom.strings.chain` for fluent chaining.
+   */
+
+    /**
+     * @namespace phantom.strings.operation
+     * @description Standalone string operation functions. Each function is pure and takes the input string as its first argument.
+     */
     phantom.strings = { operation: {} };
   
     function toStr(x) {
@@ -193,6 +220,12 @@
       return obj;
     }
   
+    /**
+     * Returns true if `stringToFind` exists within `input`.
+     * @param {string} input - The string to search in
+     * @param {string} stringToFind - The substring to search for
+     * @returns {boolean}
+     */
     phantom.strings.operation.find = function (input, stringToFind) {
       var s = toStr(input);
       var f = toStr(stringToFind);
@@ -200,6 +233,13 @@
       return s.indexOf(f) !== -1;
     };
   
+    /**
+     * Pads the left side of `input` with `padChar` repeated `count` times.
+     * @param {string} input - The string to pad
+     * @param {string} padChar - The character(s) to pad with
+     * @param {number} count - Number of times to prepend `padChar`
+     * @returns {string}
+     */
     phantom.strings.operation.leftPad = function (input, padChar, count) {
       var s = toStr(input);
       var p = toStr(padChar || " ");
@@ -211,6 +251,13 @@
       return out + s;
     };
   
+    /**
+     * Pads the right side of `input` with `padChar` repeated `count` times.
+     * @param {string} input - The string to pad
+     * @param {string} padChar - The character(s) to pad with
+     * @param {number} count - Number of times to append `padChar`
+     * @returns {string}
+     */
     phantom.strings.operation.rightPad = function (input, padChar, count) {
       var s = toStr(input);
       var p = toStr(padChar || " ");
@@ -222,6 +269,13 @@
       return out;
     };
   
+    /**
+     * Pads both sides of `input` with `padChar` repeated `count` times.
+     * @param {string} input - The string to pad
+     * @param {string} padChar - The character(s) to pad with
+     * @param {number} count - Number of pad characters on each side
+     * @returns {string}
+     */
     phantom.strings.operation.dualPad = function (input, padChar, count) {
       var s = toStr(input);
       var p = toStr(padChar || " ");
@@ -233,24 +287,53 @@
       return pad + s + pad;
     };
   
+    /**
+     * Removes leading whitespace from `input`.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.leftTrim = function (input) {
       return toStr(input).replace(/^[ \t\r\n]+/, "");
     };
   
+    /**
+     * Removes trailing whitespace from `input`.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.rightTrim = function (input) {
       return toStr(input).replace(/[ \t\r\n]+$/, "");
     };
   
+    /**
+     * Removes both leading and trailing whitespace from `input`.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.trim = function (input) {
       return phantom.strings.operation.leftTrim(
         phantom.strings.operation.rightTrim(input)
       );
     };
   
+    /**
+     * Splits `input` into an array using `delimiter`.
+     * @param {string} input
+     * @param {string} delimiter
+     * @returns {string[]}
+     */
     phantom.strings.operation.split = function (input, delimiter) {
       return toStr(input).split(toStr(delimiter));
     };
   
+    /**
+     * Removes `deleteCount` characters at index `start` and optionally inserts `insertString`.
+     * @param {string} input
+     * @param {number} start - Zero-based index to start the splice
+     * @param {number} deleteCount - Number of characters to remove
+     * @param {string} [insertString] - String to insert at `start`
+     * @returns {string}
+     */
     phantom.strings.operation.splice = function (input, start, deleteCount, insertString) {
       var s = toStr(input);
       var st = parseInt(start, 10);
@@ -263,6 +346,12 @@
       return s.slice(0, st) + ins + s.slice(st + dc);
     };
   
+    /**
+     * Lexicographically compares two strings. Returns 0 if equal, 1 if a > b, -1 if a < b.
+     * @param {string} a
+     * @param {string} b
+     * @returns {number}
+     */
     phantom.strings.operation.compare = function (a, b) {
       var s1 = toStr(a);
       var s2 = toStr(b);
@@ -270,6 +359,13 @@
       return s1 > s2 ? 1 : -1;
     };
   
+    /**
+     * Concatenates `a` and `b` with an optional `joinCharacters` separator between them.
+     * @param {string} a
+     * @param {string} b
+     * @param {string} [joinCharacters] - Separator to place between `a` and `b`
+     * @returns {string}
+     */
     phantom.strings.operation.join = function (a, b, joinCharacters) {
       return toStr(a) + toStr(joinCharacters || "") + toStr(b);
     };
@@ -278,6 +374,13 @@
       return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
 
+    /**
+     * Replaces the first occurrence of `searchString` in `input` with `replaceString`.
+     * @param {string} input
+     * @param {string} searchString
+     * @param {string} replaceString
+     * @returns {string}
+     */
     phantom.strings.operation.replace = function (input, searchString, replaceString) {
       var s = toStr(input);
       var search = toStr(searchString);
@@ -286,6 +389,13 @@
       return s.replace(search, replace);
     };
 
+    /**
+     * Replaces all occurrences of `searchString` in `input` with `replaceString`.
+     * @param {string} input
+     * @param {string} searchString
+     * @param {string} replaceString
+     * @returns {string}
+     */
     phantom.strings.operation.replaceAll = function (input, searchString, replaceString) {
       var s = toStr(input);
       var search = toStr(searchString);
@@ -295,6 +405,13 @@
       return s.replace(regex, replace);
     };
 
+    /**
+     * Extracts a portion of `input` from index `start` to `end` (exclusive).
+     * @param {string} input
+     * @param {number} start - Zero-based start index
+     * @param {number} [end] - Zero-based end index (omit to go to end of string)
+     * @returns {string}
+     */
     phantom.strings.operation.substring = function (input, start, end) {
       var s = toStr(input);
       var st = parseInt(start, 10);
@@ -305,20 +422,40 @@
       return s.substring(st, e);
     };
 
+    /**
+     * Converts `input` to upper case.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.toUpperCase = function (input) {
       return toStr(input).toUpperCase();
     };
 
+    /**
+     * Converts `input` to lower case.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.toLowerCase = function (input) {
       return toStr(input).toLowerCase();
     };
 
+    /**
+     * Upper-cases the first character and lower-cases the rest of `input`.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.capitalize = function (input) {
       var s = toStr(input);
       if (s.length === 0) return s;
       return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
     };
 
+    /**
+     * Reverses the characters of `input`.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.reverse = function (input) {
       var s = toStr(input);
       var result = "";
@@ -328,16 +465,33 @@
       return result;
     };
 
+    /**
+     * Returns the character count of `input`.
+     * @param {string} input
+     * @returns {number}
+     */
     phantom.strings.operation.length = function (input) {
       return toStr(input).length;
     };
 
+    /**
+     * Returns true if `input` begins with `prefix`.
+     * @param {string} input
+     * @param {string} prefix
+     * @returns {boolean}
+     */
     phantom.strings.operation.startsWith = function (input, prefix) {
       var s = toStr(input);
       var p = toStr(prefix);
       return s.indexOf(p) === 0;
     };
 
+    /**
+     * Returns true if `input` ends with `suffix`.
+     * @param {string} input
+     * @param {string} suffix
+     * @returns {boolean}
+     */
     phantom.strings.operation.endsWith = function (input, suffix) {
       var s = toStr(input);
       var suf = toStr(suffix);
@@ -345,10 +499,22 @@
       return s.lastIndexOf(suf) === s.length - suf.length;
     };
 
+    /**
+     * Returns true if `input` contains `stringToFind`. Alias for `find`.
+     * @param {string} input
+     * @param {string} stringToFind
+     * @returns {boolean}
+     */
     phantom.strings.operation.contains = function (input, stringToFind) {
       return phantom.strings.operation.find(input, stringToFind);
     };
 
+    /**
+     * Repeats `input` concatenated `count` times.
+     * @param {string} input
+     * @param {number} count
+     * @returns {string}
+     */
     phantom.strings.operation.repeat = function (input, count) {
       var s = toStr(input);
       var n = parseInt(count, 10);
@@ -360,19 +526,43 @@
       return result;
     };
 
+    /**
+     * Removes all occurrences of `stringToRemove` from `input`.
+     * @param {string} input
+     * @param {string} stringToRemove
+     * @returns {string}
+     */
     phantom.strings.operation.remove = function (input, stringToRemove) {
       return phantom.strings.operation.replaceAll(input, stringToRemove, "");
     };
 
+    /**
+     * Returns true if `input` has zero characters.
+     * @param {string} input
+     * @returns {boolean}
+     */
     phantom.strings.operation.isEmpty = function (input) {
       return toStr(input).length === 0;
     };
 
+    /**
+     * Returns true if `input` is empty or contains only whitespace.
+     * @param {string} input
+     * @returns {boolean}
+     */
     phantom.strings.operation.isBlank = function (input) {
       var s = toStr(input);
       return s.length === 0 || /^\s*$/.test(s);
     };
 
+    /**
+     * Wraps `input` at `size` characters per line. Set `cut` to true to break mid-word.
+     * @param {string} input
+     * @param {number} [size=80] - Maximum line length
+     * @param {boolean} [cut=false] - If true, cuts long words at the column boundary
+     * @param {boolean} [everything=false] - If true, cuts every chunk regardless of word boundaries
+     * @returns {string}
+     */
     phantom.strings.operation.wordwrap = function (input, size, cut, everything) {
       var s = toStr(input);
       var wrapSize = size != null ? parseInt(size, 10) : 80;
@@ -404,6 +594,11 @@
       return result;
     };
 
+    /**
+     * Reverses the order of words in `input`.
+     * @param {string} input
+     * @returns {string}
+     */
     phantom.strings.operation.reverseWords = function (input) {
       var s = toStr(input);
       if (s.length === 0) return s;
@@ -412,7 +607,12 @@
     };
 
   /* phantom.strings.chain */
-    
+
+    /**
+     * Starts a fluent chain of string operations on `input`. Call `.value()` at the end to retrieve the result.
+     * @param {string} input - The initial string value
+     * @returns {{ value: function(): string, trim: function(): object, toUpperCase: function(): object, toLowerCase: function(): object, capitalize: function(): object, reverse: function(): object, reverseWords: function(): object, leftTrim: function(): object, rightTrim: function(): object, replace: function(string, string): object, replaceAll: function(string, string): object, remove: function(string): object, leftPad: function(string, number): object, rightPad: function(string, number): object, substring: function(number, number=): object, wordwrap: function(number=, boolean=, boolean=): object }}
+     */
     phantom.strings.chain = function (input) {
       var value = toStr(input);
       
@@ -534,7 +734,16 @@
     };
   
   /* === NUMBERS === */
-  
+
+  /**
+   * @namespace phantom.numbers
+   * @description Numeric utilities. Use `phantom.numbers.operation` for standalone functions or `phantom.numbers.chain` for fluent chaining.
+   */
+
+    /**
+     * @namespace phantom.numbers.operation
+     * @description Standalone numeric operation functions. Throws on invalid or non-finite input.
+     */
     phantom.numbers = { operation: {} };
   
     function toNumStrict(x) {
@@ -544,10 +753,20 @@
       return n;
     }
   
+    /**
+     * Parses `value` to a finite number. Throws if the value is not a valid finite number.
+     * @param {*} value
+     * @returns {number}
+     */
     phantom.numbers.operation.parse = function (value) {
       return toNumStrict(value);
     };
   
+    /**
+     * Returns true if `value` can be parsed as a finite number.
+     * @param {*} value
+     * @returns {boolean}
+     */
     phantom.numbers.operation.isNumber = function (value) {
       try {
         var n = Number(value);
@@ -557,24 +776,54 @@
       }
     };
   
+    /**
+     * Returns `a + b`.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number}
+     */
     phantom.numbers.operation.add = function (a, b) {
       return toNumStrict(a) + toNumStrict(b);
     };
   
+    /**
+     * Returns `a - b`.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number}
+     */
     phantom.numbers.operation.subtract = function (a, b) {
       return toNumStrict(a) - toNumStrict(b);
     };
   
+    /**
+     * Returns `a * b`.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number}
+     */
     phantom.numbers.operation.multiply = function (a, b) {
       return toNumStrict(a) * toNumStrict(b);
     };
   
+    /**
+     * Returns `a / b`. Throws on division by zero.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number}
+     */
     phantom.numbers.operation.divide = function (a, b) {
       var denom = toNumStrict(b);
       if (denom === 0) return fail("Division by zero");
       return toNumStrict(a) / denom;
     };
   
+    /**
+     * Rounds `value` to `decimals` decimal places (default 0).
+     * @param {number} value
+     * @param {number} [decimals=0]
+     * @returns {number}
+     */
     phantom.numbers.operation.round = function (value, decimals) {
       var n = toNumStrict(value);
       var d = toNumStrict(decimals == null ? 0 : decimals);
@@ -582,44 +831,94 @@
       return Math.round(n * p) / p;
     };
   
+    /**
+     * Returns the smaller of `a` and `b`.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number}
+     */
     phantom.numbers.operation.min = function (a, b) {
       var x = toNumStrict(a), y = toNumStrict(b);
       return x < y ? x : y;
     };
   
+    /**
+     * Returns the larger of `a` and `b`.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number}
+     */
     phantom.numbers.operation.max = function (a, b) {
       var x = toNumStrict(a), y = toNumStrict(b);
       return x > y ? x : y;
     };
   
+    /**
+     * Returns the absolute value of `value`.
+     * @param {number} value
+     * @returns {number}
+     */
     phantom.numbers.operation.abs = function (value) {
       return Math.abs(toNumStrict(value));
     };
 
+    /**
+     * Returns the smallest integer greater than or equal to `value`.
+     * @param {number} value
+     * @returns {number}
+     */
     phantom.numbers.operation.ceil = function (value) {
       return Math.ceil(toNumStrict(value));
     };
 
+    /**
+     * Returns the largest integer less than or equal to `value`.
+     * @param {number} value
+     * @returns {number}
+     */
     phantom.numbers.operation.floor = function (value) {
       return Math.floor(toNumStrict(value));
     };
 
+    /**
+     * Returns the square root of `value`. Throws for negative input.
+     * @param {number} value
+     * @returns {number}
+     */
     phantom.numbers.operation.sqrt = function (value) {
       var n = toNumStrict(value);
       if (n < 0) return fail("Cannot calculate square root of negative number: " + n);
       return Math.sqrt(n);
     };
 
+    /**
+     * Returns `base` raised to the power of `exponent`.
+     * @param {number} base
+     * @param {number} exponent
+     * @returns {number}
+     */
     phantom.numbers.operation.pow = function (base, exponent) {
       return Math.pow(toNumStrict(base), toNumStrict(exponent));
     };
 
+    /**
+     * Returns the remainder of `dividend / divisor`. Throws on modulo by zero.
+     * @param {number} dividend
+     * @param {number} divisor
+     * @returns {number}
+     */
     phantom.numbers.operation.mod = function (dividend, divisor) {
       var d = toNumStrict(divisor);
       if (d === 0) return fail("Modulo by zero");
       return toNumStrict(dividend) % d;
     };
 
+    /**
+     * Returns a random floating-point number in the range [`min`, `max`].
+     * @param {number} [min=0]
+     * @param {number} [max=1]
+     * @returns {number}
+     */
     phantom.numbers.operation.random = function (min, max) {
       var minVal = min != null ? toNumStrict(min) : 0;
       var maxVal = max != null ? toNumStrict(max) : 1;
@@ -627,6 +926,12 @@
       return Math.random() * (maxVal - minVal) + minVal;
     };
 
+    /**
+     * Returns a random integer in the inclusive range [`min`, `max`].
+     * @param {number} [min=0]
+     * @param {number} [max=1]
+     * @returns {number}
+     */
     phantom.numbers.operation.randomInt = function (min, max) {
       var minVal = min != null ? toNumStrict(min) : 0;
       var maxVal = max != null ? toNumStrict(max) : 1;
@@ -634,6 +939,13 @@
       return Math.floor(Math.random() * (Math.floor(maxVal) - Math.ceil(minVal) + 1)) + Math.ceil(minVal);
     };
 
+    /**
+     * Returns true if `value` is between `min` and `max` (inclusive).
+     * @param {number} value
+     * @param {number} min
+     * @param {number} max
+     * @returns {boolean}
+     */
     phantom.numbers.operation.between = function (value, min, max) {
       var v = toNumStrict(value);
       var minVal = toNumStrict(min);
@@ -641,6 +953,13 @@
       return v >= minVal && v <= maxVal;
     };
 
+    /**
+     * Clamps `value` to the range [`min`, `max`], returning `min` or `max` if out of bounds.
+     * @param {number} value
+     * @param {number} min
+     * @param {number} max
+     * @returns {number}
+     */
     phantom.numbers.operation.clamp = function (value, min, max) {
       var v = toNumStrict(value);
       var minVal = toNumStrict(min);
@@ -651,6 +970,11 @@
       return v;
     };
 
+    /**
+     * Returns 1 if `value` is positive, -1 if negative, 0 if zero.
+     * @param {number} value
+     * @returns {number}
+     */
     phantom.numbers.operation.sign = function (value) {
       var n = toNumStrict(value);
       if (n > 0) return 1;
@@ -658,28 +982,59 @@
       return 0;
     };
 
+    /**
+     * Returns true if `value` is even.
+     * @param {number} value
+     * @returns {boolean}
+     */
     phantom.numbers.operation.isEven = function (value) {
       var n = toNumStrict(value);
       return n % 2 === 0;
     };
 
+    /**
+     * Returns true if `value` is odd.
+     * @param {number} value
+     * @returns {boolean}
+     */
     phantom.numbers.operation.isOdd = function (value) {
       var n = toNumStrict(value);
       return n % 2 !== 0;
     };
 
+    /**
+     * Returns true if `value` is greater than zero.
+     * @param {number} value
+     * @returns {boolean}
+     */
     phantom.numbers.operation.isPositive = function (value) {
       return toNumStrict(value) > 0;
     };
 
+    /**
+     * Returns true if `value` is less than zero.
+     * @param {number} value
+     * @returns {boolean}
+     */
     phantom.numbers.operation.isNegative = function (value) {
       return toNumStrict(value) < 0;
     };
 
+    /**
+     * Returns true if `value` is exactly zero.
+     * @param {number} value
+     * @returns {boolean}
+     */
     phantom.numbers.operation.isZero = function (value) {
       return toNumStrict(value) === 0;
     };
 
+    /**
+     * Formats `value` to a fixed number of decimal places, returning a string.
+     * @param {number} value
+     * @param {number} [decimals=0] - Decimal places (0–20)
+     * @returns {string}
+     */
     phantom.numbers.operation.toFixed = function (value, decimals) {
       var n = toNumStrict(value);
       var d = decimals != null ? toNumStrict(decimals) : 0;
@@ -687,13 +1042,23 @@
       return n.toFixed(Math.floor(d));
     };
 
+    /**
+     * Removes the fractional part of `value` (truncates towards zero).
+     * @param {number} value
+     * @returns {number}
+     */
     phantom.numbers.operation.truncate = function (value) {
       var n = toNumStrict(value);
       return n < 0 ? Math.ceil(n) : Math.floor(n);
     };
 
   /* phantom.numbers.chain */
-    
+
+    /**
+     * Starts a fluent chain of numeric operations on `input`. Call `.value()` at the end to retrieve the result.
+     * @param {number} input - The initial numeric value
+     * @returns {{ value: function(): number, abs: function(): object, round: function(number=): object, ceil: function(): object, floor: function(): object, truncate: function(): object, sqrt: function(): object, add: function(number): object, subtract: function(number): object, multiply: function(number): object, divide: function(number): object, mod: function(number): object, pow: function(number): object, min: function(number): object, max: function(number): object, clamp: function(number, number): object, toFixed: function(number=): object, isEven: function(): boolean, isOdd: function(): boolean, isPositive: function(): boolean, isNegative: function(): boolean, isZero: function(): boolean, between: function(number, number): boolean, sign: function(): number }}
+     */
     phantom.numbers.chain = function (input) {
       var value = toNumStrict(input);
       
@@ -840,7 +1205,16 @@
     };
   
   /* === JSON === */
-  
+
+  /**
+   * @namespace phantom.json
+   * @description JSON parsing, serialisation, and path-based access utilities.
+   */
+
+    /**
+     * @namespace phantom.json.operation
+     * @description Standalone JSON operation functions.
+     */
     phantom.json = { operation: {} };
   
     function parseJsonSafe(str) {
@@ -892,14 +1266,30 @@
       return obj;
     }
   
+    /**
+     * Parses a JSON string into a JavaScript object or array.
+     * @param {string} jsonString
+     * @returns {object|Array}
+     */
     phantom.json.operation.parse = function (jsonString) {
       return parseJsonSafe(jsonString);
     };
   
+    /**
+     * Serialises an object or array to a compact JSON string.
+     * @param {object|Array} obj
+     * @returns {string}
+     */
     phantom.json.operation.stringify = function (obj) {
       return stringifyJsonSafe(obj);
     };
   
+    /**
+     * Reads a nested value from `obj` using a dot-separated `keyPath` (e.g. `"user.address.city"`).
+     * @param {object} obj
+     * @param {string} keyPath - Dot-separated path to the target value
+     * @returns {*}
+     */
     phantom.json.operation.get = function (obj, keyPath) {
       if (obj == null) return fail("Object is null or undefined");
       if (keyPath == null) return fail("Key path is null or undefined");
@@ -908,6 +1298,13 @@
       return getNestedValue(obj, path);
     };
   
+    /**
+     * Returns a deep copy of `obj` with `value` set at the dot-separated `keyPath`. Does not mutate the original.
+     * @param {object} obj
+     * @param {string} keyPath - Dot-separated path
+     * @param {*} value - Value to set
+     * @returns {object}
+     */
     phantom.json.operation.set = function (obj, keyPath, value) {
       if (obj == null) return fail("Object is null or undefined");
       if (keyPath == null) return fail("Key path is null or undefined");
@@ -922,6 +1319,12 @@
       }
     };
   
+    /**
+     * Returns true if the dot-separated `keyPath` exists and is not undefined in `obj`.
+     * @param {object} obj
+     * @param {string} keyPath
+     * @returns {boolean}
+     */
     phantom.json.operation.has = function (obj, keyPath) {
       if (obj == null) return fail("Object is null or undefined");
       if (keyPath == null) return fail("Key path is null or undefined");
@@ -943,6 +1346,12 @@
       }
     };
   
+    /**
+     * Returns a deep copy of `obj` with the key at `keyPath` deleted. Does not mutate the original.
+     * @param {object} obj
+     * @param {string} keyPath - Dot-separated path of the key to delete
+     * @returns {object}
+     */
     phantom.json.operation.remove = function (obj, keyPath) {
       if (obj == null) return fail("Object is null or undefined");
       if (keyPath == null) return fail("Key path is null or undefined");
@@ -964,6 +1373,11 @@
       }
     };
   
+    /**
+     * Returns an array of the own enumerable property names of `obj`.
+     * @param {object} obj
+     * @returns {string[]}
+     */
     phantom.json.operation.keys = function (obj) {
       if (obj == null || typeof obj !== "object") return fail("Object is null, undefined, or not an object");
       if (Array.isArray(obj)) return fail("Cannot get keys from array, use size() for array length");
@@ -974,6 +1388,11 @@
       }
     };
   
+    /**
+     * Returns an array of the own enumerable property values of `obj`.
+     * @param {object} obj
+     * @returns {Array}
+     */
     phantom.json.operation.values = function (obj) {
       if (obj == null || typeof obj !== "object") return fail("Object is null, undefined, or not an object");
       if (Array.isArray(obj)) return fail("Cannot get values from array");
@@ -989,6 +1408,11 @@
       }
     };
   
+    /**
+     * Returns the number of own properties in an object, or the length of an array.
+     * @param {object|Array} obj
+     * @returns {number}
+     */
     phantom.json.operation.size = function (obj) {
       if (obj == null || typeof obj !== "object") return fail("Object is null, undefined, or not an object");
       if (Array.isArray(obj)) return obj.length;
@@ -999,6 +1423,12 @@
       }
     };
   
+    /**
+     * Shallow-merges `obj2` into a copy of `obj1`, returning the merged object. Keys in `obj2` overwrite `obj1`.
+     * @param {object} obj1
+     * @param {object} obj2
+     * @returns {object}
+     */
     phantom.json.operation.merge = function (obj1, obj2) {
       if (obj1 == null || typeof obj1 !== "object") return fail("First object is null, undefined, or not an object");
       if (obj2 == null || typeof obj2 !== "object") return fail("Second object is null, undefined, or not an object");
@@ -1015,6 +1445,11 @@
       }
     };
   
+    /**
+     * Returns true if `obj` is null, an empty object `{}`, or an empty array `[]`.
+     * @param {object|Array|null} obj
+     * @returns {boolean}
+     */
     phantom.json.operation.isEmpty = function (obj) {
       if (obj == null) return true;
       if (typeof obj !== "object") return fail("Value is not an object or array");
@@ -1026,22 +1461,43 @@
       }
     };
   
+    /**
+     * Returns true if `obj` is an array.
+     * @param {*} obj
+     * @returns {boolean}
+     */
     phantom.json.operation.isArray = function (obj) {
       if (obj == null) return false;
       return Array.isArray(obj);
     };
   
+    /**
+     * Returns true if `obj` is a non-null, non-array plain object.
+     * @param {*} obj
+     * @returns {boolean}
+     */
     phantom.json.operation.isObject = function (obj) {
       if (obj == null) return false;
       return typeof obj === "object" && !Array.isArray(obj);
     };
   
+    /**
+     * Serialises `obj` to a compact JSON string. Useful for logging in OIE/Rhino where objects print as Java types.
+     * @param {object|Array} obj
+     * @returns {string}
+     */
     phantom.json.operation.toString = function (obj) {
       // Helper method to convert JSON object/array to string for logging
       // In OIE/Rhino environment, objects/arrays show Java representation when logged directly
       return stringifyJsonSafe(obj);
     };
   
+    /**
+     * Serialises `obj` to an indented JSON string for human-readable output.
+     * @param {object|Array} obj
+     * @param {number} [indent=2] - Number of spaces per indentation level (0–10)
+     * @returns {string}
+     */
     phantom.json.operation.prettyPrint = function (obj, indent) {
       // Pretty print JSON with indentation
       try {
@@ -1055,7 +1511,16 @@
     };
   
   /* === BASE64 === */
-  
+
+  /**
+   * @namespace phantom.base64
+   * @description Base64 encoding and decoding utilities. Supports Java (OIE/Rhino), browser (`btoa`/`atob`), and a pure-JS fallback.
+   */
+
+    /**
+     * @namespace phantom.base64.operation
+     * @description Standalone Base64 operation functions.
+     */
     phantom.base64 = { operation: {} };
   
     function encodeBase64Safe(str) {
@@ -1160,16 +1625,35 @@
       }
     }
   
+    /**
+     * Encodes `str` to a Base64 string. Handles UTF-8 characters.
+     * @param {string} str
+     * @returns {string}
+     */
     phantom.base64.operation.encode = function (str) {
       return encodeBase64Safe(str);
     };
   
+    /**
+     * Decodes a Base64-encoded `str` back to a UTF-8 string.
+     * @param {string} str - Base64-encoded string
+     * @returns {string}
+     */
     phantom.base64.operation.decode = function (str) {
       return decodeBase64Safe(str);
     };
   
   /* === XML === */
-  
+
+  /**
+   * @namespace phantom.xml
+   * @description XML parsing, serialisation, and XPath-based query utilities. Requires Java XML APIs (OIE/Rhino environment).
+   */
+
+    /**
+     * @namespace phantom.xml.operation
+     * @description Standalone XML operation functions.
+     */
     phantom.xml = { operation: {} };
   
     function parseXmlSafe(str) {
@@ -1278,29 +1762,66 @@
       }
     }
   
+    /**
+     * Parses an XML string into a Java DOM Document object.
+     * @param {string} xmlString
+     * @returns {object} Java DOM Document
+     */
     phantom.xml.operation.parse = function (xmlString) {
       return parseXmlSafe(xmlString);
     };
   
+    /**
+     * Serialises a Java DOM Document back to an XML string.
+     * @param {object} xmlObj - Java DOM Document
+     * @returns {string}
+     */
     phantom.xml.operation.stringify = function (xmlObj) {
       return stringifyXmlSafe(xmlObj);
     };
   
+    /**
+     * Evaluates an XPath expression against `xml` and returns the matched string value.
+     * @param {object} xml - Java DOM Document
+     * @param {string} xpath - XPath expression
+     * @returns {string}
+     */
     phantom.xml.operation.get = function (xml, xpath) {
       return getXmlValue(xml, xpath);
     };
   
+    /**
+     * Returns true if the XPath expression matches at least one node in `xml`.
+     * @param {object} xml - Java DOM Document
+     * @param {string} xpath - XPath expression
+     * @returns {boolean}
+     */
     phantom.xml.operation.has = function (xml, xpath) {
       return hasXmlValue(xml, xpath);
     };
   
+    /**
+     * Serialises `xmlObj` to an XML string. Useful for logging in OIE/Rhino where DOM objects print as Java types.
+     * @param {object} xmlObj - Java DOM Document
+     * @returns {string}
+     */
     phantom.xml.operation.toString = function (xmlObj) {
       // Helper method to convert XML object to string for logging
       return stringifyXmlSafe(xmlObj);
     };
   
   /* === DATES === */
-  
+
+  /**
+   * @namespace phantom.dates
+   * @description Date and time utilities built on Java `java.time` APIs (OIE/Rhino environment).
+   * Use `phantom.dates.operation` for parsing, formatting, and comparison, and `phantom.dates.duration` for duration arithmetic.
+   */
+
+    /**
+     * @namespace phantom.dates.operation
+     * @description Standalone date/datetime operation functions.
+     */
     phantom.dates = { operation: {} };
   
     // Date format constants (enum-like)
@@ -1448,6 +1969,10 @@
       return fail("ChronoUnit not available - Java.time APIs required");
     }
   
+    /**
+     * Returns the current date and time as a `java.time.LocalDateTime`.
+     * @returns {object} java.time.LocalDateTime
+     */
     phantom.dates.operation.now = function () {
       try {
         if (typeof java !== "undefined" && java.time) {
@@ -1459,6 +1984,10 @@
       }
     };
   
+    /**
+     * Returns today's date as a `java.time.LocalDate` (no time component).
+     * @returns {object} java.time.LocalDate
+     */
     phantom.dates.operation.today = function () {
       try {
         if (typeof java !== "undefined" && java.time) {
@@ -1470,6 +1999,12 @@
       }
     };
   
+    /**
+     * Parses a date string into a `java.time.LocalDate`. If `format` is omitted, tries ISO and common formats automatically.
+     * @param {string} dateString - Date string to parse
+     * @param {string} [format] - Java date format pattern (e.g. `"yyyy-MM-dd"`)
+     * @returns {object} java.time.LocalDate
+     */
     phantom.dates.operation.parse = function (dateString, format) {
       try {
         if (dateString == null) return fail("Date string is null or undefined");
@@ -1506,6 +2041,12 @@
       }
     };
   
+    /**
+     * Parses a datetime string into a `java.time.LocalDateTime`. If `format` is omitted, tries ISO and common formats automatically.
+     * @param {string} dateTimeString - Datetime string to parse
+     * @param {string} [format] - Java datetime format pattern (e.g. `"yyyy-MM-dd'T'HH:mm:ss"`)
+     * @returns {object} java.time.LocalDateTime
+     */
     phantom.dates.operation.parseDateTime = function (dateTimeString, format) {
       try {
         if (dateTimeString == null) return fail("DateTime string is null or undefined");
@@ -1542,6 +2083,12 @@
       }
     };
 
+    /**
+     * Formats a date into a string using a Java date format pattern.
+     * @param {object|string} date - LocalDate, LocalDateTime, or a parseable date string
+     * @param {string} format - Java format pattern (e.g. `"dd/MM/yyyy"`)
+     * @returns {string}
+     */
     phantom.dates.operation.format = function (date, format) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1558,6 +2105,12 @@
       }
     };
   
+    /**
+     * Formats a datetime into a string using a Java datetime format pattern.
+     * @param {object|string} dateTime - LocalDateTime or a parseable datetime string
+     * @param {string} format - Java format pattern (e.g. `"yyyy-MM-dd HH:mm:ss"`)
+     * @returns {string}
+     */
     phantom.dates.operation.formatDateTime = function (dateTime, format) {
       try {
         if (dateTime == null) return fail("DateTime is null or undefined");
@@ -1574,6 +2127,11 @@
       }
     };
   
+    /**
+     * Returns the year component of `date` as an integer.
+     * @param {object|string} date - LocalDate, LocalDateTime, or parseable date string
+     * @returns {number}
+     */
     phantom.dates.operation.getYear = function (date) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1587,6 +2145,11 @@
       }
     };
   
+    /**
+     * Returns the month of `date` as an integer (1 = January … 12 = December).
+     * @param {object|string} date - LocalDate, LocalDateTime, or parseable date string
+     * @returns {number}
+     */
     phantom.dates.operation.getMonth = function (date) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1600,6 +2163,11 @@
       }
     };
   
+    /**
+     * Returns the day of the month of `date` (1–31).
+     * @param {object|string} date - LocalDate, LocalDateTime, or parseable date string
+     * @returns {number}
+     */
     phantom.dates.operation.getDay = function (date) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1613,6 +2181,11 @@
       }
     };
   
+    /**
+     * Returns the day of the week of `date` as an uppercase string (e.g. `"MONDAY"`, `"TUESDAY"`).
+     * @param {object|string} date - LocalDate, LocalDateTime, or parseable date string
+     * @returns {string}
+     */
     phantom.dates.operation.getDayOfWeek = function (date) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1626,6 +2199,13 @@
       }
     };
   
+    /**
+     * Adds a time unit to `date` and returns a new LocalDate.
+     * @param {object|string} date - LocalDate or parseable date string
+     * @param {number} amount - Number of units to add
+     * @param {string} unit - ChronoUnit name: `"DAYS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`, etc.
+     * @returns {object} java.time.LocalDate
+     */
     phantom.dates.operation.add = function (date, amount, unit) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1644,6 +2224,13 @@
       }
     };
   
+    /**
+     * Subtracts a time unit from `date` and returns a new LocalDate.
+     * @param {object|string} date - LocalDate or parseable date string
+     * @param {number} amount - Number of units to subtract
+     * @param {string} unit - ChronoUnit name: `"DAYS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`, etc.
+     * @returns {object} java.time.LocalDate
+     */
     phantom.dates.operation.subtract = function (date, amount, unit) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1662,6 +2249,13 @@
       }
     };
   
+    /**
+     * Returns the number of `unit` between `date1` and `date2` (positive if date2 is after date1).
+     * @param {object|string} date1 - Start date
+     * @param {object|string} date2 - End date
+     * @param {string} unit - ChronoUnit name: `"DAYS"`, `"WEEKS"`, `"MONTHS"`, `"YEARS"`, etc.
+     * @returns {number}
+     */
     phantom.dates.operation.between = function (date1, date2, unit) {
       try {
         if (date1 == null) return fail("First date is null or undefined");
@@ -1680,6 +2274,12 @@
       }
     };
   
+    /**
+     * Returns true if `date1` is strictly before `date2`.
+     * @param {object|string} date1
+     * @param {object|string} date2
+     * @returns {boolean}
+     */
     phantom.dates.operation.isBefore = function (date1, date2) {
       try {
         if (date1 == null) return fail("First date is null or undefined");
@@ -1696,6 +2296,12 @@
       }
     };
   
+    /**
+     * Returns true if `date1` is strictly after `date2`.
+     * @param {object|string} date1
+     * @param {object|string} date2
+     * @returns {boolean}
+     */
     phantom.dates.operation.isAfter = function (date1, date2) {
       try {
         if (date1 == null) return fail("First date is null or undefined");
@@ -1712,6 +2318,12 @@
       }
     };
   
+    /**
+     * Returns true if `date1` and `date2` represent the same date.
+     * @param {object|string} date1
+     * @param {object|string} date2
+     * @returns {boolean}
+     */
     phantom.dates.operation.isEqual = function (date1, date2) {
       try {
         if (date1 == null) return fail("First date is null or undefined");
@@ -1728,6 +2340,11 @@
       }
     };
   
+    /**
+     * Returns a `java.time.LocalDateTime` set to midnight (00:00:00) of `date`.
+     * @param {object|string} date
+     * @returns {object} java.time.LocalDateTime
+     */
     phantom.dates.operation.startOfDay = function (date) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1741,6 +2358,11 @@
       }
     };
   
+    /**
+     * Returns a `java.time.LocalDateTime` set to 23:59:59.999 of `date`.
+     * @param {object|string} date
+     * @returns {object} java.time.LocalDateTime
+     */
     phantom.dates.operation.endOfDay = function (date) {
       try {
         if (date == null) return fail("Date is null or undefined");
@@ -1755,9 +2377,19 @@
     };
   
   /* phantom.dates.duration */
-  
+
+    /**
+     * @namespace phantom.dates.duration
+     * @description Duration creation and arithmetic functions built on `java.time.Duration`.
+     */
     phantom.dates.duration = {};
   
+    /**
+     * Returns a `java.time.Duration` representing the time between `dateTime1` and `dateTime2`.
+     * @param {object|string} dateTime1 - Start datetime
+     * @param {object|string} dateTime2 - End datetime
+     * @returns {object} java.time.Duration
+     */
     phantom.dates.duration.between = function (dateTime1, dateTime2) {
       try {
         if (dateTime1 == null) return fail("First datetime is null or undefined");
@@ -1774,6 +2406,12 @@
       }
     };
   
+    /**
+     * Creates a `java.time.Duration` of `amount` in the given `unit`.
+     * @param {number} amount - Duration quantity
+     * @param {string} unit - ChronoUnit name: `"DAYS"`, `"HOURS"`, `"MINUTES"`, `"SECONDS"`, `"MILLIS"`, etc.
+     * @returns {object} java.time.Duration
+     */
     phantom.dates.duration.of = function (amount, unit) {
       try {
         if (amount == null) return fail("Amount is null or undefined");
@@ -1790,6 +2428,12 @@
       }
     };
   
+    /**
+     * Adds a `java.time.Duration` to `dateTime` and returns the resulting `java.time.LocalDateTime`.
+     * @param {object|string} dateTime - Base datetime
+     * @param {object} duration - `java.time.Duration` object (from `duration.of` or `duration.between`)
+     * @returns {object} java.time.LocalDateTime
+     */
     phantom.dates.duration.add = function (dateTime, duration) {
       try {
         if (dateTime == null) return fail("DateTime is null or undefined");
@@ -1808,6 +2452,12 @@
       }
     };
   
+    /**
+     * Subtracts a `java.time.Duration` from `dateTime` and returns the resulting `java.time.LocalDateTime`.
+     * @param {object|string} dateTime - Base datetime
+     * @param {object} duration - `java.time.Duration` object
+     * @returns {object} java.time.LocalDateTime
+     */
     phantom.dates.duration.subtract = function (dateTime, duration) {
       try {
         if (dateTime == null) return fail("DateTime is null or undefined");
@@ -1826,6 +2476,11 @@
       }
     };
   
+    /**
+     * Returns the total number of whole days in `duration`.
+     * @param {object} duration - `java.time.Duration` object
+     * @returns {number}
+     */
     phantom.dates.duration.toDays = function (duration) {
       try {
         if (duration == null) return fail("Duration is null or undefined");
@@ -1842,6 +2497,11 @@
       }
     };
   
+    /**
+     * Returns the total number of whole hours in `duration`.
+     * @param {object} duration - `java.time.Duration` object
+     * @returns {number}
+     */
     phantom.dates.duration.toHours = function (duration) {
       try {
         if (duration == null) return fail("Duration is null or undefined");
@@ -1858,6 +2518,11 @@
       }
     };
   
+    /**
+     * Returns the total number of whole minutes in `duration`.
+     * @param {object} duration - `java.time.Duration` object
+     * @returns {number}
+     */
     phantom.dates.duration.toMinutes = function (duration) {
       try {
         if (duration == null) return fail("Duration is null or undefined");
@@ -1874,6 +2539,11 @@
       }
     };
   
+    /**
+     * Returns the total number of whole seconds in `duration`.
+     * @param {object} duration - `java.time.Duration` object
+     * @returns {number}
+     */
     phantom.dates.duration.toSeconds = function (duration) {
       try {
         if (duration == null) return fail("Duration is null or undefined");
@@ -1890,6 +2560,11 @@
       }
     };
   
+    /**
+     * Returns the total number of milliseconds in `duration`.
+     * @param {object} duration - `java.time.Duration` object
+     * @returns {number}
+     */
     phantom.dates.duration.toMillis = function (duration) {
       try {
         if (duration == null) return fail("Duration is null or undefined");
@@ -1908,7 +2583,18 @@
 
   /* === INTELLIGENCE === */
 
-    phantom.intelligence = { dates: {} };
+  /**
+   * @namespace phantom.intelligence
+   * @description AI-powered intelligence utilities for automatic detection and analysis.
+   * Currently provides date format detection via `phantom.intelligence.dates`.
+   */
+    phantom.intelligence = {};
+
+  /**
+   * @namespace phantom.intelligence.dates
+   * @description Intelligent date utilities that use pattern analysis to infer format information automatically.
+   */
+    phantom.intelligence.dates = {};
 
     /**
      * Dynamically detect the format of a date string using pattern analysis.
