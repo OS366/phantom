@@ -47,7 +47,7 @@ Phantom.js is a lightweight helper library designed specifically for Mirth Conne
 
 ## Version
 
-**Current Version:** 0.1.7-BETA
+**Current Version:** 0.1.9-BETA
 
 ## Quick Start
 

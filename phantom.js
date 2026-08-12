@@ -1,4 +1,4 @@
-/*! Phantom.js v0.1.7-BETA | (c) 2025 David Labs | GPL-3.0
+/*! Phantom.js v0.1.9-BETA | (c) 2025 David Labs | GPL-3.0
  * Docs: github.com/OS366/phantom/wiki
  * 
  * MODULES: maps | strings | numbers | json | base64 | xml | dates | intelligence
@@ -6,21 +6,26 @@
 (function (global) {
   "use strict";
   var phantom = global.phantom || {};
-  phantom.version = "0.1.7-BETA";
+
+  /** Library version string (for example 0.1.8-BETA). */
+  phantom.version = "0.1.9-BETA";
+  /** Wiki URL for Phantom.js documentation. */
   phantom.docs = "https://github.com/OS366/phantom/wiki";
+  /** Runtime options; set silent to suppress non-error noise. */
   phantom.config = { silent: true };
+  /**
+   * Apply Phantom options and return phantom for chaining.
+   * @param {{silent?: boolean}} [o]
+   * @returns {typeof phantom}
+   */
   phantom.init = function(o) { if (o && typeof o.silent === "boolean") phantom.config.silent = o.silent; return phantom; };
+  /** Human-readable version plus docs URL. */
   phantom.toString = function() { return "Phantom.js v" + phantom.version + " - " + phantom.docs; };
 
   function logError(msg) { if (typeof logger !== "undefined") logger.error("[phantom] " + msg); }
   function fail(msg) { var m = msg || "Invalid operation"; logError(m); throw new Error(m); }
 
   /* === MAPS === */
-
-  /**
-   * @namespace phantom.maps
-   * @description Map operations for reading and writing OIE message maps (channel, global, connector, response, configuration).
-   */
 
     function isResponseContext() {
       try { 
@@ -94,7 +99,11 @@
     }
   
   /* phantom.maps */
-  
+
+    /**
+     * Read and write OIE message maps.
+     * @namespace phantom.maps
+     */
     phantom.maps = {};
   
     function mapFacade(mapName, responseOnly, readOnly) {
@@ -129,24 +138,19 @@
       };
     }
   
-    /** @namespace phantom.maps.channel
-     * @description Read/write access to the OIE channel map. Scoped to the current integration channel. */
+    /** Channel-scoped map for the current message. @namespace phantom.maps.channel */
     phantom.maps.channel = mapFacade("channelMap", false, false);
 
-    /** @namespace phantom.maps.global
-     * @description Read/write access to the OIE global map. Shared across all channels. */
+    /** Global map shared across all channels. @namespace phantom.maps.global */
     phantom.maps.global = mapFacade("globalMap", false, false);
 
-    /** @namespace phantom.maps.connector
-     * @description Read/write access to the OIE connector map. Scoped to the current connector. */
+    /** Connector-scoped map for the current connector. @namespace phantom.maps.connector */
     phantom.maps.connector = mapFacade("connectorMap", false, false);
 
-    /** @namespace phantom.maps.response
-     * @description Read/write access to the OIE response map. Only available in a response context. */
+    /** Response map; only in a response context. @namespace phantom.maps.response */
     phantom.maps.response = mapFacade("responseMap", true, false);
 
-    /** @namespace phantom.maps.configuration
-     * @description Read-only access to the OIE configuration map. */
+    /** Read-only configuration map values. @namespace phantom.maps.configuration */
     phantom.maps.configuration = {
       get: function (k) {
         var map = resolveMap("configurationMap");
@@ -169,16 +173,17 @@
   
   /* === STRINGS === */
 
-  /**
-   * @namespace phantom.strings
-   * @description String manipulation utilities. Use `phantom.strings.operation` for standalone functions or `phantom.strings.chain` for fluent chaining.
-   */
+    /**
+     * Trim, pad, case, split, and other string helpers.
+     * @namespace phantom.strings
+     */
+    phantom.strings = {};
 
     /**
+     * Pure string helpers; first argument is the input.
      * @namespace phantom.strings.operation
-     * @description Standalone string operation functions. Each function is pure and takes the input string as its first argument.
      */
-    phantom.strings = { operation: {} };
+    phantom.strings.operation = {};
   
     function toStr(x) {
       if (x === null || typeof x === "undefined") return "";
@@ -347,6 +352,7 @@
     };
   
     /**
+     * Compare two strings lexicographically.
      * Lexicographically compares two strings. Returns 0 if equal, 1 if a > b, -1 if a < b.
      * @param {string} a
      * @param {string} b
@@ -556,6 +562,7 @@
     };
 
     /**
+     * Wrap text to a fixed line width.
      * Wraps `input` at `size` characters per line. Set `cut` to true to break mid-word.
      * @param {string} input
      * @param {number} [size=80] - Maximum line length
@@ -609,9 +616,10 @@
   /* phantom.strings.chain */
 
     /**
-     * Starts a fluent chain of string operations on `input`. Call `.value()` at the end to retrieve the result.
-     * @param {string} input - The initial string value
-     * @returns {{ value: function(): string, trim: function(): object, toUpperCase: function(): object, toLowerCase: function(): object, capitalize: function(): object, reverse: function(): object, reverseWords: function(): object, leftTrim: function(): object, rightTrim: function(): object, replace: function(string, string): object, replaceAll: function(string, string): object, remove: function(string): object, leftPad: function(string, number): object, rightPad: function(string, number): object, substring: function(number, number=): object, wordwrap: function(number=, boolean=, boolean=): object }}
+     * Fluent string chain; finish with .value().
+     * @namespace phantom.strings.chain
+     * @param {string} input
+     * @returns {object}
      */
     phantom.strings.chain = function (input) {
       var value = toStr(input);
@@ -735,16 +743,17 @@
   
   /* === NUMBERS === */
 
-  /**
-   * @namespace phantom.numbers
-   * @description Numeric utilities. Use `phantom.numbers.operation` for standalone functions or `phantom.numbers.chain` for fluent chaining.
-   */
+    /**
+     * Math, rounding, parsing, and number checks.
+     * @namespace phantom.numbers
+     */
+    phantom.numbers = {};
 
     /**
+     * Pure number helpers; throws on invalid input.
      * @namespace phantom.numbers.operation
-     * @description Standalone numeric operation functions. Throws on invalid or non-finite input.
      */
-    phantom.numbers = { operation: {} };
+    phantom.numbers.operation = {};
   
     function toNumStrict(x) {
       if (x === null || typeof x === "undefined") return fail("Value is null or undefined");
@@ -754,6 +763,7 @@
     }
   
     /**
+     * Parse a value into a finite number.
      * Parses `value` to a finite number. Throws if the value is not a valid finite number.
      * @param {*} value
      * @returns {number}
@@ -954,6 +964,7 @@
     };
 
     /**
+     * Clamp a number into a min/max range.
      * Clamps `value` to the range [`min`, `max`], returning `min` or `max` if out of bounds.
      * @param {number} value
      * @param {number} min
@@ -1055,9 +1066,10 @@
   /* phantom.numbers.chain */
 
     /**
-     * Starts a fluent chain of numeric operations on `input`. Call `.value()` at the end to retrieve the result.
-     * @param {number} input - The initial numeric value
-     * @returns {{ value: function(): number, abs: function(): object, round: function(number=): object, ceil: function(): object, floor: function(): object, truncate: function(): object, sqrt: function(): object, add: function(number): object, subtract: function(number): object, multiply: function(number): object, divide: function(number): object, mod: function(number): object, pow: function(number): object, min: function(number): object, max: function(number): object, clamp: function(number, number): object, toFixed: function(number=): object, isEven: function(): boolean, isOdd: function(): boolean, isPositive: function(): boolean, isNegative: function(): boolean, isZero: function(): boolean, between: function(number, number): boolean, sign: function(): number }}
+     * Fluent number chain; finish with .value().
+     * @namespace phantom.numbers.chain
+     * @param {number} input
+     * @returns {object}
      */
     phantom.numbers.chain = function (input) {
       var value = toNumStrict(input);
@@ -1206,16 +1218,17 @@
   
   /* === JSON === */
 
-  /**
-   * @namespace phantom.json
-   * @description JSON parsing, serialisation, and path-based access utilities.
-   */
+    /**
+     * Parse, stringify, and path-based JSON helpers.
+     * @namespace phantom.json
+     */
+    phantom.json = {};
 
     /**
+     * Pure JSON helpers for objects and paths.
      * @namespace phantom.json.operation
-     * @description Standalone JSON operation functions.
      */
-    phantom.json = { operation: {} };
+    phantom.json.operation = {};
   
     function parseJsonSafe(str) {
       try {
@@ -1299,6 +1312,7 @@
     };
   
     /**
+     * Set a value at a dot-separated path.
      * Returns a deep copy of `obj` with `value` set at the dot-separated `keyPath`. Does not mutate the original.
      * @param {object} obj
      * @param {string} keyPath - Dot-separated path
@@ -1320,6 +1334,7 @@
     };
   
     /**
+     * Check whether a JSON path exists.
      * Returns true if the dot-separated `keyPath` exists and is not undefined in `obj`.
      * @param {object} obj
      * @param {string} keyPath
@@ -1347,6 +1362,7 @@
     };
   
     /**
+     * Remove a key at a dot-separated path.
      * Returns a deep copy of `obj` with the key at `keyPath` deleted. Does not mutate the original.
      * @param {object} obj
      * @param {string} keyPath - Dot-separated path of the key to delete
@@ -1409,6 +1425,7 @@
     };
   
     /**
+     * Count own keys or array length.
      * Returns the number of own properties in an object, or the length of an array.
      * @param {object|Array} obj
      * @returns {number}
@@ -1424,6 +1441,7 @@
     };
   
     /**
+     * Shallow-merge two objects into a copy.
      * Shallow-merges `obj2` into a copy of `obj1`, returning the merged object. Keys in `obj2` overwrite `obj1`.
      * @param {object} obj1
      * @param {object} obj2
@@ -1446,6 +1464,7 @@
     };
   
     /**
+     * True if null, empty object, or empty array.
      * Returns true if `obj` is null, an empty object `{}`, or an empty array `[]`.
      * @param {object|Array|null} obj
      * @returns {boolean}
@@ -1482,6 +1501,7 @@
     };
   
     /**
+     * Serialize an object to compact JSON.
      * Serialises `obj` to a compact JSON string. Useful for logging in OIE/Rhino where objects print as Java types.
      * @param {object|Array} obj
      * @returns {string}
@@ -1512,16 +1532,17 @@
   
   /* === BASE64 === */
 
-  /**
-   * @namespace phantom.base64
-   * @description Base64 encoding and decoding utilities. Supports Java (OIE/Rhino), browser (`btoa`/`atob`), and a pure-JS fallback.
-   */
+    /**
+     * Encode and decode Base64 strings safely.
+     * @namespace phantom.base64
+     */
+    phantom.base64 = {};
 
     /**
+     * Pure Base64 encode and decode helpers.
      * @namespace phantom.base64.operation
-     * @description Standalone Base64 operation functions.
      */
-    phantom.base64 = { operation: {} };
+    phantom.base64.operation = {};
   
     function encodeBase64Safe(str) {
       try {
@@ -1645,16 +1666,17 @@
   
   /* === XML === */
 
-  /**
-   * @namespace phantom.xml
-   * @description XML parsing, serialisation, and XPath-based query utilities. Requires Java XML APIs (OIE/Rhino environment).
-   */
+    /**
+     * Parse, stringify, and XPath-query XML.
+     * @namespace phantom.xml
+     */
+    phantom.xml = {};
 
     /**
+     * Pure XML helpers for parse and XPath.
      * @namespace phantom.xml.operation
-     * @description Standalone XML operation functions.
      */
-    phantom.xml = { operation: {} };
+    phantom.xml.operation = {};
   
     function parseXmlSafe(str) {
       try {
@@ -1791,6 +1813,7 @@
     };
   
     /**
+     * True if an XPath matches any node.
      * Returns true if the XPath expression matches at least one node in `xml`.
      * @param {object} xml - Java DOM Document
      * @param {string} xpath - XPath expression
@@ -1801,6 +1824,7 @@
     };
   
     /**
+     * Serialize an XML object to a string.
      * Serialises `xmlObj` to an XML string. Useful for logging in OIE/Rhino where DOM objects print as Java types.
      * @param {object} xmlObj - Java DOM Document
      * @returns {string}
@@ -1812,17 +1836,17 @@
   
   /* === DATES === */
 
-  /**
-   * @namespace phantom.dates
-   * @description Date and time utilities built on Java `java.time` APIs (OIE/Rhino environment).
-   * Use `phantom.dates.operation` for parsing, formatting, and comparison, and `phantom.dates.duration` for duration arithmetic.
-   */
+    /**
+     * Format, parse, and compare dates via java.time.
+     * @namespace phantom.dates
+     */
+    phantom.dates = {};
 
     /**
+     * Pure date helpers for parse, format, and compare.
      * @namespace phantom.dates.operation
-     * @description Standalone date/datetime operation functions.
      */
-    phantom.dates = { operation: {} };
+    phantom.dates.operation = {};
   
     // Date format constants (enum-like)
     function getJavaLocalDate(dateInput) {
@@ -2000,6 +2024,7 @@
     };
   
     /**
+     * Parse a date string via java.time.
      * Parses a date string into a `java.time.LocalDate`. If `format` is omitted, tries ISO and common formats automatically.
      * @param {string} dateString - Date string to parse
      * @param {string} [format] - Java date format pattern (e.g. `"yyyy-MM-dd"`)
@@ -2042,6 +2067,7 @@
     };
   
     /**
+     * Parse a datetime string via java.time.
      * Parses a datetime string into a `java.time.LocalDateTime`. If `format` is omitted, tries ISO and common formats automatically.
      * @param {string} dateTimeString - Datetime string to parse
      * @param {string} [format] - Java datetime format pattern (e.g. `"yyyy-MM-dd'T'HH:mm:ss"`)
@@ -2146,6 +2172,7 @@
     };
   
     /**
+     * Return month number (1–12) for a date.
      * Returns the month of `date` as an integer (1 = January … 12 = December).
      * @param {object|string} date - LocalDate, LocalDateTime, or parseable date string
      * @returns {number}
@@ -2182,6 +2209,7 @@
     };
   
     /**
+     * Return weekday name for a date.
      * Returns the day of the week of `date` as an uppercase string (e.g. `"MONDAY"`, `"TUESDAY"`).
      * @param {object|string} date - LocalDate, LocalDateTime, or parseable date string
      * @returns {string}
@@ -2250,6 +2278,7 @@
     };
   
     /**
+     * Count units between two dates.
      * Returns the number of `unit` between `date1` and `date2` (positive if date2 is after date1).
      * @param {object|string} date1 - Start date
      * @param {object|string} date2 - End date
@@ -2379,8 +2408,8 @@
   /* phantom.dates.duration */
 
     /**
+     * Build and convert java.time Duration values.
      * @namespace phantom.dates.duration
-     * @description Duration creation and arithmetic functions built on `java.time.Duration`.
      */
     phantom.dates.duration = {};
   
@@ -2583,23 +2612,20 @@
 
   /* === INTELLIGENCE === */
 
-  /**
-   * @namespace phantom.intelligence
-   * @description AI-powered intelligence utilities for automatic detection and analysis.
-   * Currently provides date format detection via `phantom.intelligence.dates`.
-   */
+    /**
+     * Auto-detect formats and other smart helpers.
+     * @namespace phantom.intelligence
+     */
     phantom.intelligence = {};
 
-  /**
-   * @namespace phantom.intelligence.dates
-   * @description Intelligent date utilities that use pattern analysis to infer format information automatically.
-   */
+    /**
+     * Detect a date string's Java format pattern.
+     * @namespace phantom.intelligence.dates
+     */
     phantom.intelligence.dates = {};
 
     /**
-     * Dynamically detect the format of a date string using pattern analysis.
-     * Returns the Java date format pattern string.
-     * 
+     * Detect the Java date format pattern for a string.
      * @param {string} dateString - The date string to analyze
      * @param {Object} [options] - Detection options
      * @param {string} [options.locale] - Locale hint: 'US' (MM/dd), 'EU' (dd/MM), or 'auto' (default)

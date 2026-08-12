@@ -48,24 +48,34 @@ log('\n🚀 Preparing Release...\n', 'cyan');
 log(`📦 Version: ${version}`, 'blue');
 log(`🏷️  Tag: ${tagName}\n`, 'blue');
 
-// Step 1: Run tests
-log('1️⃣  Running tests...', 'cyan');
+// Step 0: Sync every version label (banner, runtime, README, wiki, tests, minify)
+log('0️⃣  Syncing version labels everywhere...', 'cyan');
+exec('npm run version:sync');
+exec('npm run version:check');
+
+// Step 1: Bake ≤12-word hotline JSDoc into phantom.js (no extra release files)
+log('\n1️⃣  Baking hotline descriptions into phantom.js...', 'cyan');
+exec('npm run hotlines');
+exec('npm run hotlines:check');
+
+// Step 2: Run tests
+log('\n2️⃣  Running tests...', 'cyan');
 exec('npm test');
 
-// Step 2: Check test coverage
-log('\n2️⃣  Checking test coverage...', 'cyan');
+// Step 3: Check test coverage
+log('\n3️⃣  Checking test coverage...', 'cyan');
 exec('npm run test:check');
 
-// Step 3: Generate minified file
-log('\n3️⃣  Generating minified file...', 'cyan');
+// Step 4: Generate obfuscated phantom.min.js
+log('\n4️⃣  Generating obfuscated phantom.min.js...', 'cyan');
 exec('npm run minify');
 
-// Step 4: Create release package
-log('\n4️⃣  Creating release package...', 'cyan');
+// Step 5: Create release package (phantom.js + phantom.min.js only)
+log('\n5️⃣  Creating release package...', 'cyan');
 exec('npm run release');
 
-// Step 5: Check if tag already exists
-log('\n5️⃣  Checking Git tag...', 'cyan');
+// Step 6: Check if tag already exists
+log('\n6️⃣  Checking Git tag...', 'cyan');
 try {
   execSync(`git rev-parse -q --verify "refs/tags/${tagName}" > /dev/null 2>&1`, { encoding: 'utf8' });
   log(`⚠️  Tag ${tagName} already exists!`, 'yellow');
