@@ -3,7 +3,7 @@
  * Create Release Package
  * 
  * Creates a zip file containing only phantom.js and phantom.min.js
- * for distribution to the community.
+ * for distribution to the community (readable + obfuscated runtime).
  */
 
 const fs = require('fs');

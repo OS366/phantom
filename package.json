@@ -1,6 +1,6 @@
 {
   "name": "phantom",
-  "version": "0.1.7-beta",
+  "version": "0.1.9-beta",
   "description": "Lightweight helper library for OIE scripting",
   "private": true,
   "scripts": {
@@ -10,6 +10,11 @@
     "test:check": "cd scripts && npm run test:check",
     "test:check-diff": "cd scripts && npm run test:check-diff",
     "minify": "cd scripts && npm run minify",
+    "version:sync": "cd scripts && npm run version:sync",
+    "version:check": "cd scripts && npm run version:check",
+    "version:bump": "cd scripts && npm run version:bump",
+    "hotlines": "cd scripts && npm run hotlines",
+    "hotlines:check": "cd scripts && npm run hotlines:check",
     "release": "cd scripts && npm run release",
     "release:prepare": "cd scripts && npm run release:prepare"
   },

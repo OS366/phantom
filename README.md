@@ -2,7 +2,7 @@
 
 A lightweight helper library for Mirth Connect, Open Integration Engine (OIE), and BridgeLink scripting.
 
-**Version:** 0.1.8-BETA
+**Version:** 0.1.9-BETA
 
 ## Overview
 
@@ -88,7 +88,7 @@ Drag and drop is not possible for variables saved using `phantom.maps.*`
    - No additional setup required
    - You can now use all Phantom.js operations in your channel scripts
 
-**Note:** You can use either `phantom.js` (readable) or `phantom.min.js` (minified, smaller size). Both work identically.
+**Note:** Each release ships exactly two files: `phantom.js` (readable, JSDoc hotlines for editors) and `phantom.min.js` (obfuscated runtime). Both expose the same API.
 
 ### For Development/Testing
 
@@ -115,7 +115,7 @@ Phantom.js is a plug-and-play library - no initialization required! Once install
 
 ```javascript
 // Get version (optional)
-phantom.version;  // "0.1.4-BETA"
+phantom.version;  // "0.1.9-BETA"
 
 // Use any operation directly
 var result = phantom.strings.operation.trim("  hello  ");

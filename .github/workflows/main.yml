@@ -187,34 +187,37 @@ jobs:
             echo "needs_increment=false" >> $GITHUB_OUTPUT
           fi
       
-      - name: "Update Version in Files"
+      - name: "Sync Version Labels (no bump)"
+        if: steps.version_increment.outputs.needs_increment != 'true'
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔎 Verifying every version label matches package.json"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          cd scripts
+          node sync-version.js
+          node sync-version.js --check
+          echo "✅ Labels OK"
+
+      - name: "Bump + Sync Version Labels"
         if: steps.version_increment.outputs.needs_increment == 'true'
         run: |
           NEW_VERSION="${{ steps.version_increment.outputs.new_version }}"
-          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
-          
-          echo "📝 Updating version in package.json..."
+          # Normalize any accidental uppercase suffix from older tags (0.1.8-BETA → 0.1.8-beta)
+          NEW_VERSION=$(echo "$NEW_VERSION" | awk '{print tolower($0)}')
+          echo "📝 Syncing version labels everywhere → $NEW_VERSION"
           cd scripts
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '$NEW_VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-          
-          echo "📝 Updating version in phantom.js..."
-          cd ..
-          sed -i.bak "s/$CURRENT_VERSION/$NEW_VERSION/g" phantom.js
-          rm -f phantom.js.bak
-          
-          echo "✅ Version updated to $NEW_VERSION"
+          node sync-version.js --set "$NEW_VERSION"
+          node sync-version.js --check
+          echo "✅ Version labels synced to $NEW_VERSION"
       
       - name: "Commit Version Update"
         if: steps.version_increment.outputs.needs_increment == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add scripts/package.json phantom.js
+          git add package.json scripts/package.json scripts/package-lock.json \
+            phantom.js phantom.test.js README.md wiki/Home.md \
+            docs/VERSIONING.md || true
           git commit -m "chore: Auto-increment version to ${{ steps.version_increment.outputs.new_version }} [skip ci]" || exit 0
           git push origin main || exit 0
           echo "✅ Version update committed"
@@ -251,7 +254,9 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🗜️  Step 5/10: Generating Minified File"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📝 Minifying phantom.js..."
+          echo "📝 Syncing labels then minifying phantom.js..."
+          node sync-version.js
+          node sync-version.js --check
           npm run minify
           echo "✅ Minified file created: phantom.min.js"
 
